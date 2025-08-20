@@ -41,7 +41,7 @@ export function NavMain({ items }: { items: NavMainItem }) {
         {items
           .sort((a, b) => a.sort_number - b.sort_number)
           .map((item) => (
-            <Collapsible key={item.title} asChild defaultOpen={item.isActive}>
+            <Collapsible key={item.title} asChild defaultOpen={true}>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild tooltip={item.title}>
                   <Link href={item.url}>

@@ -34,7 +34,6 @@ export default async function RootLayout({
 }>) {
   const session = await getSession();
   const userInfo = session ? session : "";
-  console.log("session", session);
 
   return (
     <html lang="en" suppressHydrationWarning>

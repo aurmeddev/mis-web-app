@@ -43,7 +43,7 @@ export function NavMain({ items }: { items: NavMainItem }) {
             <Collapsible
               key={item.title}
               title={item.title}
-              defaultOpen
+              defaultOpen={item.title === "AP Profiles"}
               className="group/collapsible"
             >
               <SidebarMenuItem>

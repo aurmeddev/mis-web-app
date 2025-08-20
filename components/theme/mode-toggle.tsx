@@ -4,8 +4,8 @@ import * as React from "react";
 import { Check } from "lucide-react";
 import { useTheme } from "next-themes";
 import Image from "next/image";
-import DarkTheme from "@/public/images/dark_preview.svg";
-import LightTheme from "@/public/images/light_preview.svg";
+import DarkTheme from "@/public/dark_preview.svg";
+import LightTheme from "@/public/light_preview.svg";
 export function ModeToggle() {
   const { theme, setTheme } = useTheme();
   const themeOption = [

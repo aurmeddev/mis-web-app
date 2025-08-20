@@ -54,7 +54,7 @@ export function AppSidebar({ session, ...props }: AppSidebarProps) {
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">Aureas Media</span>
-                  <span className=" text-xs">
+                  <span className="truncate text-xs">
                     Management Information System
                   </span>
                 </div>

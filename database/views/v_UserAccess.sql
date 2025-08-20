@@ -8,11 +8,13 @@ COALESCE((
                'id', main_menu.id,
                'title', main_menu.title,
                'url', main_menu.url,
+               'sort_number',main_menu.sort_number,
                'items', COALESCE((
     					SELECT JSON_ARRAYAGG(
              					JSON_OBJECT(
                						'id', sub_menu.id,
                						'title', sub_menu.title,
+                          'sort_number',sub_menu.sort_number,
                						'url', sub_menu.url
              							)
            							)

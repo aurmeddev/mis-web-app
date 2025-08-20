@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 
 import { NavMain, NavMainItem } from "@/components/sidebar/nav-main";
-import { NavUser } from "@/components/sidebar/nav-user";
+import { NavUser, NavUserProps } from "@/components/sidebar/nav-user";
 import {
   Sidebar,
   SidebarContent,
@@ -23,19 +23,23 @@ import {
 
 type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
   session: {
-    user: { name: string; email: string; avatar: string };
-    navMain: NavMainItem;
+    user: NavUserProps & { navMain: NavMainItem };
   };
 };
 
 export function AppSidebar({ session, ...props }: AppSidebarProps) {
+  const { navMain, ...user } = session.user;
   const data = {
     user: {
-      name: session.user.name,
-      email: session.user.email,
-      avatar: session.user.avatar,
+      full_name: user.full_name,
+      display_name: user.display_name,
+      gender: user.gender,
+      email: user.email,
+      avatar: user.avatar,
+      user_type_name: user.user_type_name,
+      team_name: user.team_name,
     },
-    navMain: addIconPerMenu(session.navMain),
+    navMain: addIconPerMenu(navMain),
   };
   return (
     <Sidebar variant="inset" collapsible="icon" {...props}>
@@ -70,8 +74,10 @@ export function AppSidebar({ session, ...props }: AppSidebarProps) {
 
 const addIconPerMenu = (array: any[]) => {
   const icon = [Layers, Users, CircleDollarSign];
-  return array.map((item, i) => ({
-    ...item,
-    icon: icon[i] ?? LayoutDashboardIcon, // fallback to a default icon if not enough icons
-  }));
+  return array.map((item, i) => {
+    return {
+      ...item,
+      icon: icon[i] ?? LayoutDashboardIcon, // fallback to a default icon if not enough icons
+    };
+  });
 };

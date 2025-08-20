@@ -9,6 +9,8 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
+import { Toaster } from "@/components/ui/sonner";
+import { UserActivityContextProvider } from "@/components/auth/context/UserActivityContextProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,79 +32,40 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // const session = await getSession();
-  // const userInfo = session ? session : "";
-  const userInfo = {
-    user: {
-      name: "shadcn",
-      email: "m@example.com",
-      avatar: "https://github.com/shadcn.png",
-    },
-    navMain: [
-      {
-        title: "Profiles Management",
-        sort_number: 1,
-        url: "#",
-        isActive: true,
-        items: [
-          {
-            title: "AP Profiles",
-            sort_number: 1,
-            url: "#",
-          },
-          {
-            title: "2FA Generator",
-            sort_number: 2,
-            url: "#",
-          },
-        ],
-      },
-      // {
-      //   title: "Models",
-      //   sort_number: 2,
-      //   url: "/test",
-      //   items: [],
-      // },
-    ],
-  };
+  const session = await getSession();
+  const userInfo = session ? session : "";
+  console.log("session", session);
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <SidebarProvider>
-            <AppSidebar session={userInfo} />
-            <SidebarInset>
-              <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 border-b border-input">
-                <div className="flex items-center gap-2 px-4">
-                  <SidebarTrigger className="-ml-1" />
-                </div>
-              </header>
-              <main className="w-full overflow-hidden">{children}</main>
-            </SidebarInset>
-          </SidebarProvider>
-          {/* {session ? (
-            <SidebarProvider>
-              <AppSidebar />
-              <SidebarInset>
-                <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 border-b border-input">
-                  <div className="flex items-center gap-2 px-4">
-                    <SidebarTrigger className="-ml-1" />
-                  </div>
-                </header>
-                <main className="w-full overflow-hidden">{children}</main>
-              </SidebarInset>
-            </SidebarProvider>
-          ) : (
-            children
-          )} */}
-        </ThemeProvider>
+        <UserActivityContextProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            enableSystem
+            disableTransitionOnChange
+          >
+            {session ? (
+              <SidebarProvider>
+                <AppSidebar session={userInfo} />
+                <SidebarInset>
+                  <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 border-b border-input">
+                    <div className="flex items-center gap-2 px-4">
+                      <SidebarTrigger className="-ml-1" />
+                    </div>
+                  </header>
+                  <main className="w-full overflow-hidden">{children}</main>
+                </SidebarInset>
+              </SidebarProvider>
+            ) : (
+              children
+            )}
+          </ThemeProvider>
+        </UserActivityContextProvider>
+        <Toaster />
       </body>
     </html>
   );

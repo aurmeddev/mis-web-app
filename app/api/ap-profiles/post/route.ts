@@ -28,7 +28,7 @@ export const POST = async (request: NextRequest) => {
     return NextResponse.json(
       {
         isSuccess,
-        message: "Data parse error.",
+        message: "Data parse error occurred.",
       },
       { status: 500 }
     );
@@ -38,8 +38,17 @@ export const POST = async (request: NextRequest) => {
   // Validate the data before proceeding
   const aps = new ApProfilesService();
   const validationResponse = await aps.find({ searchKey: data.profile_name });
-  const doesApProfileExist =
-    validationResponse.isSuccess && validationResponse.data.length > 0;
+  if (!validationResponse.isSuccess) {
+    return NextResponse.json(
+      {
+        isSuccess: false,
+        message: "Validation error occurred.",
+        data: [],
+      },
+      { status: 500 }
+    );
+  }
+  const doesApProfileExist = validationResponse.data.length > 0;
   if (doesApProfileExist) {
     return NextResponse.json(
       {
@@ -53,7 +62,7 @@ export const POST = async (request: NextRequest) => {
   }
 
   const objUtil = new ObjectUtils();
-  const payload = objUtil.removeInvalidKeys(data);
+  const { recovery_codes, ...payload } = objUtil.removeInvalidKeys(data);
   const mysqlUtils = new MySqlUtils();
   const { columns, values, questionMarksValue } =
     mysqlUtils.generateInsertQuery({ created_by: decryptedData, ...payload });
@@ -63,16 +72,22 @@ export const POST = async (request: NextRequest) => {
 
   // Execute the query to insert data into the database
   try {
-    await query({
+    const response: any = await query({
       query: queryString,
       values: values,
+    });
+
+    // Execute the recovery codes insertion
+    await aps.postRecoveryCodes({
+      ap_profile_id: response.insertId,
+      recovery_code: recovery_codes,
     });
 
     return NextResponse.json(
       {
         isSuccess: true,
         message: "Data have been submitted successfully.",
-        data: [],
+        data: response,
       },
       { status: 201 }
     );

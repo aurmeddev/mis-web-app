@@ -2,10 +2,14 @@ import { ApiResponseProps } from "@/database/dbConnection";
 import { appBaseUrl } from "@/lib/base-url/appBaseUrl";
 import {
   FindApProfilesProps,
+  GetAllApProfilesProps,
   PostApProfilesProps,
+  PostRecoveryCodesProps,
   ToggleApProfilesStatusProps,
   UpdateApProfilesProps,
 } from "./type/ApProfilesProps";
+import { SearchParamsManager } from "@/lib/utils/search-params/SearchParamsManager";
+import { PaginationProps } from "@/lib/utils/pagination/type/PaginationProps";
 
 export class ApProfilesService {
   async post(params: PostApProfilesProps): Promise<ApiResponseProps> {
@@ -77,5 +81,60 @@ export class ApProfilesService {
     );
 
     return await response.json();
+  }
+
+  async getAll(
+    params: GetAllApProfilesProps
+  ): Promise<ApiResponseProps & { pagination?: PaginationProps }> {
+    const searchParams = new SearchParamsManager();
+    const searchQueryParams = searchParams.append(params);
+    const response = await fetch(
+      `${appBaseUrl}/api/acquisition/ap-profiles/get-all${searchQueryParams}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-type": "application/json",
+        },
+        cache: "no-store",
+      }
+    );
+
+    return await response.json();
+  }
+
+  async postRecoveryCodes(
+    params: PostRecoveryCodesProps
+  ): Promise<ApiResponseProps> {
+    const { ap_profile_id, recovery_code } = params;
+    let recovery_code_format: string[] = [];
+    // Validate the recovery code format
+    if (recovery_code.includes(" ")) {
+      recovery_code_format = recovery_code.split(" ");
+    } else if (recovery_code) {
+      recovery_code_format = recovery_code.split("/");
+    }
+    // Execute the query to insert recovery codes into the database simulataneously
+    await Promise.allSettled(
+      recovery_code_format.map((value) => {
+        if (value) {
+          // Check if value is not empty
+          fetch(`${appBaseUrl}/api/ap-profiles/recovery-codes`, {
+            method: "POST",
+            headers: {
+              "Content-type": "application/json",
+            },
+            body: JSON.stringify({
+              ap_profile_id,
+              recovery_code: value,
+            }),
+          });
+        }
+      })
+    );
+    return {
+      isSuccess: true,
+      message: "Recovery codes have been submitted successfully.",
+      data: [],
+    };
   }
 }

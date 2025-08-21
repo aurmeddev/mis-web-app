@@ -15,7 +15,7 @@ export class ObjectUtils {
   }
 
   removeInvalidKeys(obj: any) {
-    let newObj: any = {};
+    const newObj: any = {};
     for (const key in obj) {
       const value = obj[key];
       if (value) {

@@ -1,6 +1,9 @@
 import { ApiResponseProps } from "@/database/dbConnection";
 import { appBaseUrl } from "@/lib/base-url/appBaseUrl";
-import { PostApProfilesProps } from "./type/ApProfilesProps";
+import {
+  PostApProfilesProps,
+  UpdateApProfilesProps,
+} from "./type/ApProfilesProps";
 
 export class ApProfilesService {
   async post(params: PostApProfilesProps): Promise<ApiResponseProps> {
@@ -26,5 +29,18 @@ export class ApProfilesService {
         data: [],
       };
     }
+  }
+
+  async update(params: UpdateApProfilesProps): Promise<ApiResponseProps> {
+    const { id, ...payload } = params;
+    const response = await fetch(`${appBaseUrl}/api/ap-profiles/update/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    return await response.json();
   }
 }

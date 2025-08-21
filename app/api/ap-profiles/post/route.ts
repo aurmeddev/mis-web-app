@@ -87,7 +87,7 @@ export const POST = async (request: NextRequest) => {
       {
         isSuccess: true,
         message: "Data have been submitted successfully.",
-        data: response,
+        data: [],
       },
       { status: 201 }
     );

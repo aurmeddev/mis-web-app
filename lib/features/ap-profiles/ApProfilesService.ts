@@ -2,6 +2,7 @@ import { ApiResponseProps } from "@/database/dbConnection";
 import { appBaseUrl } from "@/lib/base-url/appBaseUrl";
 import {
   PostApProfilesProps,
+  ToggleApProfilesStatusProps,
   UpdateApProfilesProps,
 } from "./type/ApProfilesProps";
 
@@ -40,6 +41,24 @@ export class ApProfilesService {
       },
       body: JSON.stringify(payload),
     });
+
+    return await response.json();
+  }
+
+  async toggleStatus(
+    params: ToggleApProfilesStatusProps
+  ): Promise<ApiResponseProps> {
+    const { id, ...payload } = params;
+    const response = await fetch(
+      `${appBaseUrl}/api/ap-profiles/update/${id}/status`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      }
+    );
 
     return await response.json();
   }

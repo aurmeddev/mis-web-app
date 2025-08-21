@@ -4,7 +4,7 @@ import { UserLoginParams, VerifyUserIpParams } from "./type/UserAuthProps";
 import { CryptoUtilsManager } from "../cryptography/util/CryptoUtilsManager";
 import { CryptoUtilsServerService } from "../cryptography/util/CryptoUtilsServerService";
 import { UserAccessControlService } from "./util/UserAccessControlService";
-import { MySqlUtils } from "@/lib/mysql/MySqlUtils";
+import { MySqlUtils } from "@/lib/utils/mysql/MySqlUtils";
 
 export class UserAuthServerService {
   async login(params: UserLoginParams) {

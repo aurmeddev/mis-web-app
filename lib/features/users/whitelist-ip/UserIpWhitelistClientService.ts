@@ -1,6 +1,6 @@
 import { appBaseUrl } from "@/lib/base-url/appBaseUrl";
-import { SearchParamsManager } from "../../search-params/SearchParamsManager";
-import { PaginationParams } from "../pagination/type/PaginationProps";
+import { SearchParamsManager } from "../../../utils/search-params/SearchParamsManager";
+import { PaginationParams } from "../../pagination/type/PaginationProps";
 import {
   FindUserIpWhitelistParams,
   PaginationUserIpWhitelistProps,

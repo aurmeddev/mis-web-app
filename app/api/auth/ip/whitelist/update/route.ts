@@ -1,5 +1,5 @@
-import { UserIpWhitelistManager } from "@/lib/features/user-ip-whitelist/UserIpWhitelistManager";
-import { UserIpWhitelistServerService } from "@/lib/features/user-ip-whitelist/UserIpWhitelistServerService";
+import { UserIpWhitelistManager } from "@/lib/features/users/whitelist-ip/UserIpWhitelistManager";
+import { UserIpWhitelistServerService } from "@/lib/features/users/whitelist-ip/UserIpWhitelistServerService";
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { NextResponse, NextRequest } from "next/server";
 

@@ -1,6 +1,6 @@
-import { UserIpWhitelistManager } from "@/lib/features/user-ip-whitelist/UserIpWhitelistManager";
-import { UserIpWhitelistServerService } from "@/lib/features/user-ip-whitelist/UserIpWhitelistServerService";
-import { SearchParamsManager } from "@/lib/search-params/SearchParamsManager";
+import { UserIpWhitelistManager } from "@/lib/features/users/whitelist-ip/UserIpWhitelistManager";
+import { UserIpWhitelistServerService } from "@/lib/features/users/whitelist-ip/UserIpWhitelistServerService";
+import { SearchParamsManager } from "@/lib/utils/search-params/SearchParamsManager";
 import { NextRequest, NextResponse } from "next/server";
 export const GET = async (request: NextRequest) => {
   const params = new SearchParamsManager().toObject(

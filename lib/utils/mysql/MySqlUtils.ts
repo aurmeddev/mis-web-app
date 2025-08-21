@@ -1,4 +1,4 @@
-import { NumberUtils } from "../number/NumberUtils";
+import { NumberUtils } from "@/lib/utils/number/NumberUtils";
 
 export type PaginationRowIdsProps = {
   page: number;

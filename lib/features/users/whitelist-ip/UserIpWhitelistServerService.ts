@@ -1,5 +1,5 @@
-import { DatetimeUtils } from "../../date/DatetimeUtils";
-import { MySqlUtils } from "@/lib/mysql/MySqlUtils";
+import { DatetimeUtils } from "../../../utils/date/DatetimeUtils";
+import { MySqlUtils } from "@/lib/utils/mysql/MySqlUtils";
 import {
   FindUserIpWhitelistParams,
   PaginationUserIpWhitelistProps,
@@ -9,7 +9,7 @@ import {
 } from "./type/UserIpWhitelistProps";
 import { ApiResponseProps, query } from "@/database/dbConnection";
 import { IpAddressUtil } from "./util/IpAddressUtil";
-import { PaginationParams } from "../pagination/type/PaginationProps";
+import { PaginationParams } from "../../pagination/type/PaginationProps";
 export class UserIpWhitelistServerService {
   async post(params: PostUserIpWhitelistParams): Promise<ApiResponseProps> {
     const mysqlUtils = new MySqlUtils();

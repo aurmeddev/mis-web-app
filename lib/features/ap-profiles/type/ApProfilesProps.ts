@@ -5,7 +5,7 @@ type BaseApProfilesProps = {
   fb_owner_name?: string;
   username: string;
   password: string;
-  long_2fa_key?: string;
+  app_2fa_code?: string;
   marketing_api_access_token?: string;
   recovery_codes: any;
   remarks?: string;
@@ -37,7 +37,7 @@ type ToggleApProfilesStatusProps = Omit<
   | "remarks"
   | "username"
   | "password"
-  | "long_2fa_key"
+  | "app_2fa_code"
   | "marketing_api_access_token"
   | "created_by"
   | "created_at"

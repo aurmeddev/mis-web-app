@@ -1,5 +1,6 @@
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { NotFound } from "@/components/not-found/not-found";
+import { ManageApProfilesContainer } from "@/components/ap-profiles/manage-ap-profiles/ManageApProfilesContainer";
 export default async function Page() {
   const session = await getSession();
 
@@ -8,5 +9,5 @@ export default async function Page() {
     title: "403 Forbidden",
   };
   if (!session) return <NotFound param={notFoundObj} />;
-  return <>Manage AP Profiles</>;
+  return <ManageApProfilesContainer />;
 }

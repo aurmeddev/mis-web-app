@@ -59,9 +59,9 @@ export class UserAuthServerService {
         };
       }
 
-      // Check if the user is Adam Account
-      const IS_USER_ADAM_ACCOUNT = validateUserEmailResult[0].id === 8;
-      if (!IS_USER_ADAM_ACCOUNT) {
+      // Check if the user is SUPER ADMINISTRATOR
+      const IS_USER_SUPER_ADMIN = validateUserEmailResult[0].user_type_id === 1;
+      if (!IS_USER_SUPER_ADMIN) {
         // Check if the user is whitelisted.
         const userIpAccess = new UserAccessControlService();
         const ipAccessVerificationResult =

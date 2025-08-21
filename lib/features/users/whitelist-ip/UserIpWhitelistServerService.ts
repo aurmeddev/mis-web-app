@@ -9,7 +9,7 @@ import {
 } from "./type/UserIpWhitelistProps";
 import { ApiResponseProps, query } from "@/database/dbConnection";
 import { IpAddressUtil } from "./util/IpAddressUtil";
-import { PaginationParams } from "../../pagination/type/PaginationProps";
+import { PaginationProps } from "../../../utils/pagination/type/PaginationProps";
 export class UserIpWhitelistServerService {
   async post(params: PostUserIpWhitelistParams): Promise<ApiResponseProps> {
     const mysqlUtils = new MySqlUtils();
@@ -187,7 +187,7 @@ export class UserIpWhitelistServerService {
 
   async get(params: PaginationUserIpWhitelistProps): Promise<
     ApiResponseProps & {
-      pagination?: PaginationParams;
+      pagination?: PaginationProps;
     }
   > {
     const util = new MySqlUtils();
@@ -208,7 +208,7 @@ export class UserIpWhitelistServerService {
         };
       }
 
-      let pagination: PaginationParams = {
+      let pagination: PaginationProps = {
         page: 0,
         limit: 0,
         total_pages: 0,

@@ -1,6 +1,6 @@
 import { appBaseUrl } from "@/lib/base-url/appBaseUrl";
 import { SearchParamsManager } from "../../../utils/search-params/SearchParamsManager";
-import { PaginationParams } from "../../pagination/type/PaginationProps";
+import { PaginationProps } from "../../../utils/pagination/type/PaginationProps";
 import {
   FindUserIpWhitelistParams,
   PaginationUserIpWhitelistProps,
@@ -72,7 +72,7 @@ export class UserIpWhitelistClientService {
 
   async get(params: PaginationUserIpWhitelistProps): Promise<
     ApiResponseProps & {
-      pagination?: PaginationParams;
+      pagination?: PaginationProps;
     }
   > {
     const searchParams = new SearchParamsManager();

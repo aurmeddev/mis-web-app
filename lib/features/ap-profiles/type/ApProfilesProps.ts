@@ -7,9 +7,14 @@ type BaseApProfilesProps = {
   password: string;
   app_2fa_code?: string;
   marketing_api_access_token?: string;
+  created_by_id: number;
   recovery_codes: any;
   remarks?: string;
   is_active: 0 | 1 | 2; // 0: Inactive, 1: Active, 2: New AP Profile
+  status: {
+    status: string;
+    is_active: 0 | 1 | 2; // 0: Inactive, 1: Active, 2: New AP Profile
+  };
   created_by: {
     full_name: string;
     team_name: string;
@@ -19,12 +24,12 @@ type BaseApProfilesProps = {
 
 type PostApProfilesProps = Omit<
   BaseApProfilesProps,
-  "is_active" | "created_by" | "created_at"
+  "is_active" | "created_by" | "created_at" | "status" | "created_by_id"
 >;
 
 type UpdateApProfilesProps = Omit<
   BaseApProfilesProps,
-  "is_active" | "created_by" | "created_at"
+  "is_active" | "created_by" | "created_at" | "status" | "created_by_id"
 > & {
   id: number;
 };
@@ -33,12 +38,14 @@ type ToggleApProfilesStatusProps = Omit<
   BaseApProfilesProps,
   | "profile_name"
   | "fb_owner_name"
-  | "recovery_codes"
-  | "remarks"
   | "username"
   | "password"
   | "app_2fa_code"
   | "marketing_api_access_token"
+  | "created_by_id"
+  | "recovery_codes"
+  | "remarks"
+  | "status"
   | "created_by"
   | "created_at"
 > & {

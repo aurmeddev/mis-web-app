@@ -5,6 +5,7 @@ import { ObjectUtils } from "@/lib/utils/object/ObjectUtils";
 import { CryptoServerService } from "@/lib/features/security/cryptography/CryptoServerService";
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { NextResponse, NextRequest } from "next/server";
+import { ApProfilesService } from "@/lib/features/ap-profiles/ApProfilesService";
 export const POST = async (request: NextRequest) => {
   // Check if the user session is valid before processing the request
   const session = await getSession();
@@ -34,6 +35,23 @@ export const POST = async (request: NextRequest) => {
   }
 
   const data: PostApProfilesProps = await request.json();
+  // Validate the data before proceeding
+  const aps = new ApProfilesService();
+  const validationResponse = await aps.find({ searchKey: data.profile_name });
+  const doesApProfileExist =
+    validationResponse.isSuccess && validationResponse.data.length > 0;
+  if (doesApProfileExist) {
+    return NextResponse.json(
+      {
+        isSuccess: false,
+        message:
+          "The AP profile name you provided already exists. Please check the name and try again.",
+        data: [],
+      },
+      { status: 409 }
+    );
+  }
+
   const objUtil = new ObjectUtils();
   const payload = objUtil.removeInvalidKeys(data);
   const mysqlUtils = new MySqlUtils();

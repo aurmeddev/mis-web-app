@@ -25,7 +25,7 @@ export class ApProfilesService {
       const errorResponse = JSON.parse(error.message);
       return {
         isSuccess: false,
-        message: errorResponse.message.includes("duplicate entry")
+        message: errorResponse.message.includes("exists")
           ? errorResponse.message
           : "Something went wrong! Please try again.",
         data: [],

@@ -34,9 +34,14 @@ type ToggleApProfilesStatusProps = Omit<
   id: number;
 };
 
+type FindApProfilesProps = {
+  searchKey: string;
+};
+
 export type {
   BaseApProfilesProps,
   PostApProfilesProps,
   UpdateApProfilesProps,
   ToggleApProfilesStatusProps,
+  FindApProfilesProps,
 };

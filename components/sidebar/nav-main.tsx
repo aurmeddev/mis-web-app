@@ -39,11 +39,11 @@ export function NavMain({ items }: { items: NavMainItem }) {
       <SidebarMenu>
         {items
           .sort((a, b) => a.sort_number - b.sort_number)
-          .map((item) => (
+          .map((item, index) => (
             <Collapsible
-              key={item.title}
+              key={index}
               title={item.title}
-              defaultOpen={item.title === "AP Profiles"}
+              defaultOpen={index === 0}
               className="group/collapsible"
             >
               <SidebarMenuItem>
@@ -69,8 +69,8 @@ export function NavMain({ items }: { items: NavMainItem }) {
                   <SidebarMenuSub>
                     {item.items
                       ?.sort((a, b) => a.sort_number - b.sort_number)
-                      .map((subItem) => (
-                        <SidebarMenuSubItem key={subItem.title}>
+                      .map((subItem, index) => (
+                        <SidebarMenuSubItem key={index}>
                           <SidebarMenuSubButton asChild>
                             <Link href={subItem.url}>
                               <span>{subItem.title}</span>

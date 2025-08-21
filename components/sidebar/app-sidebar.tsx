@@ -7,6 +7,7 @@ import {
   LayoutDashboardIcon,
   Users,
   Layers,
+  ShieldCheck,
 } from "lucide-react";
 
 import { NavMain, NavMainItem } from "@/components/sidebar/nav-main";
@@ -74,7 +75,7 @@ export function AppSidebar({ session, ...props }: AppSidebarProps) {
 }
 
 const addIconPerMenu = (array: any[]) => {
-  const icon = [Layers, Users, CircleDollarSign];
+  const icon = [Layers, Users, ShieldCheck];
   return array.map((item, i) => {
     return {
       ...item,

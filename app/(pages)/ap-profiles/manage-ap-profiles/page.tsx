@@ -1,4 +1,4 @@
-import { getSession } from "@/lib/security/user-auth/jwt/JwtAuthService";
+import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { NotFound } from "@/components/not-found/not-found";
 export default async function Page() {
   const session = await getSession();

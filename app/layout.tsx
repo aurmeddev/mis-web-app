@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { getSession } from "@/lib/security/user-auth/jwt/JwtAuthService";
+import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import {
   SidebarInset,

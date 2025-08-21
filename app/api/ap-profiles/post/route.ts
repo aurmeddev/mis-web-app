@@ -2,8 +2,8 @@ import { query } from "@/database/dbConnection";
 import { PostApProfilesProps } from "@/lib/features/ap-profiles/type/ApProfilesProps";
 import { MySqlUtils } from "@/lib/mysql/MySqlUtils";
 import { ObjectUtils } from "@/lib/object/ObjectUtils";
-import { CryptoServerService } from "@/lib/security/cryptography/CryptoServerService";
-import { getSession } from "@/lib/security/user-auth/jwt/JwtAuthService";
+import { CryptoServerService } from "@/lib/features/security/cryptography/CryptoServerService";
+import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { NextResponse, NextRequest } from "next/server";
 export const POST = async (request: NextRequest) => {
   // Check if the user session is valid before processing the request

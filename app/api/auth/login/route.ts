@@ -1,12 +1,12 @@
-import { UserAuthManager } from "@/lib/security/user-auth/UserAuthManager";
-import { UserAuthServerService } from "@/lib/security/user-auth/UserAuthServerService";
+import { UserAuthManager } from "@/lib/features/security/user-auth/UserAuthManager";
+import { UserAuthServerService } from "@/lib/features/security/user-auth/UserAuthServerService";
 import { NextRequest, NextResponse } from "next/server";
 import {
   encrypt,
   expirationTime,
-} from "@/lib/security/user-auth/jwt/JwtAuthService";
+} from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { cookies } from "next/headers";
-import { UserLoginParams } from "@/lib/security/user-auth/type/UserAuthProps";
+import { UserLoginParams } from "@/lib/features/security/user-auth/type/UserAuthProps";
 export const POST = async (request: NextRequest) => {
   const payload: UserLoginParams = await request.json();
   const auth = new UserAuthManager(new UserAuthServerService());

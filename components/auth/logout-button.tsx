@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { UserAuthManager } from "@/lib/security/user-auth/UserAuthManager";
-import { UserAuthClientService } from "@/lib/security/user-auth/UserAuthClientService";
+import { UserAuthManager } from "@/lib/features/security/user-auth/UserAuthManager";
+import { UserAuthClientService } from "@/lib/features/security/user-auth/UserAuthClientService";
 import { appBaseUrl } from "@/lib/base-url/appBaseUrl";
 import { DropdownMenuItem } from "../ui/dropdown-menu";
 import { LogOut } from "lucide-react";

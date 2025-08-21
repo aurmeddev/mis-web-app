@@ -2,8 +2,8 @@
 import React, { createContext, useState, useEffect } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import { usePathname } from "next/navigation";
-import { UserAuthManager } from "@/lib/security/user-auth/UserAuthManager";
-import { UserAuthClientService } from "@/lib/security/user-auth/UserAuthClientService";
+import { UserAuthManager } from "@/lib/features/security/user-auth/UserAuthManager";
+import { UserAuthClientService } from "@/lib/features/security/user-auth/UserAuthClientService";
 import { appBaseUrl } from "@/lib/base-url/appBaseUrl";
 import {
   AlertDialog,

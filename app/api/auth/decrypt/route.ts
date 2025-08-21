@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSession } from "@/lib/security/user-auth/jwt/JwtAuthService";
-import { CryptoServerService } from "@/lib/security/cryptography/CryptoServerService";
-import { CryptoManager } from "@/lib/security/cryptography/CryptoManager";
+import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
+import { CryptoServerService } from "@/lib/features/security/cryptography/CryptoServerService";
+import { CryptoManager } from "@/lib/features/security/cryptography/CryptoManager";
 export const POST = async (request: NextRequest) => {
   // const authorization = (await headers()).get("authorization");
   // const token = authorization?.split(" ")[1];

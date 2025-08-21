@@ -1,6 +1,6 @@
 import { UserIpWhitelistManager } from "@/lib/features/user-ip-whitelist/UserIpWhitelistManager";
 import { UserIpWhitelistServerService } from "@/lib/features/user-ip-whitelist/UserIpWhitelistServerService";
-import { getSession } from "@/lib/security/user-auth/jwt/JwtAuthService";
+import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { NextResponse, NextRequest } from "next/server";
 
 export const POST = async (request: NextRequest) => {

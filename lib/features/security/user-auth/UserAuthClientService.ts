@@ -1,4 +1,4 @@
-import { appBaseUrl } from "../../base-url/appBaseUrl";
+import { appBaseUrl } from "@/lib/base-url/appBaseUrl";
 import { UserLoginParams } from "./type/UserAuthProps";
 
 export class UserAuthClientService {

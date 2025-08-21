@@ -1,5 +1,5 @@
 import { LoginForm } from "@/components/auth/login-form";
-import { getSession } from "@/lib/security/user-auth/jwt/JwtAuthService";
+import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { GalleryVerticalEnd } from "lucide-react";
 import { redirect } from "next/navigation";
 import { LoginPageContainer } from "@/components/auth/login-page-container";

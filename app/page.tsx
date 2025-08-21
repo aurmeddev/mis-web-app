@@ -1,4 +1,4 @@
-import { getSession } from "@/lib/security/user-auth/jwt/JwtAuthService";
+import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { redirect } from "next/navigation";
 export default async function Home() {
   const session = await getSession();

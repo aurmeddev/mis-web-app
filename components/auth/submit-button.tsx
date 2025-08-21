@@ -1,8 +1,8 @@
 "use client";
 import { Button } from "../ui/button";
 import { ReloadIcon } from "@radix-ui/react-icons";
-import { UserAuthManager } from "@/lib/security/user-auth/UserAuthManager";
-import { UserAuthClientService } from "@/lib/security/user-auth/UserAuthClientService";
+import { UserAuthManager } from "@/lib/features/security/user-auth/UserAuthManager";
+import { UserAuthClientService } from "@/lib/features/security/user-auth/UserAuthClientService";
 import { HandleSubmitStateProps } from "./login-form";
 import { appBaseUrl } from "@/lib/base-url/appBaseUrl";
 export const SubmitButton = ({

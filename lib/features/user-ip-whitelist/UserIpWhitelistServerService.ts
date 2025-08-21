@@ -1,5 +1,5 @@
 import { DatetimeUtils } from "../../date/DatetimeUtils";
-import { MySqlUtils } from "../../mysql/MySqlUtils";
+import { MySqlUtils } from "@/lib/mysql/MySqlUtils";
 import {
   FindUserIpWhitelistParams,
   PaginationUserIpWhitelistProps,

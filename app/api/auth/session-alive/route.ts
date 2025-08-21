@@ -1,4 +1,4 @@
-import { refreshSession } from "@/lib/security/user-auth/jwt/JwtAuthService";
+import { refreshSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { NextResponse } from "next/server";
 
 export const POST = async () => {

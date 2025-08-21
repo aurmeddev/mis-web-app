@@ -1,10 +1,10 @@
 import { query } from "@/database/dbConnection";
 import { cookies } from "next/headers";
 import { UserLoginParams, VerifyUserIpParams } from "./type/UserAuthProps";
-import { MySqlUtils } from "../../mysql/MySqlUtils";
 import { CryptoUtilsManager } from "../cryptography/util/CryptoUtilsManager";
 import { CryptoUtilsServerService } from "../cryptography/util/CryptoUtilsServerService";
 import { UserAccessControlService } from "./util/UserAccessControlService";
+import { MySqlUtils } from "@/lib/mysql/MySqlUtils";
 
 export class UserAuthServerService {
   async login(params: UserLoginParams) {

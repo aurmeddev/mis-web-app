@@ -54,10 +54,13 @@ export const GET = async (request: NextRequest) => {
       size: response.length,
     });
     const formattedResponse = response.map((item: any, index: number) => {
-      const { created_at, ...rest } = item;
+      const { created_at, fb_owner_account_created, ...rest } = item;
       return {
         ...rest,
         row_id: rowIds[index],
+        fb_owner_account_created: dateUtils.formatDateOnly(
+          dateUtils.convertToUTC8(fb_owner_account_created)
+        ),
         created_at: dateUtils.formatDateTime(
           dateUtils.convertToUTC8(created_at)
         ),

@@ -54,10 +54,35 @@ export const GET = async (request: NextRequest) => {
       size: response.length,
     });
     const formattedResponse = response.map((item: any, index: number) => {
-      const { created_at, ...rest } = item;
+      const {
+        created_at,
+        fb_owner_account_created,
+        ap_profile_remarks,
+        fb_account_remarks,
+        ...rest
+      } = item;
       return {
         ...rest,
         row_id: rowIds[index],
+        fb_account_remarks: fb_account_remarks.map((remark: any) => {
+          return {
+            ...remark,
+            created_at: dateUtils.formatDateTime(
+              dateUtils.convertToUTC8(remark.created_at)
+            ),
+          };
+        }),
+        ap_profile_remarks: ap_profile_remarks.map((remark: any) => {
+          return {
+            ...remark,
+            created_at: dateUtils.formatDateTime(
+              dateUtils.convertToUTC8(remark.created_at)
+            ),
+          };
+        }),
+        fb_owner_account_created: dateUtils.formatDateOnly(
+          dateUtils.convertToUTC8(fb_owner_account_created)
+        ),
         created_at: dateUtils.formatDateTime(
           dateUtils.convertToUTC8(created_at)
         ),

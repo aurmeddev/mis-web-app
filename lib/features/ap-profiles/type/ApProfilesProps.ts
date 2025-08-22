@@ -5,10 +5,7 @@ type BaseApProfilesProps = {
   profile_name: string;
   fb_account_id?: number;
   is_active: 0 | 1 | 2; // 0: Inactive, 1: Active, 2: New AP Profile
-  // status: {
-  //   status: string;
-  //   is_active: 0 | 1 | 2; // 0: Inactive, 1: Active, 2: New AP Profile
-  // };
+  marketing_api_access_token: string;
   created_by:
     | {
         full_name: string;
@@ -30,7 +27,11 @@ type UpdateApProfilesProps = Omit<
 
 type ToggleApProfilesStatusProps = Omit<
   BaseApProfilesProps,
-  "profile_name" | "fb_account_id" | "created_by" | "created_at"
+  | "profile_name"
+  | "fb_account_id"
+  | "marketing_api_access_token"
+  | "created_by"
+  | "created_at"
 >;
 
 type FindApProfilesProps = {

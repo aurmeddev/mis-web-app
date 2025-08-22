@@ -25,14 +25,7 @@ SELECT
         WHERE qt.id = fb.fb_account_quality_type_id
       ), JSON_OBJECT()),
       'remarks',fb.remarks,
-      'is_active',COALESCE((
-        SELECT JSON_OBJECT(
-          'id', st.id,
-          'status', st.status
-        )
-        FROM `Status_Types` AS st
-        WHERE st.id = fb.is_active
-      ), JSON_OBJECT()),
+      'status',(SELECT IF(is_active = 1, 'active', 'inactive')),
       'recovery_codes',COALESCE((
         SELECT JSON_ARRAYAGG(
           JSON_OBJECT(
@@ -70,12 +63,10 @@ SELECT
     WHERE u.id = ap.created_by
   ), JSON_OBJECT()) AS ap_created_by,
   ap.is_active,
-  COALESCE((
-    SELECT JSON_OBJECT(
-      'id', st.id,
-      'status', st.status
-    )
-    FROM `Status_Types` AS st
-    WHERE st.id = ap.is_active
-  ), JSON_OBJECT()) AS is_active_status
-FROM `Ap_Profiles` AS ap
+  CASE
+    WHEN is_active = 0 AND fb_account_id != 0 THEN 'inactive'
+    WHEN is_active = 1 AND fb_account_id != 0 THEN 'active'
+    WHEN is_active = 0 AND fb_account_id = 0 THEN 'available'
+    ELSE 'unknown'
+  END AS status
+FROM `Ap_Profiles` AS ap;

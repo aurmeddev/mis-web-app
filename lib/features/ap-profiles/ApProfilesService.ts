@@ -89,7 +89,7 @@ export class ApProfilesService {
     const searchParams = new SearchParamsManager();
     const searchQueryParams = searchParams.append(params);
     const response = await fetch(
-      `${appBaseUrl}/api/acquisition/ap-profiles/get-all${searchQueryParams}`,
+      `${appBaseUrl}/api/ap-profiles/get-all${searchQueryParams}`,
       {
         method: "GET",
         headers: {

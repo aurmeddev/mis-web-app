@@ -1,13 +1,16 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ManageApProfilesTable } from "./ManageApProfilesTable";
 import { SearchInput } from "../search/SearchInput";
+import { ManageApProfilesDialog } from "../dialog/ManageApProfilesDialog";
+import { useRouter } from "next/navigation";
+import { Pagination } from "@/components/pagination/route-based/Pagination";
 
 type ManageApProfilesTableContainerProps = {
-  profiles: any;
+  response: any;
 };
 
 export type ManageApProfilesRecordRaw = ManageApProfilesForm & {
@@ -24,13 +27,12 @@ type ManageApProfilesForm = {
   name: string;
 };
 
-export function ManageApProfilesTableContainer({
-  profiles,
-}: ManageApProfilesTableContainerProps) {
-  //   const ipWhitelistService = new UserIpWhitelistManager(
-  //     new UserIpWhitelistClientService()
-  //   );
+type Pagination = { page: number; limit: number };
 
+export function ManageApProfilesTableContainer({
+  response,
+}: ManageApProfilesTableContainerProps) {
+  const router = useRouter();
   const showToast = (isSuccess: boolean, message: string) => {
     if (isSuccess) {
       toast.success(message);
@@ -42,14 +44,24 @@ export function ManageApProfilesTableContainer({
   const [editingRow, setEditingRow] = useState<number | null>(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [form, setForm] = useState<any>({
-    ip_address: "",
-    name: "",
-    is_active: 0,
+    profile_name: "",
+    fb_owner_name: "",
+    username: "",
+    password: "",
+    long_2fa_key: "",
+    recovery_codes: "",
+    remarks: "",
+    is_active: 2,
   });
-  const [tableData, setTableData] = useState<any>(profiles);
+  const [tableData, setTableData] = useState<any>(response.data);
   const [isSubmitInProgress, setIsSubmitInProgress] = useState(false);
   const [hasStatusChanged, setHasStatusChanged] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    setTableData(response.data);
+  }, [response.data]);
 
   const handleInputChange = (name: string, value: string) => {
     setForm((prevState: any) => ({
@@ -166,19 +178,13 @@ export function ManageApProfilesTableContainer({
     if (id === null) {
       setIsAddingNew(false);
     }
-    const selectedWhitelistData = profiles.find(
+    const selectedWhitelistData = response.data.find(
       (data: { id: number }) => data.id === id
     );
     setEditingRow(id);
     if (selectedWhitelistData) {
       setForm(selectedWhitelistData);
     }
-  };
-
-  const handleAddWhitelistEntry = () => {
-    setIsAddingNew(true);
-    setForm(null);
-    setEditingRow(null);
   };
 
   const hasInputChanged = () => {
@@ -204,7 +210,7 @@ export function ManageApProfilesTableContainer({
   const handleSearch = async (value: string) => {
     setIsSearching(true);
     if (!value) {
-      setTableData(profiles);
+      setTableData(response.data);
       setIsSearching(false);
       return;
     }
@@ -221,13 +227,33 @@ export function ManageApProfilesTableContainer({
     }
   };
 
+  const handlePagination = (page: number, limit: number) => {
+    router.push(`?page=${page}&limit=${limit}`);
+  };
+
+  const currentPage = response.pagination?.page;
+  const total_pages = response.pagination?.total_pages;
+  const limit = response.pagination?.limit || 10;
+
   return (
     <>
+      <ManageApProfilesDialog
+        form={form}
+        rowData={[]}
+        open={open}
+        setOpen={setOpen}
+        editingRow={editingRow}
+        handleConfirm={handleConfirm}
+        handleEditChange={handleEditChange}
+        handleInputChange={handleInputChange}
+        handleStatusChange={handleStatusChange}
+        isActionDisabled={isSubmitInProgress}
+      />
       <div className="flex justify-start gap-2 2xl:w-1/3 mt-4 w-[40%]">
         <Button
-          className="h-8 text-white"
+          className="cursor-pointer h-8 text-white"
           variant="default"
-          onClick={handleAddWhitelistEntry}
+          onClick={() => setOpen(true)}
         >
           New Profile Entry
         </Button>
@@ -248,6 +274,13 @@ export function ManageApProfilesTableContainer({
           handleInputChange={handleInputChange}
           handleStatusChange={handleStatusChange}
           isActionDisabled={isSubmitInProgress}
+        />
+
+        <Pagination
+          currentPage={currentPage}
+          limit={limit}
+          total_pages={total_pages}
+          handlePagination={handlePagination}
         />
       </ScrollArea>
     </>

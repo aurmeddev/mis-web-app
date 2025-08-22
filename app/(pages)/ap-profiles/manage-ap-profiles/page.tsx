@@ -1,13 +1,22 @@
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { NotFound } from "@/components/not-found/not-found";
 import { ManageApProfilesContainer } from "@/components/ap-profiles/manage-ap-profiles/ManageApProfilesContainer";
-export default async function Page() {
+export default async function Page({ searchParams }: any) {
   const session = await getSession();
+  const awaitedParams = await searchParams;
 
   const notFoundObj = {
     msg: "You don't have permission to access this page.",
     title: "403 Forbidden",
   };
   if (!session) return <NotFound param={notFoundObj} />;
-  return <ManageApProfilesContainer />;
+
+  const page = Number(awaitedParams.page) || 1;
+  const limit = Number(awaitedParams.limit) || 10;
+  const params = {
+    page,
+    limit,
+  };
+
+  return <ManageApProfilesContainer searchParams={params} />;
 }

@@ -64,8 +64,9 @@ export function ManageApProfilesTable({
   handleStatusChange,
   isActionDisabled,
 }: UserManagementTableProps) {
+  console.log("data ", data);
   const tableHeaders = [
-    { label: "#", className: "border-r text-sm w-[3%] max-w-[20px] truncate" },
+    { label: "#", className: "border-r text-sm" },
     { label: "Profile", className: "border-r text-sm w-[15%]", colSpan: 1 },
     {
       label: "Recruiters",
@@ -130,12 +131,12 @@ export function ManageApProfilesTable({
           />
         )}
 
-        {!data.length && (
-          <TableRow>
-            <TableCell className="border-r py-0 text-center" colSpan={9}>
+        {!data?.length && (
+          <TableRow className="bg-muted">
+            <TableCell className="py-0 text-center" colSpan={11}>
               <div className="flex flex-col gap-2 items-center py-4">
                 <SearchX className="h-10 w-10 text-muted-foreground" />
-                <div className="text-base text-muted-foreground">
+                <div className="text-sm text-muted-foreground">
                   No matching results found.
                 </div>
               </div>
@@ -148,8 +149,8 @@ export function ManageApProfilesTable({
 
           return (
             <TableRow key={idx}>
-              <TableCell className="border-r font-medium text-sm w-[10%]">
-                {idx + 1}
+              <TableCell className="border-r font-medium text-sm max-w-[10%]">
+                {rowData.row_id}
               </TableCell>
               <TableCell className="border-r text-sm">
                 {isEditing ? (
@@ -178,7 +179,7 @@ export function ManageApProfilesTable({
                     }
                   />
                 ) : (
-                  rowData.created_by.full_name
+                  rowData.recruited_by.full_name
                 )}
               </TableCell>
               <TableCell className="border-r text-sm">

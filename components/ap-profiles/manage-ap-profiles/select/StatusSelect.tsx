@@ -27,6 +27,14 @@ export function StatusSelect({
       <SelectContent>
         <SelectGroup>
           <SelectLabel>Status</SelectLabel>
+          <SelectItem value="2">
+            <div className="flex items-center gap-1">
+              <span className="relative flex h-2 w-2">
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-gray-500"></span>
+              </span>
+              <div className="text-xs">New</div>
+            </div>
+          </SelectItem>
           <SelectItem value="1">
             <div className="flex items-center gap-1">
               <span className="relative flex h-2 w-2">

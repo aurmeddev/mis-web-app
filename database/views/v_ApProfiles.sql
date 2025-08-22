@@ -39,7 +39,28 @@ SELECT
     FROM `Status_Types` AS st
     WHERE st.id = fb.is_active
   ), JSON_OBJECT()) AS fb_account_status,
-  ap.remarks,
+  COALESCE((
+    SELECT JSON_ARRAYAGG(
+      JSON_OBJECT(
+        'id', rm.id,
+        'remarks', rm.remarks,
+        'created_at', rm.created_at
+      )
+    )
+    FROM `Remarks` AS rm
+    WHERE rm.entity_source_id = ap.profile_name
+  ), JSON_ARRAY()) AS ap_profile_remarks,
+  COALESCE((
+    SELECT JSON_ARRAYAGG(
+      JSON_OBJECT(
+        'id', rm.id,
+        'remarks', rm.remarks,
+        'created_at', rm.created_at
+      )
+    )
+    FROM `Remarks` AS rm
+    WHERE rm.entity_source_id = fb.id
+  ), JSON_ARRAY()) AS fb_account_remarks,
   ap.created_at,
   COALESCE((
     SELECT JSON_ARRAYAGG(

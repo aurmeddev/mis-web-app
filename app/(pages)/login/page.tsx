@@ -6,7 +6,11 @@ import { LoginPageContainer } from "@/components/auth/login-page-container";
 export default async function Page() {
   const session = await getSession();
   if (session) {
-    return redirect("/");
+    const { team_name } = session.user;
+    if (team_name === "Traffic Team") {
+      return redirect("/2fa-generator");
+    }
+    return redirect("/ap-profiles/manage-ap-profiles");
   }
   return (
     <LoginPageContainer>

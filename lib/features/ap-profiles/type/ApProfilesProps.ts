@@ -1,56 +1,37 @@
 import { PaginationProps } from "@/lib/utils/pagination/type/PaginationProps";
 
 type BaseApProfilesProps = {
+  id: number; // auto-incremented in the database
   profile_name: string;
-  fb_owner_name?: string;
-  username: string;
-  password: string;
-  app_2fa_code?: string;
-  marketing_api_access_token?: string;
-  created_by_id: number;
-  recovery_codes: any;
-  remarks?: string;
+  fb_account_id?: number;
   is_active: 0 | 1 | 2; // 0: Inactive, 1: Active, 2: New AP Profile
-  status: {
-    status: string;
-    is_active: 0 | 1 | 2; // 0: Inactive, 1: Active, 2: New AP Profile
-  };
-  created_by: {
-    full_name: string;
-    team_name: string;
-  };
+  // status: {
+  //   status: string;
+  //   is_active: 0 | 1 | 2; // 0: Inactive, 1: Active, 2: New AP Profile
+  // };
+  created_by:
+    | {
+        full_name: string;
+        team_name: string;
+      }
+    | number;
   created_at: Date;
 };
 
 type PostApProfilesProps = Omit<
   BaseApProfilesProps,
-  "is_active" | "created_by" | "created_at" | "status" | "created_by_id"
+  "id" | "is_active" | "created_by" | "created_at"
 >;
 
 type UpdateApProfilesProps = Omit<
   BaseApProfilesProps,
-  "is_active" | "created_by" | "created_at" | "status" | "created_by_id"
-> & {
-  id: number;
-};
+  "is_active" | "created_by" | "created_at"
+>;
 
 type ToggleApProfilesStatusProps = Omit<
   BaseApProfilesProps,
-  | "profile_name"
-  | "fb_owner_name"
-  | "username"
-  | "password"
-  | "app_2fa_code"
-  | "marketing_api_access_token"
-  | "created_by_id"
-  | "recovery_codes"
-  | "remarks"
-  | "status"
-  | "created_by"
-  | "created_at"
-> & {
-  id: number;
-};
+  "profile_name" | "fb_account_id" | "created_by" | "created_at"
+>;
 
 type FindApProfilesProps = {
   searchKey: string;
@@ -60,11 +41,6 @@ type GetAllApProfilesProps = Omit<PaginationProps, "total_pages"> & {
   recruiter?: string;
 };
 
-type PostRecoveryCodesProps = {
-  ap_profile_id: number;
-  recovery_code: string;
-};
-
 export type {
   BaseApProfilesProps,
   PostApProfilesProps,
@@ -72,5 +48,4 @@ export type {
   ToggleApProfilesStatusProps,
   FindApProfilesProps,
   GetAllApProfilesProps,
-  PostRecoveryCodesProps,
 };

@@ -7,16 +7,16 @@ export const GET = async (
   { params }: { params: Promise<{ id: string }> }
 ) => {
   // Check if the user session is valid before processing the request
-  const session = await getSession();
-  if (!session) {
-    return NextResponse.json(
-      {
-        isSuccess: false,
-        message: "Session expired or invalid",
-      },
-      { status: 403 }
-    );
-  }
+  // const session = await getSession();
+  // if (!session) {
+  //   return NextResponse.json(
+  //     {
+  //       isSuccess: false,
+  //       message: "Session expired or invalid",
+  //     },
+  //     { status: 403 }
+  //   );
+  // }
 
   const searchKey = `${(await params).id}`;
   const mysqlUtils = new MySqlUtils();

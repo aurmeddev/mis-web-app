@@ -1,0 +1,42 @@
+type BaseFbAccountsProps = {
+  id: number; // auto-incremented in the database
+  fb_owner_name: string;
+  recruited_by:
+    | {
+        full_name: string;
+        team_name: string;
+      }
+    | number;
+  contact_no: string;
+  email_address: string;
+  username: string;
+  password: string;
+  app_2fa_key: string;
+  marketing_api_access_token: string;
+  recovery_code: any; // This can be a string or an array of strings
+  fb_owner_account_created: Date;
+  no_of_friends: number;
+  fb_account_quality_status_id: number; // 2: New, 3: Pass, 4: Rejected
+  is_active: number; // 0: Inactive or not renewed, 1: Active
+  created_at: Date; // auto-generated in the database
+};
+
+type PostFbAccountsProps = Omit<
+  BaseFbAccountsProps,
+  | "id"
+  | "recruited_by"
+  | "is_active"
+  | "created_at"
+  | "fb_account_quality_status_id"
+>;
+
+type PostRecoveryCodesProps = {
+  fb_account_id: number;
+  recovery_code: string;
+};
+
+export type {
+  BaseFbAccountsProps,
+  PostFbAccountsProps,
+  PostRecoveryCodesProps,
+};

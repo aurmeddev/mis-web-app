@@ -71,7 +71,7 @@ SELECT
       )
     )
     FROM `Recovery_Codes` AS rc
-    WHERE rc.ap_profile_id = ap.id
+    WHERE rc.fb_account_id = fb.id
   ), JSON_ARRAY()) AS recovery_codes,
   ap.created_by AS created_by_id,
   COALESCE((

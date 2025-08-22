@@ -1,24 +1,24 @@
 import { query } from "@/database/dbConnection";
-import { PostRecoveryCodesProps } from "@/lib/features/ap-profiles/type/ApProfilesProps";
 import { MySqlUtils } from "@/lib/utils/mysql/MySqlUtils";
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { NextResponse, NextRequest } from "next/server";
+import { PostRecoveryCodesProps } from "@/lib/features/fb-accounts/type/FbAccountsProps";
 export const POST = async (request: NextRequest) => {
   // Check if the user session is valid before processing the request
-  const session = await getSession();
-  if (!session) {
-    return NextResponse.json(
-      {
-        isSuccess: false,
-        message: "Session expired or invalid",
-      },
-      { status: 403 }
-    );
-  }
+  // const session = await getSession();
+  // if (!session) {
+  //   return NextResponse.json(
+  //     {
+  //       isSuccess: false,
+  //       message: "Session expired or invalid",
+  //     },
+  //     { status: 403 }
+  //   );
+  // }
 
   const data: PostRecoveryCodesProps = await request.json();
   // Validate the data before proceeding
-  const { recovery_code, ap_profile_id } = data;
+  const { recovery_code, fb_account_id } = data;
   if (!recovery_code || recovery_code.length === 0) {
     return NextResponse.json(
       {
@@ -32,7 +32,7 @@ export const POST = async (request: NextRequest) => {
 
   const mysqlUtils = new MySqlUtils();
   const { columns, values, questionMarksValue } =
-    mysqlUtils.generateInsertQuery({ recovery_code, ap_profile_id });
+    mysqlUtils.generateInsertQuery({ recovery_code, fb_account_id });
   const queryString = `INSERT INTO Recovery_Codes ${columns} ${questionMarksValue}`;
   console.log(queryString);
   console.log(values);

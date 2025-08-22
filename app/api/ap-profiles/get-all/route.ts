@@ -68,7 +68,7 @@ export const GET = async (request: NextRequest) => {
       {
         isSuccess: true,
         message: "Data fetched successfully.",
-        pagination: { page, limit, totalPages },
+        pagination: { page, limit, total_pages: totalPages },
         data: formattedResponse,
       },
       { status: 200 }

@@ -18,7 +18,7 @@ SELECT
   fb.username,
   fb.password,
   fb.app_2fa_key,
-  fb.marketing_api_access_token,
+  ap.marketing_api_access_token,
   fb.fb_owner_account_created,
   fb.no_of_friends,
   fb.fb_account_quality_status_id,

@@ -12,7 +12,6 @@ type BaseFbAccountsProps = {
   username: string;
   password: string;
   app_2fa_key: string;
-  marketing_api_access_token: string;
   recovery_code: any; // This can be a string or an array of strings
   fb_owner_account_created: Date;
   no_of_friends: number;

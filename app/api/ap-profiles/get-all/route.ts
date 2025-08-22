@@ -54,9 +54,11 @@ export const GET = async (request: NextRequest) => {
       size: response.length,
     });
     const formattedResponse = response.map((item: any, index: number) => {
-      const { created_at, ...rest } = item;
+      const { created_at, is_active, created_by, ap_created_by, ...rest } =
+        item;
       return {
         ...rest,
+        created_by: ap_created_by,
         row_id: rowIds[index],
         created_at: dateUtils.formatDateTime(
           dateUtils.convertToUTC8(created_at)

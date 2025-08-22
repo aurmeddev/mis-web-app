@@ -17,7 +17,7 @@ export const GET = async (request: NextRequest) => {
   const { queryValues } = mysqlUtils.generateSelectQuery({
     data: { limit, offset },
   });
-  const queryString = `SELECT * FROM v_Ap_Profiles LIMIT ? OFFSET ?`;
+  const queryString = `SELECT * FROM v_ApProfiles LIMIT ? OFFSET ?`;
   console.log(queryString);
   console.log(queryValues);
 
@@ -41,7 +41,7 @@ export const GET = async (request: NextRequest) => {
 
     // Get the total count of rows for pagination
     const rows: any = await query({
-      query: "SELECT COUNT(*) AS total_count FROM v_Ap_Profiles",
+      query: "SELECT COUNT(*) AS total_count FROM v_ApProfiles",
       values: [],
     });
     const totalRows: number = rows[0].total_count;

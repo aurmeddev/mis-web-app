@@ -15,16 +15,16 @@ export const POST = async (request: NextRequest) => {
   //     { status: 401 }
   //   );
   // }
-  const session = await getSession();
-  if (!session) {
-    return NextResponse.json(
-      {
-        isSuccess: false,
-        message: "Session expired or invalid",
-      },
-      { status: 403 }
-    );
-  }
+  // const session = await getSession();
+  // if (!session) {
+  //   return NextResponse.json(
+  //     {
+  //       isSuccess: false,
+  //       message: "Session expired or invalid",
+  //     },
+  //     { status: 403 }
+  //   );
+  // }
   const { data } = await request.json();
   const security = new CryptoManager(new CryptoServerService());
   const response = await security.decrypt({

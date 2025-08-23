@@ -56,9 +56,10 @@ export const GET = async (request: NextRequest) => {
     const formattedResponse = response.map((item: any, index: number) => {
       const {
         created_at,
-        is_active, // Exclude is_active in the response
+        is_active, // Exclude is_active in the response.
         fb_owner_account_created,
-        base_search_keyword, // Exclude base_search_keyword in the response
+        base_search_keyword, // Exclude base_search_keyword in the response. It's for searching purpose only
+        recruiter, // Exclude recruiter in the response. It's for filtering purpose only
         ...rest
       } = item;
       return {

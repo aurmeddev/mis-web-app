@@ -73,9 +73,10 @@ export const POST = async (
     const formattedResponse = response.map((item: any) => {
       const {
         created_at,
-        is_active, // Exclude base_search_keyword in the response
+        is_active, // Exclude base_search_keyword in the response.
         fb_owner_account_created,
-        base_search_keyword, // Exclude base_search_keyword in the response
+        base_search_keyword, // Exclude base_search_keyword in the response. It's for searching purpose only
+        recruiter, // Exclude recruiter in the response. It's for filtering purpose only
         ...rest
       } = item;
       return {

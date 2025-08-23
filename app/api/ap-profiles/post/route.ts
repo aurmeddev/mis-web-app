@@ -37,7 +37,9 @@ export const POST = async (request: NextRequest) => {
   const data: PostApProfilesProps = await request.json();
   // Validate the data before proceeding
   const aps = new ApProfilesService();
-  const validationResponse = await aps.find({ searchKey: data.profile_name });
+  const validationResponse = await aps.find({
+    searchKeyword: data.profile_name,
+  });
   if (!validationResponse.isSuccess) {
     return NextResponse.json(
       {

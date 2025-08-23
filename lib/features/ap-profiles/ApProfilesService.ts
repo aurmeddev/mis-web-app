@@ -68,9 +68,9 @@ export class ApProfilesService {
   }
 
   async find(params: FindApProfilesProps): Promise<ApiResponseProps> {
-    const { searchKey } = params;
+    const { searchKeyword } = params;
     const response = await fetch(
-      `${appBaseUrl}/api/ap-profiles/find/${searchKey}`,
+      `${appBaseUrl}/api/ap-profiles/find/${searchKeyword}`,
       {
         method: "GET",
         headers: {

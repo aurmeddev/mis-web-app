@@ -18,11 +18,11 @@ export const GET = async (
   //   );
   // }
 
-  const searchKey = `${(await params).id}`;
+  const searchKeyword = `${(await params).id}`;
   const mysqlUtils = new MySqlUtils();
   const { columns, values } = mysqlUtils.generateFindQuery({
     column: {
-      profile_name: searchKey,
+      profile_name: searchKeyword,
     },
     operator: "LIKE",
   });

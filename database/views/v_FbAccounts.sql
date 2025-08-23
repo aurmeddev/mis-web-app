@@ -36,6 +36,8 @@ SELECT
     ELSE 'active'
   END) AS status, 
   fb.created_at,
+  (SELECT u.full_name FROM `Users` AS u 
+   WHERE u.id = fb.recruited_by) AS recruiter,
    COALESCE((
         SELECT JSON_OBJECT(
           'id', fb.recruited_by,
@@ -46,7 +48,6 @@ SELECT
         INNER JOIN `Teams` AS t ON u.team_id = t.id
         WHERE u.id = fb.recruited_by
     ), JSON_OBJECT()) AS recruited_by,
-   
   COALESCE((
     SELECT JSON_OBJECT(
       'id',ap.id,

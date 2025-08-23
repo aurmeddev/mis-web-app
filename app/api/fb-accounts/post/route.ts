@@ -36,7 +36,6 @@ export const POST = async (request: NextRequest) => {
 
   const data: PostFbAccountsProps = await request.json();
   // Validate the data before proceeding
-  const fb = new FbAccountsService();
   // const validationResponse = await aps.find({ searchKey: data.profile_name });
   // if (!validationResponse.isSuccess) {
   //   return NextResponse.json(
@@ -62,7 +61,7 @@ export const POST = async (request: NextRequest) => {
   // }
 
   const objUtil = new ObjectUtils();
-  const { recovery_code, ...payload } = objUtil.removeInvalidKeys(data);
+  const payload = objUtil.removeInvalidKeys(data);
   const mysqlUtils = new MySqlUtils();
   const { columns, values, questionMarksValue } =
     mysqlUtils.generateInsertQuery({ recruited_by: 2, ...payload });
@@ -76,12 +75,6 @@ export const POST = async (request: NextRequest) => {
       query: queryString,
       values: values,
     });
-
-    // Execute the recovery codes insertion
-    // await fb.postRecoveryCodes({
-    //   fb_account_id: response.insertId,
-    //   recovery_code: recovery_code,
-    // });
 
     return NextResponse.json(
       {

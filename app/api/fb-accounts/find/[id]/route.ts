@@ -1,7 +1,9 @@
 import { query } from "@/database/dbConnection";
+import { FindFbAccountsProps } from "@/lib/features/fb-accounts/type/FbAccountsProps";
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { DatetimeUtils } from "@/lib/utils/date/DatetimeUtils";
 import { MySqlUtils } from "@/lib/utils/mysql/MySqlUtils";
+import { SearchParamsManager } from "@/lib/utils/search-params/SearchParamsManager";
 import { NextResponse, NextRequest } from "next/server";
 export const GET = async (
   request: NextRequest,
@@ -19,13 +21,18 @@ export const GET = async (
   //   );
   // }
 
+  type FindMethodProps = Omit<FindFbAccountsProps, "searchKey">;
+  const methodParams: FindMethodProps = new SearchParamsManager().toObject(
+    request.nextUrl.searchParams
+  );
+  const { method } = methodParams;
   const searchKey = `${(await params).id}`;
   const mysqlUtils = new MySqlUtils();
   const { columns, values } = mysqlUtils.generateFindQuery({
     column: {
       search_key: searchKey,
     },
-    operator: "LIKE",
+    operator: method === "find-one" ? "equals" : "like", // Default to "like" if not provided
   });
   const queryString = `SELECT * FROM v_FbAccounts WHERE ${columns} LIMIT 3`;
   console.log(queryString);

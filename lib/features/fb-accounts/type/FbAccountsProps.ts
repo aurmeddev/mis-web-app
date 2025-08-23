@@ -34,6 +34,7 @@ type PostRecoveryCodesProps = {
 
 type FindFbAccountsProps = {
   searchKey: string;
+  method?: "find-one" | "find-many";
 };
 
 type GetAllFbAccountsProps = Omit<PaginationProps, "total_pages"> & {

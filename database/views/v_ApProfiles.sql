@@ -16,14 +16,11 @@ SELECT
       'fb_owner_account_created',fb.fb_owner_account_created,
       'no_of_friends',fb.no_of_friends,
       'fb_account_quality',
-       COALESCE((
-        SELECT JSON_OBJECT(
-          'id', qt.id,
-          'status', qt.fb_account_quality
-        )
-        FROM `Fb_Account_Quality_Types` AS qt
-        WHERE qt.id = fb.fb_account_quality_type_id
-      ), JSON_OBJECT()),
+       (CASE
+    		WHEN fb.fb_account_quality_type_id = 0 THEN 'rejected'
+    		WHEN fb.fb_account_quality_type_id = 1 THEN 'passed'
+    		ELSE 'unknown'
+  		END),
       'remarks',fb.remarks,
       'status',(SELECT IF(is_active = 1, 'active', 'inactive')),
       'recovery_codes',COALESCE((

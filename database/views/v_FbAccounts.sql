@@ -6,6 +6,7 @@ SELECT
   fb.username,
   fb.password,
   fb.app_2fa_key,
+  fb.marketing_api_access_token,
   fb.fb_owner_account_created,
   fb.no_of_friends,
   (CASE
@@ -14,7 +15,7 @@ SELECT
     	ELSE 'unknown'
   END) AS fb_account_quality,
   fb.remarks,
-  IF(is_active = 1, 'active', 'inactive') AS status,
+  IF(is_active = 1, 'active', 'inactive') AS status, 
   fb.created_at,
   COALESCE((
         SELECT JSON_ARRAYAGG(
@@ -43,7 +44,6 @@ SELECT
       'id',ap.id,
       'fb_account_id',ap.fb_account_id,
       'profile_name',ap.profile_name,
-      'marketing_api_access_token',ap.marketing_api_access_token,
       'remarks',ap.remarks,
       'created_at',ap.created_at,
       'created_by',COALESCE((

@@ -30,7 +30,7 @@ type ToggleApProfilesStatusProps = Omit<
 >;
 
 type FindApProfilesProps = {
-  searchKey: string;
+  searchKeyword: string;
 };
 
 type GetAllApProfilesProps = Omit<PaginationProps, "total_pages"> & {

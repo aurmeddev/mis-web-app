@@ -26,7 +26,7 @@ export const GET = async (
     },
     operator: "LIKE",
   });
-  const queryString = `SELECT * FROM Ap_Profiles WHERE ${columns} LIMIT 3`;
+  const queryString = `SELECT * FROM v_ApProfiles WHERE ${columns} LIMIT 3`;
   console.log(queryString);
   console.log(values);
 

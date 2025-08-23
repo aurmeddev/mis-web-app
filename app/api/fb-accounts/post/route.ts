@@ -64,7 +64,7 @@ export const POST = async (request: NextRequest) => {
   const payload = objUtil.removeInvalidKeys(data);
   const mysqlUtils = new MySqlUtils();
   const { columns, values, questionMarksValue } =
-    mysqlUtils.generateInsertQuery({ recruited_by: 2, ...payload });
+    mysqlUtils.generateInsertQuery({ recruited_by: 3, ...payload });
   const queryString = `INSERT INTO Fb_Accounts ${columns} ${questionMarksValue}`;
   console.log(queryString);
   console.log(values);

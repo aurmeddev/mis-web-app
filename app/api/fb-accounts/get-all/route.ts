@@ -58,7 +58,7 @@ export const GET = async (request: NextRequest) => {
         created_at,
         is_active, // Exclude is_active in the response
         fb_owner_account_created,
-        search_key, // Exclude search_key in the response
+        base_search_keyword, // Exclude base_search_keyword in the response
         ...rest
       } = item;
       return {

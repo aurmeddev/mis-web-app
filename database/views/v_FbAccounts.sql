@@ -14,7 +14,7 @@ SELECT
     COALESCE(fb.fb_owner_name,''),' ',
 	  COALESCE(fb.contact_no,''), ' ',
     COALESCE(fb.email_address,''), ' ',
-	  COALESCE(fb.username,''))) AS search_key,
+	  COALESCE(fb.username,''))) AS base_search_keyword,
   (CASE
     WHEN (SELECT COUNT(*) 
           FROM `Ap_Profiles` ap

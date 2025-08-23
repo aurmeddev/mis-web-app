@@ -33,8 +33,9 @@ type PostRecoveryCodesProps = {
 };
 
 type FindFbAccountsProps = {
-  searchKey: string;
-  method?: "find-one" | "find-many";
+  searchKeyword: string;
+  method: "find-one" | "find-many";
+  dynamicSearchPayload?: object; // Search multiple fields or columns
 };
 
 type GetAllFbAccountsProps = Omit<PaginationProps, "total_pages"> & {

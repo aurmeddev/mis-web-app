@@ -36,31 +36,45 @@ export const POST = async (request: NextRequest) => {
 
   const data: PostFbAccountsProps = await request.json();
   // Validate the data before proceeding
-  // const validationResponse = await aps.find({ searchKey: data.profile_name });
-  // if (!validationResponse.isSuccess) {
-  //   return NextResponse.json(
-  //     {
-  //       isSuccess: false,
-  //       message: "Validation error occurred.",
-  //       data: [],
-  //     },
-  //     { status: 500 }
-  //   );
-  // }
-  // const doesApProfileExist = validationResponse.data.length > 0;
-  // if (doesApProfileExist) {
-  //   return NextResponse.json(
-  //     {
-  //       isSuccess: false,
-  //       message:
-  //         "The AP profile name you provided already exists. Please check the name and try again.",
-  //       data: [],
-  //     },
-  //     { status: 409 }
-  //   );
-  // }
-
   const objUtil = new ObjectUtils();
+  const fbs = new FbAccountsService();
+  const validationPostQueryParams = objUtil.removeInvalidKeys({
+    fb_owner_name: data.fb_owner_name,
+    contact_no: data.contact_no || "",
+    email_address: data.email_address || "",
+    username: data.username,
+  });
+
+  // Validate if the fb account already exists
+  const validationResponse = await fbs.find({
+    searchKeyword: "dynamic-search",
+    method: "find-one",
+    dynamicSearchPayload: validationPostQueryParams,
+  });
+
+  if (!validationResponse.isSuccess) {
+    return NextResponse.json(
+      {
+        isSuccess: false,
+        message: "Validation error occurred.",
+        data: [],
+      },
+      { status: 500 }
+    );
+  }
+  const doesApProfileExist = validationResponse.data.length > 0;
+  if (doesApProfileExist) {
+    return NextResponse.json(
+      {
+        isSuccess: false,
+        message:
+          "The FB account information (fb owner name, contact number, email address and username) you provided already exists. Please check and try again.",
+        data: [],
+      },
+      { status: 409 }
+    );
+  }
+
   const payload = objUtil.removeInvalidKeys(data);
   const mysqlUtils = new MySqlUtils();
   const { columns, values, questionMarksValue } =

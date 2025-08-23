@@ -72,16 +72,16 @@ export const POST = async (request: NextRequest) => {
 
   // Execute the query to insert data into the database
   try {
-    const response: any = await query({
+    await query({
       query: queryString,
       values: values,
     });
 
     // Execute the recovery codes insertion
-    await fb.postRecoveryCodes({
-      fb_account_id: response.insertId,
-      recovery_code: recovery_code,
-    });
+    // await fb.postRecoveryCodes({
+    //   fb_account_id: response.insertId,
+    //   recovery_code: recovery_code,
+    // });
 
     return NextResponse.json(
       {

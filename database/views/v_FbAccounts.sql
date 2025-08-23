@@ -10,6 +10,11 @@ SELECT
   fb.recovery_code,
   fb.fb_owner_account_created,
   fb.no_of_friends,
+  (CONCAT(
+    COALESCE(fb.fb_owner_name,''),' ',
+	  COALESCE(fb.contact_no,''), ' ',
+    COALESCE(fb.email_address,''), ' ',
+	  COALESCE(fb.username,''))) AS search_key,
   (CASE
     WHEN (SELECT COUNT(*) 
           FROM `Ap_Profiles` ap

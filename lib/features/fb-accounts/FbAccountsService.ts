@@ -1,5 +1,6 @@
 import { ApiResponseProps } from "@/database/dbConnection";
 import {
+  FindFbAccountsProps,
   PostFbAccountsProps,
   PostRecoveryCodesProps,
 } from "./type/FbAccountsProps";
@@ -29,6 +30,21 @@ export class FbAccountsService {
         data: [],
       };
     }
+  }
+
+  async find(params: FindFbAccountsProps): Promise<ApiResponseProps> {
+    const { searchKey } = params;
+    const response = await fetch(
+      `${appBaseUrl}/api/fb-accounts/find/${searchKey}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-type": "application/json",
+        },
+      }
+    );
+
+    return await response.json();
   }
 
   async postRecoveryCodes(

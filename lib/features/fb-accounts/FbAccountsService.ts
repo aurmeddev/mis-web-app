@@ -5,6 +5,7 @@ import {
   PostRecoveryCodesProps,
 } from "./type/FbAccountsProps";
 import { appBaseUrl } from "@/lib/base-url/appBaseUrl";
+import { SearchParamsManager } from "@/lib/utils/search-params/SearchParamsManager";
 
 export class FbAccountsService {
   async post(params: PostFbAccountsProps): Promise<ApiResponseProps> {
@@ -33,9 +34,10 @@ export class FbAccountsService {
   }
 
   async find(params: FindFbAccountsProps): Promise<ApiResponseProps> {
-    const { searchKey } = params;
+    const searchParams = new SearchParamsManager();
+    const searchQueryParams = searchParams.append(params.method);
     const response = await fetch(
-      `${appBaseUrl}/api/fb-accounts/find/${searchKey}`,
+      `${appBaseUrl}/api/fb-accounts/find/${params.searchKey}${searchQueryParams}`,
       {
         method: "GET",
         headers: {

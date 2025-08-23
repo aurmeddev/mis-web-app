@@ -18,7 +18,7 @@ type BaseFbAccountsProps = {
   recovery_code: string;
   fb_owner_account_created: Date;
   no_of_friends: number;
-  fb_account_quality_status_id: number; // 2: New, 3: Pass, 4: Rejected
+  fb_account_quality_status_id: number;
   created_at: Date; // auto-generated in the database
 };
 
@@ -32,6 +32,10 @@ type PostRecoveryCodesProps = {
   recovery_code: string;
 };
 
+type FindFbAccountsProps = {
+  searchKey: string;
+};
+
 type GetAllFbAccountsProps = Omit<PaginationProps, "total_pages"> & {
   recruiter?: string;
 };
@@ -41,4 +45,5 @@ export type {
   PostFbAccountsProps,
   PostRecoveryCodesProps,
   GetAllFbAccountsProps,
+  FindFbAccountsProps,
 };

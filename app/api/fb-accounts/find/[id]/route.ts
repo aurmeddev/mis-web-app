@@ -1,31 +1,41 @@
 import { query } from "@/database/dbConnection";
-import { GetAllFbAccountsProps } from "@/lib/features/fb-accounts/type/FbAccountsProps";
+import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { DatetimeUtils } from "@/lib/utils/date/DatetimeUtils";
 import { MySqlUtils } from "@/lib/utils/mysql/MySqlUtils";
-import { SearchParamsManager } from "@/lib/utils/search-params/SearchParamsManager";
 import { NextResponse, NextRequest } from "next/server";
-export const GET = async (request: NextRequest) => {
-  const params: GetAllFbAccountsProps = new SearchParamsManager().toObject(
-    request.nextUrl.searchParams
-  );
+export const GET = async (
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) => {
+  // Check if the user session is valid before processing the request
+  // const session = await getSession();
+  // if (!session) {
+  //   return NextResponse.json(
+  //     {
+  //       isSuccess: false,
+  //       message: "Session expired or invalid",
+  //     },
+  //     { status: 403 }
+  //   );
+  // }
 
+  const searchKey = `${(await params).id}`;
   const mysqlUtils = new MySqlUtils();
-  const { page, limit, offset } = mysqlUtils.generatePaginationQuery({
-    page: params.page,
-    limit: params.limit,
+  const { columns, values } = mysqlUtils.generateFindQuery({
+    column: {
+      search_key: searchKey,
+    },
+    operator: "LIKE",
   });
-  const { queryValues } = mysqlUtils.generateSelectQuery({
-    data: { limit, offset },
-  });
-  const queryString = `SELECT * FROM v_FbAccounts LIMIT ? OFFSET ?`;
+  const queryString = `SELECT * FROM v_FbAccounts WHERE ${columns} LIMIT 3`;
   console.log(queryString);
-  console.log(queryValues);
+  console.log(values);
 
-  // Execute the query to get all AP profiles by pagination
+  // Execute the query to find data in the database
   try {
     const response: any = await query({
       query: queryString,
-      values: queryValues,
+      values: values,
     });
 
     if (response.length === 0) {
@@ -39,31 +49,17 @@ export const GET = async (request: NextRequest) => {
       );
     }
 
-    // Get the total count of rows for pagination
-    const rows: any = await query({
-      query: "SELECT COUNT(*) AS total_count FROM v_FbAccounts",
-      values: [],
-    });
-    const totalRows: number = rows[0].total_count;
-    const totalPages: number = Math.ceil(totalRows / limit);
-
     const dateUtils = new DatetimeUtils();
-    const rowIds = mysqlUtils.generateRowIds({
-      page: page,
-      limit: limit,
-      size: response.length,
-    });
-    const formattedResponse = response.map((item: any, index: number) => {
+    const formattedResponse = response.map((item: any) => {
       const {
         created_at,
-        is_active, // Exclude is_active in the response
+        is_active, // Exclude search_key in the response
         fb_owner_account_created,
         search_key, // Exclude search_key in the response
         ...rest
       } = item;
       return {
         ...rest,
-        row_id: rowIds[index],
         fb_owner_account_created: dateUtils.formatDateOnly(
           dateUtils.convertToUTC8(fb_owner_account_created)
         ),
@@ -77,7 +73,6 @@ export const GET = async (request: NextRequest) => {
       {
         isSuccess: true,
         message: "Data fetched successfully.",
-        pagination: { page, limit, total_pages: totalPages },
         data: formattedResponse,
       },
       { status: 200 }

@@ -11,9 +11,12 @@ SELECT
   fb.fb_owner_account_created,
   fb.no_of_friends,
   (CASE
-    	WHEN fb.fb_account_quality_type_id = 0 THEN 'rejected'
-    	WHEN fb.fb_account_quality_type_id = 1 THEN 'passed'
-    	ELSE 'unknown'
+    WHEN (SELECT COUNT(*) 
+          FROM `Ap_Profiles` ap
+          WHERE ap.fb_account_id = fb.id) = 0 AND fb.fb_account_quality_type_id = 0 THEN '-'
+    WHEN fb.fb_account_quality_type_id = 0 THEN 'rejected'
+    WHEN fb.fb_account_quality_type_id = 1 THEN 'passed'
+    ELSE 'unknown'
   END) AS fb_account_quality,
   fb.remarks,
   (CASE

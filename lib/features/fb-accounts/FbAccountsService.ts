@@ -34,15 +34,17 @@ export class FbAccountsService {
   }
 
   async find(params: FindFbAccountsProps): Promise<ApiResponseProps> {
+    const { searchKeyword, method, dynamicSearchPayload } = params;
     const searchParams = new SearchParamsManager();
-    const searchQueryParams = searchParams.append(params.method);
+    const searchQueryParams = searchParams.append({ method });
     const response = await fetch(
-      `${appBaseUrl}/api/fb-accounts/find/${params.searchKey}${searchQueryParams}`,
+      `${appBaseUrl}/api/fb-accounts/find/${searchKeyword}${searchQueryParams}`,
       {
-        method: "GET",
+        method: "POST",
         headers: {
           "Content-type": "application/json",
         },
+        body: JSON.stringify(dynamicSearchPayload || {}),
       }
     );
 

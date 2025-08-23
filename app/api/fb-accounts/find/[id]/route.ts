@@ -3,9 +3,10 @@ import { FindFbAccountsProps } from "@/lib/features/fb-accounts/type/FbAccountsP
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { DatetimeUtils } from "@/lib/utils/date/DatetimeUtils";
 import { MySqlUtils } from "@/lib/utils/mysql/MySqlUtils";
+import { ObjectUtils } from "@/lib/utils/object/ObjectUtils";
 import { SearchParamsManager } from "@/lib/utils/search-params/SearchParamsManager";
 import { NextResponse, NextRequest } from "next/server";
-export const GET = async (
+export const POST = async (
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) => {
@@ -21,17 +22,29 @@ export const GET = async (
   //   );
   // }
 
-  type FindMethodProps = Omit<FindFbAccountsProps, "searchKey">;
+  type FindMethodProps = Omit<
+    FindFbAccountsProps,
+    "searchKeyword" | "dynamicSearchPayload"
+  >;
   const methodParams: FindMethodProps = new SearchParamsManager().toObject(
     request.nextUrl.searchParams
   );
   const { method } = methodParams;
-  const searchKey = `${(await params).id}`;
+  const searchKeyword = `${(await params).id}`;
+  const objUtil = new ObjectUtils();
+  const payload: object = await request.json();
+  const isValidPayload = objUtil.isValidObject(payload);
+
+  let column = payload;
+  if (!isValidPayload) {
+    column = {
+      base_search_keyword: searchKeyword,
+    };
+  }
+
   const mysqlUtils = new MySqlUtils();
   const { columns, values } = mysqlUtils.generateFindQuery({
-    column: {
-      search_key: searchKey,
-    },
+    column: column,
     operator: method === "find-one" ? "equals" : "like", // Default to "like" if not provided
   });
   const queryString = `SELECT * FROM v_FbAccounts WHERE ${columns} LIMIT 3`;
@@ -60,9 +73,9 @@ export const GET = async (
     const formattedResponse = response.map((item: any) => {
       const {
         created_at,
-        is_active, // Exclude search_key in the response
+        is_active, // Exclude base_search_keyword in the response
         fb_owner_account_created,
-        search_key, // Exclude search_key in the response
+        base_search_keyword, // Exclude base_search_keyword in the response
         ...rest
       } = item;
       return {

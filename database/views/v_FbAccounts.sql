@@ -15,7 +15,12 @@ SELECT
     	ELSE 'unknown'
   END) AS fb_account_quality,
   fb.remarks,
-  IF(is_active = 1, 'active', 'inactive') AS status, 
+  (CASE
+    WHEN (SELECT COUNT(*) 
+          FROM `Ap_Profiles` ap
+          WHERE ap.fb_account_id = fb.id) = 0 THEN 'available'
+    ELSE 'active'
+  END) AS status, 
   fb.created_at,
   COALESCE((
         SELECT JSON_ARRAYAGG(
@@ -55,7 +60,7 @@ SELECT
     		INNER JOIN `Teams` AS t ON u.team_id = t.id
     		WHERE u.id = ap.created_by
   		), JSON_OBJECT()),
-      'status',(SELECT IF(is_active = 1, 'active', 'inactive'))
+      'status',(SELECT IF(ap.is_active = 1, 'active', 'inactive'))
     )
     FROM `Ap_Profiles` AS ap
     WHERE fb.id=ap.fb_account_id

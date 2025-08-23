@@ -19,17 +19,12 @@ type BaseFbAccountsProps = {
   fb_owner_account_created: Date;
   no_of_friends: number;
   fb_account_quality_status_id: number; // 2: New, 3: Pass, 4: Rejected
-  is_active: number; // 0: Inactive or not renewed, 1: Active
   created_at: Date; // auto-generated in the database
 };
 
 type PostFbAccountsProps = Omit<
   BaseFbAccountsProps,
-  | "id"
-  | "recruited_by"
-  | "is_active"
-  | "created_at"
-  | "fb_account_quality_status_id"
+  "id" | "recruited_by" | "created_at" | "fb_account_quality_status_id"
 >;
 
 type PostRecoveryCodesProps = {

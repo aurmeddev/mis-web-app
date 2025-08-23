@@ -23,17 +23,7 @@ SELECT
   		END),
       'remarks',fb.remarks,
       'status',(SELECT IF(is_active = 1, 'active', 'inactive')),
-      'recovery_codes',COALESCE((
-        SELECT JSON_ARRAYAGG(
-          JSON_OBJECT(
-          'id', rc.id,
-          'recovery_code', rc.recovery_code,
-          'is_active', rc.is_active
-        )
-      )
-        FROM `Recovery_Codes` AS rc
-        WHERE rc.fb_account_id = fb.id
-      ), JSON_ARRAY()),
+      'recovery_code',fb.recovery_code,
       'recruited_by',COALESCE((
         SELECT JSON_OBJECT(
           'id', fb.recruited_by,

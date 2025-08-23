@@ -7,6 +7,7 @@ SELECT
   fb.password,
   fb.app_2fa_key,
   fb.marketing_api_access_token,
+  fb.recovery_code,
   fb.fb_owner_account_created,
   fb.no_of_friends,
   (CASE
@@ -22,17 +23,6 @@ SELECT
     ELSE 'active'
   END) AS status, 
   fb.created_at,
-  COALESCE((
-        SELECT JSON_ARRAYAGG(
-          JSON_OBJECT(
-          'id', rc.id,
-          'recovery_code', rc.recovery_code,
-          'is_active', rc.is_active
-        )
-      )
-        FROM `Recovery_Codes` AS rc
-        WHERE rc.fb_account_id = fb.id
-   ), JSON_ARRAY()) AS recovery_codes,
    COALESCE((
         SELECT JSON_OBJECT(
           'id', fb.recruited_by,

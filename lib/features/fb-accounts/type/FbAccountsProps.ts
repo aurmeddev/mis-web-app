@@ -15,7 +15,7 @@ type BaseFbAccountsProps = {
   password: string;
   app_2fa_key: string;
   marketing_api_access_token: string;
-  recovery_code: any; // This can be a string or an array of strings
+  recovery_code: string;
   fb_owner_account_created: Date;
   no_of_friends: number;
   fb_account_quality_status_id: number; // 2: New, 3: Pass, 4: Rejected

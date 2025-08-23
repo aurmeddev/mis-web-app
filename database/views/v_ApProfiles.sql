@@ -14,6 +14,12 @@ SELECT
       'app_2fa_key',fb.app_2fa_key,
       'marketing_api_access_token',fb.marketing_api_access_token,
       'fb_owner_account_created',fb.fb_owner_account_created,
+      'age_of_fb',
+      (CASE
+	      WHEN TIMESTAMPDIFF(MONTH, fb.fb_owner_account_created, CURDATE()) <= 3 THEN 'NEW'
+	      WHEN TIMESTAMPDIFF(MONTH, fb.fb_owner_account_created, CURDATE()) >= 12  THEN 'AGED'
+        ELSE 'OLD'
+      END),
       'no_of_friends',fb.no_of_friends,
       'fb_account_quality',
        (CASE

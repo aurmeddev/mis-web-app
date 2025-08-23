@@ -9,6 +9,11 @@ SELECT
   fb.marketing_api_access_token,
   fb.recovery_code,
   fb.fb_owner_account_created,
+  (CASE
+	  WHEN TIMESTAMPDIFF(MONTH, fb.fb_owner_account_created, CURDATE()) <= 3 THEN 'NEW'
+	  WHEN TIMESTAMPDIFF(MONTH, fb.fb_owner_account_created, CURDATE()) >= 12  THEN 'AGED'
+    ELSE 'OLD'
+  END) AS age_of_fb,
   fb.no_of_friends,
   (CONCAT(
     COALESCE(fb.fb_owner_name,''),' ',

@@ -1,3 +1,5 @@
+import { PaginationProps } from "@/lib/utils/pagination/type/PaginationProps";
+
 type BaseFbAccountsProps = {
   id: number; // auto-incremented in the database
   fb_owner_name: string;
@@ -34,8 +36,13 @@ type PostRecoveryCodesProps = {
   recovery_code: string;
 };
 
+type GetAllFbAccountsProps = Omit<PaginationProps, "total_pages"> & {
+  recruiter?: string;
+};
+
 export type {
   BaseFbAccountsProps,
   PostFbAccountsProps,
   PostRecoveryCodesProps,
+  GetAllFbAccountsProps,
 };

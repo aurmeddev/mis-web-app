@@ -1,5 +1,5 @@
 import { PaginationProps } from "@/lib/utils/pagination/type/PaginationProps";
-import { BaseSearchKeywordProps } from "../../search/type/SearchKeywordProps";
+import { BaseSearchKeywordProps } from "../../search-keyword/type/SearchKeywordProps";
 
 type BaseApProfilesProps = {
   id: number; // auto-incremented in the database

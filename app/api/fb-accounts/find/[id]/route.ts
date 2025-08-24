@@ -1,5 +1,6 @@
 import { query } from "@/database/dbConnection";
 import { FindFbAccountsProps } from "@/lib/features/fb-accounts/type/FbAccountsProps";
+import { SearchKeywordService } from "@/lib/features/search-keyword/SearchKeywordService";
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { DatetimeUtils } from "@/lib/utils/date/DatetimeUtils";
 import { MySqlUtils } from "@/lib/utils/mysql/MySqlUtils";
@@ -22,34 +23,17 @@ export const POST = async (
   //   );
   // }
 
-  type FindMethodProps = Omit<
-    FindFbAccountsProps,
-    "searchKeyword" | "dynamicSearchPayload"
-  >;
-  const methodParams: FindMethodProps = new SearchParamsManager().toObject(
-    request.nextUrl.searchParams
-  );
-  const { method } = methodParams;
   const searchKeyword = `${(await params).id}`;
-  const objUtil = new ObjectUtils();
   const payload: object = await request.json();
-  const isValidPayload = objUtil.isValidObject(payload);
 
-  let column = payload;
-  if (!isValidPayload) {
-    column = {
-      base_search_keyword: searchKeyword,
-    };
-  }
-
-  const mysqlUtils = new MySqlUtils();
-  const { columns, values } = mysqlUtils.generateFindQuery({
-    column: column,
-    operator: method === "find-one" ? "equals" : "like", // Default to "like" if not provided
+  const searchApi = new SearchKeywordService();
+  const { queryString, values } = searchApi.search({
+    searchKeyword,
+    requestUrlSearchParams: request.nextUrl.searchParams,
+    dynamicSearchPayload: payload,
+    databaseTableName: "v_FbAccounts",
+    staticSearchField: "base_search_keyword",
   });
-  const queryString = `SELECT * FROM v_FbAccounts WHERE ${columns} LIMIT 3`;
-  console.log(queryString);
-  console.log(values);
 
   // Execute the query to find data in the database
   try {

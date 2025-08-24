@@ -1,6 +1,7 @@
 import { query } from "@/database/dbConnection";
 import { SearchKeywordService } from "@/lib/features/search-keyword/SearchKeywordService";
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
+import { DatetimeUtils } from "@/lib/utils/date/DatetimeUtils";
 import { NextResponse, NextRequest } from "next/server";
 export const POST = async (
   request: NextRequest,
@@ -71,11 +72,24 @@ export const POST = async (
       );
     }
 
+    const dateUtils = new DatetimeUtils();
+    const formattedResponse = response.map((item: any) => {
+      const { created_at, is_active, created_by, ap_created_by, ...rest } =
+        item;
+      return {
+        ...rest,
+        created_by: ap_created_by,
+        created_at: dateUtils.formatDateTime(
+          dateUtils.convertToUTC8(created_at)
+        ),
+      };
+    });
+
     return NextResponse.json(
       {
         isSuccess: true,
         message: "Data fetched successfully.",
-        data: response,
+        data: formattedResponse,
       },
       { status: 200 }
     );

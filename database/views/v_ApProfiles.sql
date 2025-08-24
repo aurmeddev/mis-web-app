@@ -28,7 +28,7 @@ SELECT
     		ELSE 'unknown'
   		END),
       'remarks',fb.remarks,
-      'status',(SELECT IF(is_active = 1, 'active', 'inactive')),
+      'status','active',
       'recovery_code',fb.recovery_code,
       'recruited_by',COALESCE((
         SELECT JSON_OBJECT(

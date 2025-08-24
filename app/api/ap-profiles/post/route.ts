@@ -39,7 +39,7 @@ export const POST = async (request: NextRequest) => {
   const aps = new ApProfilesService();
   const validationPostQueryParams = objUtil.removeInvalidKeys({
     profile_name: data.profile_name,
-    fb_account_id: data.fb_account_id || "",
+    fb_account_id: data.fb_account_id,
   });
   // Validate if the AP Profile already exists
   const validationResponse = await aps.find({
@@ -72,10 +72,18 @@ export const POST = async (request: NextRequest) => {
     );
   }
 
-  const payload = objUtil.removeInvalidKeys(data);
-  const mysqlUtils = new MySqlUtils();
-  const { columns, values, questionMarksValue } =
-    mysqlUtils.generateInsertQuery({ created_by: 1, ...payload });
+  let payload = objUtil.removeInvalidKeys(data);
+  const isFbAccountIdProvided =
+    payload.fb_account_id && payload.fb_account_id > 0;
+
+  if (isFbAccountIdProvided) {
+    payload = { ...payload, is_active: 1 }; // Set the status to active if fb_account_id is provided
+  }
+  const mysql = new MySqlUtils();
+  const { columns, values, questionMarksValue } = mysql.generateInsertQuery({
+    created_by: 1,
+    ...payload,
+  });
   const queryString = `INSERT INTO Ap_Profiles ${columns} ${questionMarksValue}`;
   console.log(queryString);
   console.log(values);

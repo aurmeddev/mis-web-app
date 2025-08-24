@@ -39,6 +39,7 @@ export const POST = async (request: NextRequest) => {
   const aps = new ApProfilesService();
   const validationResponse = await aps.find({
     searchKeyword: data.profile_name,
+    method: "find-one",
   });
   if (!validationResponse.isSuccess) {
     return NextResponse.json(

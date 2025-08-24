@@ -1,4 +1,5 @@
 import { PaginationProps } from "@/lib/utils/pagination/type/PaginationProps";
+import { BaseSearchKeywordProps } from "../../search/type/SearchKeywordProps";
 
 type BaseFbAccountsProps = {
   id: number; // auto-incremented in the database
@@ -32,11 +33,7 @@ type PostRecoveryCodesProps = {
   recovery_code: string;
 };
 
-type FindFbAccountsProps = {
-  searchKeyword: string;
-  method: "find-one" | "find-many";
-  dynamicSearchPayload?: object; // Search multiple fields or columns
-};
+type FindFbAccountsProps = BaseSearchKeywordProps;
 
 type GetAllFbAccountsProps = Omit<PaginationProps, "total_pages"> & {
   recruiter?: string;

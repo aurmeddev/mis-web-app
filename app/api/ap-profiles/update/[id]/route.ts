@@ -21,6 +21,8 @@ export const PUT = async (
 
   const apProfileId = `${(await params).id}`;
   const data: UpdateApProfilesProps = await request.json();
+
+  // Validate if the fb account does not assign to another profile
   const { id, ...payload } = data;
   const mysqlUtils = new MySqlUtils();
   const { columns, values, whereClause } = mysqlUtils.generateUpdateQuery({

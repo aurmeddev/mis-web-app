@@ -64,11 +64,18 @@ export class SearchKeywordService {
           condition: condition,
         };
       } else {
-        const dynamicKey = Object.keys(dynamicSearchPayload ?? {})[0];
-        generateFindQueryParams = {
-          column: { [dynamicKey]: searchKeyword },
-          operator: method === "find-one" ? "equals" : "like", // Assign logial operator based on method type
-        };
+        if (searchKeyword !== "dynamic-search") {
+          const dynamicKey = Object.keys(dynamicSearchPayload ?? {})[0];
+          generateFindQueryParams = {
+            column: { [dynamicKey]: searchKeyword },
+            operator: method === "find-one" ? "equals" : "like", // Assign logial operator based on method type
+          };
+        } else {
+          generateFindQueryParams = {
+            column: dynamicSearchPayload,
+            operator: method === "find-one" ? "equals" : "like", // Assign logial operator based on method type
+          };
+        }
       }
     } else {
       generateFindQueryParams = {

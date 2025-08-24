@@ -34,9 +34,10 @@ export class FbAccountsService {
   }
 
   async find(params: FindFbAccountsProps): Promise<ApiResponseProps> {
-    const { searchKeyword, method, dynamicSearchPayload } = params;
+    const { searchKeyword, dynamicSearchPayload, ...searchParamsUtils } =
+      params;
     const searchParams = new SearchParamsManager();
-    const searchQueryParams = searchParams.append({ method });
+    const searchQueryParams = searchParams.append(searchParamsUtils);
     const response = await fetch(
       `${appBaseUrl}/api/fb-accounts/find/${searchKeyword}${searchQueryParams}`,
       {

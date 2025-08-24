@@ -35,12 +35,20 @@ export const POST = async (request: NextRequest) => {
   // }
 
   const data: PostApProfilesProps = await request.json();
-  // Validate the data before proceeding
+  const objUtil = new ObjectUtils();
   const aps = new ApProfilesService();
-  const validationResponse = await aps.find({
-    searchKeyword: data.profile_name,
-    method: "find-one",
+  const validationPostQueryParams = objUtil.removeInvalidKeys({
+    profile_name: data.profile_name,
+    fb_account_id: data.fb_account_id || "",
   });
+  // Validate if the AP Profile already exists
+  const validationResponse = await aps.find({
+    searchKeyword: "dynamic-search",
+    method: "find-one",
+    condition: "at-least-one",
+    dynamicSearchPayload: validationPostQueryParams,
+  });
+
   if (!validationResponse.isSuccess) {
     return NextResponse.json(
       {
@@ -57,14 +65,13 @@ export const POST = async (request: NextRequest) => {
       {
         isSuccess: false,
         message:
-          "The AP profile name you provided already exists. Please check the name and try again.",
+          "The AP profile information you provided already exists. Please check the name and try again.",
         data: [],
       },
       { status: 409 }
     );
   }
 
-  const objUtil = new ObjectUtils();
   const payload = objUtil.removeInvalidKeys(data);
   const mysqlUtils = new MySqlUtils();
   const { columns, values, questionMarksValue } =

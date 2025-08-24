@@ -1,10 +1,6 @@
 import { query } from "@/database/dbConnection";
-import { FindApProfilesProps } from "@/lib/features/ap-profiles/type/ApProfilesProps";
 import { SearchKeywordService } from "@/lib/features/search-keyword/SearchKeywordService";
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
-import { MySqlUtils } from "@/lib/utils/mysql/MySqlUtils";
-import { ObjectUtils } from "@/lib/utils/object/ObjectUtils";
-import { SearchParamsManager } from "@/lib/utils/search-params/SearchParamsManager";
 import { NextResponse, NextRequest } from "next/server";
 export const POST = async (
   request: NextRequest,
@@ -23,16 +19,39 @@ export const POST = async (
   // }
 
   const searchKeyword = `${(await params).id}`;
-  const payload: object = await request.json();
+  let payload: object = {};
+  try {
+    payload = await request.json();
+  } catch (error) {
+    return NextResponse.json(
+      {
+        isSuccess: false,
+        message: "Invalid JSON payload.",
+        data: [],
+      },
+      { status: 400 }
+    );
+  }
 
   const searchApi = new SearchKeywordService();
-  const { queryString, values } = searchApi.search({
+  const { queryString, values, isSuccess, message } = searchApi.search({
     searchKeyword,
     requestUrlSearchParams: request.nextUrl.searchParams,
     dynamicSearchPayload: payload,
     databaseTableName: "v_ApProfiles",
     staticSearchField: "profile_name",
   });
+
+  if (!isSuccess) {
+    return NextResponse.json(
+      {
+        isSuccess,
+        message,
+        data: [],
+      },
+      { status: 400 }
+    );
+  }
 
   // Execute the query to find data in the database
   try {

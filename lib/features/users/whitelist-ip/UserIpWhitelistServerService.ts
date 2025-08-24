@@ -132,7 +132,7 @@ export class UserIpWhitelistServerService {
     const mysqlUtils = new MySqlUtils();
     const { columns, values } = mysqlUtils.generateFindQuery({
       column: prop,
-      operator: "LIKE",
+      operator: "equals",
     });
     const queryString = `SELECT * FROM User_IP_Whitelist WHERE ${columns} LIMIT 3`;
     console.log(queryString);

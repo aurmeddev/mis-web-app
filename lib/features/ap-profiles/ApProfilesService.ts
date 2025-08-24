@@ -68,9 +68,10 @@ export class ApProfilesService {
   }
 
   async find(params: FindApProfilesProps): Promise<ApiResponseProps> {
-    const { searchKeyword, method, dynamicSearchPayload } = params;
+    const { searchKeyword, dynamicSearchPayload, ...searchParamsUtils } =
+      params;
     const searchParams = new SearchParamsManager();
-    const searchQueryParams = searchParams.append({ method });
+    const searchQueryParams = searchParams.append(searchParamsUtils);
     const response = await fetch(
       `${appBaseUrl}/api/ap-profiles/find/${searchKeyword}${searchQueryParams}`,
       {

@@ -1,3 +1,4 @@
+import { BaseSearchKeywordProps } from "@/lib/features/search-keyword/type/SearchKeywordProps";
 import { NumberUtils } from "@/lib/utils/number/NumberUtils";
 
 export type PaginationRowIdsProps = {
@@ -5,9 +6,13 @@ export type PaginationRowIdsProps = {
   limit: number;
   size: number;
 };
-type ValidateParamsForFindQueryProps = {
-  column: any; // TEMPORARILY set to optional
-  operator?: string; // If operator is undefined, "=" is the default value
+type ConditionProps = Omit<
+  BaseSearchKeywordProps,
+  "searchKeyword" | "dynamicSearchPayload" | "method"
+>;
+type GenerateFindQueryProps = {
+  column: any;
+  operator: "equals" | "like"; // If operator is undefined, "LIKE" is the default value
 };
 export class MySqlUtils {
   generateInsertQuery(params: any) {
@@ -98,8 +103,9 @@ export class MySqlUtils {
     };
   };
 
-  generateFindQuery(params: ValidateParamsForFindQueryProps) {
-    const { operator, column } = params;
+  generateFindQuery(params: GenerateFindQueryProps & ConditionProps) {
+    const { operator, column, condition } = params;
+    const logicalOperator = condition || "all"; // Default to AND if not provided
     const keys = Object.keys(column);
     const appendQuestionMarks = [];
     for (let index = 0; index < keys.length; index++) {
@@ -113,7 +119,9 @@ export class MySqlUtils {
     }
     const columns =
       appendQuestionMarks.length > 1
-        ? appendQuestionMarks.join(" AND ")
+        ? logicalOperator === "all"
+          ? appendQuestionMarks.join(" AND ")
+          : appendQuestionMarks.join(" OR ")
         : appendQuestionMarks;
     const arrayValues = Object.values(column);
     const stringArray = arrayValues.map((prop: any) => {

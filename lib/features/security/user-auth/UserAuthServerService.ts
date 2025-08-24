@@ -14,6 +14,7 @@ export class UserAuthServerService {
       column: {
         email: email,
       },
+      operator: "equals",
     });
     const queryString = `SELECT * FROM v_UserAccess WHERE ${columns} LIMIT 1;`;
     try {
@@ -122,6 +123,7 @@ export class UserAuthServerService {
     const util = new MySqlUtils();
     const { columns, values } = util.generateFindQuery({
       column: params,
+      operator: "equals",
     });
     const queryString = `SELECT * FROM User_IP_Whitelist WHERE ${columns}`;
     try {

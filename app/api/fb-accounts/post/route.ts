@@ -35,7 +35,6 @@ export const POST = async (request: NextRequest) => {
   // }
 
   const data: PostFbAccountsProps = await request.json();
-  // Validate the data before proceeding
   const objUtil = new ObjectUtils();
   const fbs = new FbAccountsService();
   const validationPostQueryParams = objUtil.removeInvalidKeys({
@@ -49,6 +48,7 @@ export const POST = async (request: NextRequest) => {
   const validationResponse = await fbs.find({
     searchKeyword: "dynamic-search",
     method: "find-one",
+    condition: "all",
     dynamicSearchPayload: validationPostQueryParams,
   });
 

@@ -4,7 +4,10 @@ import {
   SearchKeywordServiceProps,
 } from "./type/SearchKeywordProps";
 import { ObjectUtils } from "@/lib/utils/object/ObjectUtils";
-import { MySqlUtils } from "@/lib/utils/mysql/MySqlUtils";
+import {
+  GenerateFindQueryProps,
+  MySqlUtils,
+} from "@/lib/utils/mysql/MySqlUtils";
 
 type MethodProps = Omit<
   BaseSearchKeywordProps,
@@ -27,23 +30,12 @@ export class SearchKeywordService {
     );
     const { method, condition } = searchParamsUtils;
     const objUtil = new ObjectUtils();
-    const isValidJsonPayload = objUtil.isValidObject(
+    const isJsonPayloadValid = objUtil.isValidObject(
       dynamicSearchPayload ?? {}
     );
-    if (
-      isValidJsonPayload &&
-      Object.keys(dynamicSearchPayload ?? {}).length > 1
-    ) {
-      if (condition !== "all" && condition !== "at-least-one") {
-        return {
-          isSuccess: false,
-          message:
-            'Invalid condition value. It must be either "all" or "at-least-one".',
-          queryString: "",
-          values: [],
-        };
-      }
-    }
+    const containsMultipleParams =
+      Object.keys(dynamicSearchPayload ?? {}).length > 1;
+
     if (method !== "find-one" && method !== "find-any") {
       return {
         isSuccess: false,
@@ -54,19 +46,44 @@ export class SearchKeywordService {
       };
     }
 
-    let column = dynamicSearchPayload;
-    if (!isValidJsonPayload) {
-      column = {
-        [staticSearchField]: searchKeyword,
+    let generateFindQueryParams: GenerateFindQueryProps;
+    if (isJsonPayloadValid) {
+      if (containsMultipleParams) {
+        if (condition !== "all" && condition !== "at-least-one") {
+          return {
+            isSuccess: false,
+            message:
+              'Invalid condition value. It must be either "all" or "at-least-one".',
+            queryString: "",
+            values: [],
+          };
+        }
+        generateFindQueryParams = {
+          column: dynamicSearchPayload,
+          operator: method === "find-one" ? "equals" : "like", // Assign logial operator based on method type
+          condition: condition,
+        };
+      } else {
+        const dynamicKey = Object.keys(dynamicSearchPayload ?? {})[0];
+        generateFindQueryParams = {
+          column: { [dynamicKey]: searchKeyword },
+          operator: method === "find-one" ? "equals" : "like", // Assign logial operator based on method type
+        };
+      }
+    } else {
+      generateFindQueryParams = {
+        column: {
+          [staticSearchField]: searchKeyword,
+        },
+        operator: method === "find-one" ? "equals" : "like", // Assign logial operator based on method type
       };
     }
 
+    // console.log(generateFindQueryParams);
     const mysqlUtils = new MySqlUtils();
-    const { columns, values } = mysqlUtils.generateFindQuery({
-      column: column,
-      operator: method === "find-one" ? "equals" : "like", // Default to "like" if not provided
-      condition: condition || "all",
-    });
+    const { columns, values } = mysqlUtils.generateFindQuery(
+      generateFindQueryParams
+    );
 
     const queryString = `SELECT * FROM ${databaseTableName} WHERE ${columns} LIMIT ${LIMIT}`;
     console.log(queryString);

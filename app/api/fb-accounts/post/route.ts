@@ -59,7 +59,7 @@ export const POST = async (request: NextRequest) => {
         message: "Validation error occurred.",
         data: [],
       },
-      { status: 500 }
+      { status: 400 }
     );
   }
   const doesApProfileExist = validationResponse.data.length > 0;

@@ -56,7 +56,7 @@ export const POST = async (request: NextRequest) => {
         message: "Validation error occurred.",
         data: [],
       },
-      { status: 500 }
+      { status: 400 }
     );
   }
   const doesApProfileExist = validationResponse.data.length > 0;
@@ -65,7 +65,7 @@ export const POST = async (request: NextRequest) => {
       {
         isSuccess: false,
         message:
-          "The AP profile information you provided already exists. Please check the name and try again.",
+          "The AP profile information you provided already exists. Please check the profile name or assigned fb account and try again.",
         data: [],
       },
       { status: 409 }

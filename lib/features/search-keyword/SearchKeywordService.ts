@@ -64,7 +64,7 @@ export class SearchKeywordService {
           condition: condition,
         };
       } else {
-        if (searchKeyword !== "dynamic-search") {
+        if (searchKeyword !== "validation") {
           const dynamicKey = Object.keys(dynamicSearchPayload ?? {})[0];
           generateFindQueryParams = {
             column: { [dynamicKey]: searchKeyword },

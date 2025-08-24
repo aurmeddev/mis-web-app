@@ -1,5 +1,6 @@
 import { query } from "@/database/dbConnection";
 import { FindApProfilesProps } from "@/lib/features/ap-profiles/type/ApProfilesProps";
+import { SearchKeywordService } from "@/lib/features/search-keyword/SearchKeywordService";
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { MySqlUtils } from "@/lib/utils/mysql/MySqlUtils";
 import { ObjectUtils } from "@/lib/utils/object/ObjectUtils";
@@ -21,34 +22,17 @@ export const POST = async (
   //   );
   // }
 
-  type FindMethodProps = Omit<
-    FindApProfilesProps,
-    "searchKeyword" | "dynamicSearchPayload"
-  >;
-  const methodParams: FindMethodProps = new SearchParamsManager().toObject(
-    request.nextUrl.searchParams
-  );
-  const { method } = methodParams;
   const searchKeyword = `${(await params).id}`;
-  const objUtil = new ObjectUtils();
   const payload: object = await request.json();
-  const isValidPayload = objUtil.isValidObject(payload);
 
-  let column = payload;
-  if (!isValidPayload) {
-    column = {
-      profile_name: searchKeyword,
-    };
-  }
-
-  const mysqlUtils = new MySqlUtils();
-  const { columns, values } = mysqlUtils.generateFindQuery({
-    column: column,
-    operator: method === "find-one" ? "equals" : "like", // Default to "like" if not provided
+  const searchApi = new SearchKeywordService();
+  const { queryString, values } = searchApi.search({
+    searchKeyword,
+    requestUrlSearchParams: request.nextUrl.searchParams,
+    dynamicSearchPayload: payload,
+    databaseTableName: "v_ApProfiles",
+    staticSearchField: "profile_name",
   });
-  const queryString = `SELECT * FROM v_ApProfiles WHERE ${columns} LIMIT 3`;
-  console.log(queryString);
-  console.log(values);
 
   // Execute the query to find data in the database
   try {

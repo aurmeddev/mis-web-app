@@ -10,7 +10,7 @@ type ConditionProps = Omit<
   BaseSearchKeywordProps,
   "searchKeyword" | "dynamicSearchPayload" | "method"
 >;
-type GenerateFindQueryProps = {
+export type GenerateFindQueryProps = ConditionProps & {
   column: any;
   operator: "equals" | "like"; // If operator is undefined, "LIKE" is the default value
 };
@@ -103,7 +103,7 @@ export class MySqlUtils {
     };
   };
 
-  generateFindQuery(params: GenerateFindQueryProps & ConditionProps) {
+  generateFindQuery(params: GenerateFindQueryProps) {
     const { operator, column, condition } = params;
     const logicalOperator = condition || "all"; // Default to AND if not provided
     const keys = Object.keys(column);

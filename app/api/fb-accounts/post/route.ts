@@ -46,7 +46,7 @@ export const POST = async (request: NextRequest) => {
 
   // Validate if the fb account already exists
   const validationResponse = await fbs.find({
-    searchKeyword: "dynamic-search",
+    searchKeyword: "validation",
     method: "find-one",
     condition: "all",
     dynamicSearchPayload: validationPostQueryParams,

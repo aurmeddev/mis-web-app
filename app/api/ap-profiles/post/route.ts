@@ -43,7 +43,7 @@ export const POST = async (request: NextRequest) => {
   });
   // Validate if the AP Profile already exists
   const validationResponse = await aps.find({
-    searchKeyword: "dynamic-search",
+    searchKeyword: "validation",
     method: "find-one",
     condition: "at-least-one",
     dynamicSearchPayload: validationPostQueryParams,

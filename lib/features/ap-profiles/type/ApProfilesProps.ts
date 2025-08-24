@@ -1,4 +1,5 @@
 import { PaginationProps } from "@/lib/utils/pagination/type/PaginationProps";
+import { BaseSearchKeywordProps } from "../../search/type/SearchKeywordProps";
 
 type BaseApProfilesProps = {
   id: number; // auto-incremented in the database
@@ -29,9 +30,7 @@ type ToggleApProfilesStatusProps = Omit<
   "profile_name" | "fb_account_id" | "created_by" | "created_at"
 >;
 
-type FindApProfilesProps = {
-  searchKeyword: string;
-};
+type FindApProfilesProps = BaseSearchKeywordProps;
 
 type GetAllApProfilesProps = Omit<PaginationProps, "total_pages"> & {
   recruiter?: string;

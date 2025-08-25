@@ -16,8 +16,8 @@ export const POST = async (request: NextRequest) => {
   //   );
   // }
 
-  // // Decrypt the user ID from the session
-  // const decipher = new CryptoServerService();
+  // Decrypt the user ID from the session
+  const decipher = new CryptoServerService();
   // const { isSuccess, decryptedData } = await decipher.decrypt({
   //   data: session.user.id,
   // });
@@ -32,8 +32,21 @@ export const POST = async (request: NextRequest) => {
   // }
 
   const { secret }: GenerateOTPProps = await request.json();
+  const { isSuccess, decryptedData, message } = await decipher.decrypt({
+    data: secret,
+  });
+  if (!isSuccess) {
+    console.log(message);
+    return NextResponse.json(
+      {
+        isSuccess,
+        message: "Data parse error occurred.",
+      },
+      { status: 400 }
+    );
+  }
   try {
-    const otp = TOTP.generate("totp", secret, null, 30, 6, null, 0);
+    const otp = TOTP.generate("totp", decryptedData, null, 30, 6, null, 0);
     return NextResponse.json(
       {
         isSuccess: true,

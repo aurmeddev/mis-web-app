@@ -5,6 +5,7 @@ import { CryptoUtilsManager } from "../cryptography/util/CryptoUtilsManager";
 import { CryptoUtilsServerService } from "../cryptography/util/CryptoUtilsServerService";
 import { UserAccessControlService } from "./util/UserAccessControlService";
 import { MySqlUtils } from "@/lib/utils/mysql/MySqlUtils";
+import { CryptoServerService } from "../cryptography/CryptoServerService";
 
 export class UserAuthServerService {
   async login(params: UserLoginParams) {
@@ -17,6 +18,8 @@ export class UserAuthServerService {
       operator: "equals",
     });
     const queryString = `SELECT * FROM v_UserAccess WHERE ${columns} LIMIT 1;`;
+    console.log(queryString);
+    console.log(values);
     try {
       const validateUserEmailResult: any = await query({
         query: queryString,
@@ -41,16 +44,21 @@ export class UserAuthServerService {
       }
 
       const getUserPassword = validateUserEmailResult[0].password;
-      const decipher = new CryptoUtilsManager(new CryptoUtilsServerService());
-      const decryptedUserPassword = (
-        await decipher.cryptoArrayString({
-          data: getUserPassword,
-          isEncrypt: false,
-        })
-      ).string();
+      const decipher = new CryptoServerService();
+      const { isSuccess, decryptedData, message } = await decipher.decrypt({
+        data: getUserPassword,
+      });
 
-      const isUserPasswordMatch = decryptedUserPassword === password;
+      if (!isSuccess) {
+        console.log(message);
+        return {
+          isSuccess: false,
+          message: "Data parse error occurred.",
+          data: [],
+        };
+      }
 
+      const isUserPasswordMatch = decryptedData === password;
       if (!isUserPasswordMatch) {
         return {
           isSuccess: false,

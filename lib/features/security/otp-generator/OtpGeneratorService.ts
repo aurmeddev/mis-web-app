@@ -4,7 +4,7 @@ import { GenerateOTPProps } from "./type/OtpGeneratorProps";
 export class OtpGeneratorService {
   async generate(params: GenerateOTPProps) {
     try {
-      const response = await fetch(`${appBaseUrl}/api/otp-generator`, {
+      const response = await fetch(`${appBaseUrl}/api/auth/otp-generator`, {
         method: "POST",
         headers: {
           "Content-type": "application/json",

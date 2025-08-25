@@ -6,6 +6,7 @@ import { CryptoServerService } from "@/lib/features/security/cryptography/Crypto
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { NextResponse, NextRequest } from "next/server";
 import { ApProfilesService } from "@/lib/features/ap-profiles/ApProfilesService";
+import { FbAccountsService } from "@/lib/features/fb-accounts/FbAccountsService";
 export const POST = async (request: NextRequest) => {
   // Check if the user session is valid before processing the request
   // const session = await getSession();
@@ -78,6 +79,37 @@ export const POST = async (request: NextRequest) => {
 
   if (isFbAccountIdProvided) {
     payload = { ...payload, is_active: 1 }; // Set the status to active if fb_account_id is provided
+
+    // Validate if the assigned fb_account_id exists in FB Accounts db table
+    const fbs = new FbAccountsService();
+    const validationResponse = await fbs.find({
+      searchKeyword: "validation",
+      method: "find-one",
+      dynamicSearchPayload: { id: payload.fb_account_id },
+    });
+
+    if (!validationResponse.isSuccess) {
+      return NextResponse.json(
+        {
+          isSuccess: false,
+          message: "Validation error occurred.",
+          data: [],
+        },
+        { status: 400 }
+      );
+    }
+
+    const doesFbAccountIdNotExist = validationResponse.data.length === 0;
+    if (doesFbAccountIdNotExist) {
+      return NextResponse.json(
+        {
+          isSuccess: false,
+          message: `The FB account you've assigned to ${payload.profile_name} does not exist. Unable to proceed.`,
+          data: [],
+        },
+        { status: 400 }
+      );
+    }
   }
   const mysql = new MySqlUtils();
   const { columns, values, questionMarksValue } = mysql.generateInsertQuery({

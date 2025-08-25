@@ -25,8 +25,6 @@ export function GeneratorCountdown({
     return () => clearInterval(interval);
   }, [otp]);
   return (
-    <div className="absolute font-bold right-0 text-muted-foreground top-0">
-      {secondsRemaining}
-    </div>
+    <div className="font-bold text-muted-foreground">{secondsRemaining}s.</div>
   );
 }

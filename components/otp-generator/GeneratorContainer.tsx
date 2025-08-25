@@ -10,7 +10,6 @@ import { SearchResult } from "../search/SearchResult";
 import { OtpGeneratorService } from "@/lib/features/security/otp-generator/OtpGeneratorService";
 import { GeneratorCardLoading } from "./GeneratorCardLoading";
 import { SearchQuery } from "./type";
-import { cn } from "@/lib/utils";
 import { GeneratorSearchResults } from "./search/GeneratorSearchResults";
 
 export function GeneratorContainer() {
@@ -85,7 +84,10 @@ export function GeneratorContainer() {
 
   return (
     <div className="min-h-[calc(100dvh-5rem)] p-6 pr-0">
-      <div className="font-medium mb-4 text-lg">Generate OTP</div>
+      <div className="font-medium mb-1 text-lg">Get OTP</div>
+      <div className="text-muted-foreground mb-4">
+        Generate a secure one-time password (OTP).
+      </div>
       <div className="flex flex-col gap-10">
         <div className="relative max-w-xs w-[25%]">
           <Input

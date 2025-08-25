@@ -32,9 +32,20 @@ export const POST = async (request: NextRequest) => {
   // }
 
   const { secret }: GenerateOTPProps = await request.json();
+
+  if (!secret) {
+    return NextResponse.json(
+      {
+        isSuccess: false,
+        message: "No secret key was provided",
+      },
+      { status: 400 }
+    );
+  }
   const { isSuccess, decryptedData, message } = await decipher.decrypt({
     data: secret,
   });
+
   if (!isSuccess) {
     console.log(message);
     return NextResponse.json(

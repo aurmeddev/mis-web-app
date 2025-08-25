@@ -37,7 +37,7 @@ export const POST = async (request: NextRequest) => {
     return NextResponse.json(
       {
         isSuccess: false,
-        message: "No secret key provided.",
+        message: "No secret key was provided",
       },
       { status: 400 }
     );

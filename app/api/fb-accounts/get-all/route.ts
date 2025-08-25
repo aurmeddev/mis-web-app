@@ -74,6 +74,10 @@ export const GET = async (request: NextRequest) => {
           rest.app_2fa_key = isSuccess ? encryptedData : message;
         }
 
+        rest.ap_profile.created_at = dateUtils.formatDateTime(
+          dateUtils.convertToUTC8(rest.ap_profile.created_at)
+        );
+
         return {
           ...rest,
           row_id: rowIds[index],

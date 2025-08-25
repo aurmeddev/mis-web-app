@@ -64,7 +64,6 @@ export function ManageApProfilesTable({
   handleStatusChange,
   isActionDisabled,
 }: UserManagementTableProps) {
-  console.log("data ", data);
   const tableHeaders = [
     { label: "#", className: "border-r text-sm" },
     { label: "Profile", className: "border-r text-sm w-[15%]", colSpan: 1 },
@@ -146,7 +145,6 @@ export function ManageApProfilesTable({
 
         {data.map((rowData: any, idx: number) => {
           const isEditing = editingRow === rowData.id;
-
           return (
             <TableRow key={idx}>
               <TableCell className="border-r font-medium text-sm max-w-[10%]">
@@ -179,7 +177,7 @@ export function ManageApProfilesTable({
                     }
                   />
                 ) : (
-                  rowData.recruited_by.full_name
+                  rowData.fb_account.recruited_by?.full_name
                 )}
               </TableCell>
               <TableCell className="border-r text-sm">
@@ -194,7 +192,7 @@ export function ManageApProfilesTable({
                     }
                   />
                 ) : (
-                  rowData.fb_owner_name
+                  rowData.fb_account.fb_owner_name
                 )}
               </TableCell>
               <TableCell className="border-r text-sm">
@@ -209,7 +207,7 @@ export function ManageApProfilesTable({
                     }
                   />
                 ) : (
-                  rowData.username
+                  rowData.fb_account.username
                 )}
               </TableCell>
 
@@ -224,7 +222,7 @@ export function ManageApProfilesTable({
                     }
                   />
                 ) : (
-                  rowData.password
+                  rowData.fb_account.password
                 )}
               </TableCell>
               <TableCell className="border-r text-sm">

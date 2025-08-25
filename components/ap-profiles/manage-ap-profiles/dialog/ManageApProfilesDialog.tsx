@@ -162,15 +162,6 @@ export function ManageApProfilesDialog({
             <Button type="submit">Save</Button>
           </DialogFooter>
         </form>
-
-        {/* <Button
-            onClick={() => {
-              onConfirm();
-              setOpen(false);
-            }}
-          >
-            {confirmLabel}
-          </Button> */}
       </DialogContent>
     </Dialog>
   );

@@ -1,5 +1,6 @@
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { NotFound } from "@/components/not-found/not-found";
+import { GeneratorContainer } from "@/components/2fa-generator/GeneratorContainer";
 export default async function Page() {
   const session = await getSession();
 
@@ -8,5 +9,5 @@ export default async function Page() {
     title: "403 Forbidden",
   };
   if (!session) return <NotFound param={notFoundObj} />;
-  return <>2FA Generator</>;
+  return <GeneratorContainer />;
 }

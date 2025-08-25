@@ -22,11 +22,11 @@ export const PUT = async (
   const apProfileId = `${(await params).id}`;
   const data: ToggleApProfilesStatusProps = await request.json();
   const { is_active } = data;
-  if (is_active < 0 || is_active >= 2) {
+  if (is_active < 0 || is_active >= 1) {
     return NextResponse.json(
       {
         isSuccess: false,
-        message: "Incorrect active value.",
+        message: `Invalid status value. It must be either "0" for inactive or "1" for active.`,
         data: [],
       },
       { status: 400 }

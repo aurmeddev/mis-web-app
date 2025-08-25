@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -7,10 +6,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ClipboardUtils } from "@/lib/utils/clipboard/ClipboardUtils";
-import { Clipboard, Copy } from "lucide-react";
+import { Clipboard } from "lucide-react";
 import { toast } from "sonner";
 import { GeneratorCountdown } from "./GeneratorCountdown";
 import { GeneratorCardProps } from "./type";
+import { GeneratorButtonCopy } from "./GeneratorButtonCopy";
 
 export function GeneratorCard({
   selectedResult,
@@ -35,9 +35,7 @@ export function GeneratorCard({
     <Card className="w-full max-w-sm">
       <CardHeader className="relative">
         <CardTitle className="relative">
-          <div className="font-semibold text-muted-foreground">
-            {selectedResult.profile_name}
-          </div>
+          <div className="font-semibold">{selectedResult.profile_name}</div>
           <div className="font-normal mt-5 text-muted-foreground">
             Your one-time code is:
           </div>
@@ -46,14 +44,7 @@ export function GeneratorCard({
           <div className="bg-muted font-bold relative rounded py-2 text-center text-2xl">
             {otp}
 
-            <Button
-              className="absolute bg-transparent cursor-pointer hover:bg-primary-foreground focus:bg-primary-foreground shadow-none top-1/2 -translate-y-1/2 text-xs right-1"
-              size={"sm"}
-              variant={"ghost"}
-              onClick={() => handleCopy("otp")}
-            >
-              <Copy />
-            </Button>
+            <GeneratorButtonCopy handleCopy={() => handleCopy("otp")} />
           </div>
           <div className="flex gap-1 mt-2 relative">
             This code expires in
@@ -64,35 +55,21 @@ export function GeneratorCard({
       <CardContent>
         <div className="flex flex-col gap-2">
           <div className="grid gap-1">
-            <div className="">Username</div>
-            <div className="relative">
-              <div className="bg-muted font-bold relative rounded py-2 text-center text-muted-foreground">
+            <div className="text-muted-foreground">Username</div>
+            <div className="relative text-muted-foreground">
+              <div className="bg-muted font-bold relative rounded py-2 text-center">
                 {selectedResult.fb_account.username}
               </div>
-              <Button
-                className="absolute cursor-pointer hover:bg-secondary focus:bg-primary-foreground shadow-none top-1/2 -translate-y-1/2 text-xs right-0"
-                size={"sm"}
-                variant={"secondary"}
-                onClick={() => handleCopy("username")}
-              >
-                <Copy />
-              </Button>
+              <GeneratorButtonCopy handleCopy={() => handleCopy("username")} />
             </div>
           </div>
           <div className="grid gap-1">
-            <div className="">Password</div>
-            <div className="relative">
-              <div className="bg-muted font-bold relative rounded py-1 text-center text-2xl text-muted-foreground">
+            <div className="text-muted-foreground">Password</div>
+            <div className="relative text-muted-foreground">
+              <div className="bg-muted font-bold relative rounded py-1 text-center text-2xl">
                 *********
               </div>
-              <Button
-                className="absolute cursor-pointer hover:bg-secondary focus:bg-primary-foreground shadow-none top-1/2 -translate-y-1/2 text-xs right-0"
-                size={"sm"}
-                variant={"secondary"}
-                onClick={() => handleCopy("password")}
-              >
-                <Copy />
-              </Button>
+              <GeneratorButtonCopy handleCopy={() => handleCopy("password")} />
             </div>
           </div>
         </div>

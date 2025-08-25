@@ -24,8 +24,10 @@ export function GeneratorSearchResults({
             <li
               key={item.id}
               className={cn(
-                !result.data?.length ? "pointer-events-none" : "",
-                "flex hover:bg-muted hover:cursor-pointer gap-2 px-3 py-2 rounded-lg"
+                !result.data?.length || isProfileAvailable
+                  ? "hover:cursor-not-allowed"
+                  : "hover:cursor-pointer",
+                "flex hover:bg-muted gap-2 px-3 py-2 rounded-lg"
               )}
               onClick={() => {
                 if (!isProfileAvailable) {

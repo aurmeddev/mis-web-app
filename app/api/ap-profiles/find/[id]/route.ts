@@ -1,5 +1,6 @@
 import { query } from "@/database/dbConnection";
 import { SearchKeywordService } from "@/lib/features/search-keyword/SearchKeywordService";
+import { CryptoServerService } from "@/lib/features/security/cryptography/CryptoServerService";
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { DatetimeUtils } from "@/lib/utils/date/DatetimeUtils";
 import { NextResponse, NextRequest } from "next/server";
@@ -72,18 +73,28 @@ export const POST = async (
       );
     }
 
+    const cipher = new CryptoServerService();
     const dateUtils = new DatetimeUtils();
-    const formattedResponse = response.map((item: any) => {
-      const { created_at, is_active, created_by, ap_created_by, ...rest } =
-        item;
-      return {
-        ...rest,
-        created_by: ap_created_by,
-        created_at: dateUtils.formatDateTime(
-          dateUtils.convertToUTC8(created_at)
-        ),
-      };
-    });
+    const formattedResponse = await Promise.all(
+      response.map(async (item: any) => {
+        const { created_at, is_active, created_by, ap_created_by, ...rest } =
+          item;
+
+        if (rest.fb_account.app_2fa_key) {
+          const { isSuccess, encryptedData, message } = await cipher.encrypt({
+            data: rest.fb_account.app_2fa_key, // Enrypt app_2fa_key
+          });
+          rest.fb_account.app_2fa_key = isSuccess ? encryptedData : message;
+        }
+        return {
+          ...rest,
+          created_by: ap_created_by,
+          created_at: dateUtils.formatDateTime(
+            dateUtils.convertToUTC8(created_at)
+          ),
+        };
+      })
+    );
 
     return NextResponse.json(
       {

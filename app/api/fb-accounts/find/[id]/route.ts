@@ -1,5 +1,6 @@
 import { query } from "@/database/dbConnection";
 import { SearchKeywordService } from "@/lib/features/search-keyword/SearchKeywordService";
+import { CryptoServerService } from "@/lib/features/security/cryptography/CryptoServerService";
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { DatetimeUtils } from "@/lib/utils/date/DatetimeUtils";
 import { NextResponse, NextRequest } from "next/server";
@@ -72,26 +73,37 @@ export const POST = async (
       );
     }
 
+    const cipher = new CryptoServerService();
     const dateUtils = new DatetimeUtils();
-    const formattedResponse = response.map((item: any) => {
-      const {
-        created_at,
-        is_active, // Exclude base_search_keyword in the response.
-        fb_owner_account_created,
-        base_search_keyword, // Exclude base_search_keyword in the response. It's for searching purpose only
-        recruiter, // Exclude recruiter in the response. It's for filtering purpose only
-        ...rest
-      } = item;
-      return {
-        ...rest,
-        fb_owner_account_created: dateUtils.formatDateOnly(
-          dateUtils.convertToUTC8(fb_owner_account_created)
-        ),
-        created_at: dateUtils.formatDateTime(
-          dateUtils.convertToUTC8(created_at)
-        ),
-      };
-    });
+    const formattedResponse = await Promise.all(
+      response.map(async (item: any) => {
+        const {
+          created_at,
+          is_active, // Exclude base_search_keyword in the response.
+          fb_owner_account_created,
+          base_search_keyword, // Exclude base_search_keyword in the response. It's for searching purpose only
+          recruiter, // Exclude recruiter in the response. It's for filtering purpose only
+          ...rest
+        } = item;
+
+        if (rest.app_2fa_key) {
+          const { isSuccess, encryptedData, message } = await cipher.encrypt({
+            data: rest.app_2fa_key, // Enrypt app_2fa_key
+          });
+          rest.app_2fa_key = isSuccess ? encryptedData : message;
+        }
+
+        return {
+          ...rest,
+          fb_owner_account_created: dateUtils.formatDateOnly(
+            dateUtils.convertToUTC8(fb_owner_account_created)
+          ),
+          created_at: dateUtils.formatDateTime(
+            dateUtils.convertToUTC8(created_at)
+          ),
+        };
+      })
+    );
 
     return NextResponse.json(
       {

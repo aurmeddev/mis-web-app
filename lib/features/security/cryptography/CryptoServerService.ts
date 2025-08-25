@@ -1,7 +1,7 @@
 const CryptoJS = require("crypto-js");
 import { CryptoProps } from "./type/CryptoMethodProps";
 export class CryptoServerService {
-  private secretKey = `${process.env.NEXT_SERVER_ACCESS_TOKEN}`;
+  private secretKey = `${process.env.NEXT_AUTH_SECRET_KEY}`;
   async encrypt(params: CryptoProps) {
     try {
       const iv = CryptoJS.lib.WordArray.random(16); // 16 bytes = 128 bits

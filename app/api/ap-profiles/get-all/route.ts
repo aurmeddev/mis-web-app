@@ -1,5 +1,6 @@
 import { query } from "@/database/dbConnection";
 import { GetAllApProfilesProps } from "@/lib/features/ap-profiles/type/ApProfilesProps";
+import { CryptoServerService } from "@/lib/features/security/cryptography/CryptoServerService";
 import { DatetimeUtils } from "@/lib/utils/date/DatetimeUtils";
 import { MySqlUtils } from "@/lib/utils/mysql/MySqlUtils";
 import { SearchParamsManager } from "@/lib/utils/search-params/SearchParamsManager";
@@ -53,18 +54,30 @@ export const GET = async (request: NextRequest) => {
       limit: limit,
       size: response.length,
     });
-    const formattedResponse = response.map((item: any, index: number) => {
-      const { created_at, is_active, created_by, ap_created_by, ...rest } =
-        item;
-      return {
-        ...rest,
-        created_by: ap_created_by,
-        row_id: rowIds[index],
-        created_at: dateUtils.formatDateTime(
-          dateUtils.convertToUTC8(created_at)
-        ),
-      };
-    });
+
+    const cipher = new CryptoServerService();
+    const formattedResponse = await Promise.all(
+      response.map(async (item: any, index: number) => {
+        const { created_at, is_active, created_by, ap_created_by, ...rest } =
+          item;
+
+        if (rest.fb_account.app_2fa_key) {
+          const { isSuccess, encryptedData, message } = await cipher.encrypt({
+            data: rest.fb_account.app_2fa_key, // Enrypt app_2fa_key
+          });
+          rest.fb_account.app_2fa_key = isSuccess ? encryptedData : message;
+        }
+
+        return {
+          ...rest,
+          created_by: ap_created_by,
+          row_id: rowIds[index],
+          created_at: dateUtils.formatDateTime(
+            dateUtils.convertToUTC8(created_at)
+          ),
+        };
+      })
+    );
 
     return NextResponse.json(
       {

@@ -1,5 +1,6 @@
 import { query } from "@/database/dbConnection";
 import { GetAllFbAccountsProps } from "@/lib/features/fb-accounts/type/FbAccountsProps";
+import { CryptoServerService } from "@/lib/features/security/cryptography/CryptoServerService";
 import { DatetimeUtils } from "@/lib/utils/date/DatetimeUtils";
 import { MySqlUtils } from "@/lib/utils/mysql/MySqlUtils";
 import { SearchParamsManager } from "@/lib/utils/search-params/SearchParamsManager";
@@ -47,32 +48,44 @@ export const GET = async (request: NextRequest) => {
     const totalRows: number = rows[0].total_count;
     const totalPages: number = Math.ceil(totalRows / limit);
 
+    const cipher = new CryptoServerService();
     const dateUtils = new DatetimeUtils();
     const rowIds = mysqlUtils.generateRowIds({
       page: page,
       limit: limit,
       size: response.length,
     });
-    const formattedResponse = response.map((item: any, index: number) => {
-      const {
-        created_at,
-        is_active, // Exclude is_active in the response.
-        fb_owner_account_created,
-        base_search_keyword, // Exclude base_search_keyword in the response. It's for searching purpose only
-        recruiter, // Exclude recruiter in the response. It's for filtering purpose only
-        ...rest
-      } = item;
-      return {
-        ...rest,
-        row_id: rowIds[index],
-        fb_owner_account_created: dateUtils.formatDateOnly(
-          dateUtils.convertToUTC8(fb_owner_account_created)
-        ),
-        created_at: dateUtils.formatDateTime(
-          dateUtils.convertToUTC8(created_at)
-        ),
-      };
-    });
+
+    const formattedResponse = await Promise.all(
+      response.map(async (item: any, index: number) => {
+        const {
+          created_at,
+          is_active, // Exclude is_active in the response.
+          fb_owner_account_created,
+          base_search_keyword, // Exclude base_search_keyword in the response. It's for searching purpose only
+          recruiter, // Exclude recruiter in the response. It's for filtering purpose only
+          ...rest
+        } = item;
+
+        if (rest.app_2fa_key) {
+          const { isSuccess, encryptedData, message } = await cipher.encrypt({
+            data: rest.app_2fa_key, // Enrypt app_2fa_key
+          });
+          rest.app_2fa_key = isSuccess ? encryptedData : message;
+        }
+
+        return {
+          ...rest,
+          row_id: rowIds[index],
+          fb_owner_account_created: dateUtils.formatDateOnly(
+            dateUtils.convertToUTC8(fb_owner_account_created)
+          ),
+          created_at: dateUtils.formatDateTime(
+            dateUtils.convertToUTC8(created_at)
+          ),
+        };
+      })
+    );
 
     return NextResponse.json(
       {

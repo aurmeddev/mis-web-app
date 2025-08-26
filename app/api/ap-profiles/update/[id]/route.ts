@@ -47,7 +47,7 @@ export const PUT = async (
   };
 
   let validationUpdateQueryParams: { [key: string]: any } = {};
-  if (payload.fb_account_id === 0) {
+  if (payload.fb_account_id && payload.fb_account_id === 0) {
     // Remove FB Account from the AP Profile
     const { fb_account_id, ...rest } = payload;
     validationUpdateQueryParams = objUtil.removeInvalidKeys(rest);

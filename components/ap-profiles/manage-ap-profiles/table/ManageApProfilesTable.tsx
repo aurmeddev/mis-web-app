@@ -2,13 +2,12 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import {
+  Calendar,
   CircleFadingPlus,
   CircleStop,
   FileText,
-  Lock,
   SearchX,
-  ShieldCheck,
-  User,
+  User2,
 } from "lucide-react";
 import { ManageApProfilesTableHeader } from "./ManageApProfilesTableHeader";
 import { RowAddMode } from "./row-actions/RowAddMode";
@@ -30,12 +29,12 @@ type UserManagementTableProps = {
 
 function BadgeStatus({ status }: { status: string }) {
   const statusMap: Record<string, { text: string; color: string }> = {
-    "0": { text: "Inactive", color: "bg-rose-500" },
-    "1": { text: "Active", color: "bg-green-500" },
+    active: { text: "Inactive", color: "bg-rose-500" },
+    inactive: { text: "Active", color: "bg-green-500" },
   };
 
   const { text, color } = statusMap[status] || {
-    text: "New",
+    text: "Available",
     color: "bg-gray-500",
   };
 
@@ -68,34 +67,10 @@ export function ManageApProfilesTable({
     { label: "#", className: "border-r text-sm" },
     { label: "Profile", className: "border-r text-sm w-[15%]", colSpan: 1 },
     {
-      label: "Recruiters",
+      label: "FB Account",
       className: "border-r text-sm ",
       colSpan: 1,
     },
-    {
-      label: "FB Name",
-      className: "border-r text-sm ",
-      colSpan: 1,
-    },
-    {
-      label: "Username/Email",
-      icon: <User className="h-4 w-4" />,
-      className: "border-r text-sm ",
-      colSpan: 1,
-    },
-    {
-      label: "Password",
-      icon: <Lock className="h-4 w-4" />,
-      className: "border-r text-sm ",
-      colSpan: 1,
-    },
-    {
-      label: "2FA Key",
-      icon: <ShieldCheck className="h-4 w-4" />,
-      className: "border-r text-sm ",
-      colSpan: 1,
-    },
-
     {
       label: "Remarks",
       icon: <FileText className="h-4 w-4" />,
@@ -107,6 +82,18 @@ export function ManageApProfilesTable({
       icon: <CircleFadingPlus className="h-4 w-4" />,
       className: "border-r text-sm w-[10%]",
       colSpan: 2,
+    },
+    {
+      label: "Created by",
+      icon: <User2 className="h-4 w-4" />,
+      className: "border-r text-sm ",
+      colSpan: 1,
+    },
+    {
+      label: "Created at",
+      icon: <Calendar className="h-4 w-4" />,
+      className: "border-r text-sm ",
+      colSpan: 1,
     },
     {
       label: "Actions",
@@ -168,22 +155,6 @@ export function ManageApProfilesTable({
               <TableCell className="border-r text-sm">
                 {isEditing ? (
                   <Input
-                    autoFocus
-                    className="border h-8 px-2 py-0 rounded w-full"
-                    disabled={isActionDisabled}
-                    value={form.full_name}
-                    onChange={(e) =>
-                      handleInputChange("full_name", e.target.value)
-                    }
-                  />
-                ) : (
-                  rowData.fb_account.recruited_by?.full_name
-                )}
-              </TableCell>
-              <TableCell className="border-r text-sm">
-                {isEditing ? (
-                  <Input
-                    autoFocus
                     className="border h-8 px-2 py-0 rounded w-full"
                     disabled={isActionDisabled}
                     value={form.fb_owner_name}
@@ -196,63 +167,7 @@ export function ManageApProfilesTable({
                 )}
               </TableCell>
               <TableCell className="border-r text-sm">
-                {isEditing ? (
-                  <Input
-                    autoFocus
-                    className="border h-8 px-2 py-0 rounded w-full"
-                    disabled={isActionDisabled}
-                    value={form.username}
-                    onChange={(e) =>
-                      handleInputChange("username", e.target.value)
-                    }
-                  />
-                ) : (
-                  rowData.fb_account.username
-                )}
-              </TableCell>
-
-              <TableCell className="border-r text-sm">
-                {isEditing ? (
-                  <Input
-                    className="border h-8 px-2 py-0 rounded w-full"
-                    disabled={isActionDisabled}
-                    value={form.password}
-                    onChange={(e) =>
-                      handleInputChange("password", e.target.value)
-                    }
-                  />
-                ) : (
-                  rowData.fb_account.password
-                )}
-              </TableCell>
-              <TableCell className="border-r text-sm">
-                {isEditing ? (
-                  <Input
-                    className="border h-8 px-2 py-0 rounded w-full"
-                    disabled={isActionDisabled}
-                    value={form.long_2fa_key}
-                    onChange={(e) =>
-                      handleInputChange("long_2fa_key", e.target.value)
-                    }
-                  />
-                ) : (
-                  rowData.long_2fa_key
-                )}
-              </TableCell>
-
-              <TableCell className="border-r text-sm">
-                {isEditing ? (
-                  <Input
-                    className="border h-8 px-2 py-0 rounded w-full"
-                    disabled={isActionDisabled}
-                    value={form.remarks}
-                    onChange={(e) =>
-                      handleInputChange("remarks", e.target.value)
-                    }
-                  />
-                ) : (
-                  rowData.remarks
-                )}
+                {rowData.remarks}
               </TableCell>
               <TableCell
                 className="border-r font-medium py-0 text-sm"
@@ -265,10 +180,18 @@ export function ManageApProfilesTable({
                     isDisabled={isActionDisabled}
                   />
                 ) : (
-                  <BadgeStatus status={rowData.is_active} />
+                  <BadgeStatus status={rowData.status} />
                 )}
               </TableCell>
-
+              <TableCell className="border-r text-sm">
+                <div className="text-xs">{rowData.created_by.full_name}</div>
+                <div className="text-xs text-muted-foreground">
+                  {rowData.created_by.team_name}
+                </div>
+              </TableCell>
+              <TableCell className="border-r text-sm">
+                {rowData.created_at}
+              </TableCell>
               <TableCell>
                 <div className="flex justify-center gap-2 text-center">
                   <RowActions

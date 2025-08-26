@@ -43,7 +43,7 @@ export function Pagination({
         </SelectContent>
       </Select>
       <Button
-        className="cursor-pointer h-8 px-4 text-white text-xs"
+        className="cursor-pointer h-8 px-4 dark:text-white text-xs"
         disabled={currentPage <= 1 || !currentPage}
         onClick={() => handlePagination(currentPage - 1, limit)}
         variant={"outline"}
@@ -51,7 +51,7 @@ export function Pagination({
         Previous
       </Button>
       <Button
-        className="cursor-pointer h-8 px-4 text-white text-xs"
+        className="cursor-pointer h-8 px-4 dark:text-white text-xs"
         disabled={currentPage >= total_pages || !currentPage}
         onClick={() => handlePagination(currentPage + 1, limit)}
         variant={"outline"}

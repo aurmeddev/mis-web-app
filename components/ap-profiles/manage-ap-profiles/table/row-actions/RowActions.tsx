@@ -46,13 +46,13 @@ export function RowActions({
           <Pencil style={{ height: "14px", width: "14px" }} /> Edit
         </Button>
       )}
-      <Button
+      {/* <Button
         className="h-7 py-0 px-3"
         variant="outline"
         onClick={() => onEditChange(id)}
       >
         <Fingerprint className="mr-1 h-4 w-4" />
-      </Button>
+      </Button> */}
     </>
   );
 }

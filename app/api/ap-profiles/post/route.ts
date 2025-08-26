@@ -132,7 +132,7 @@ export const POST = async (request: NextRequest) => {
     const { insertId } = response;
 
     let getFbAccountInfo: any;
-    if (data.fb_account_id !== 0) {
+    if (data.fb_account_id && data.fb_account_id > 0) {
       const { data } = await fbs.find({
         searchKeyword: "validation",
         method: "find-one",

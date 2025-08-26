@@ -7,6 +7,7 @@ import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService
 import { NextResponse, NextRequest } from "next/server";
 import { ApProfilesService } from "@/lib/features/ap-profiles/ApProfilesService";
 import { FbAccountsService } from "@/lib/features/fb-accounts/FbAccountsService";
+import { DatetimeUtils } from "@/lib/utils/date/DatetimeUtils";
 export const POST = async (request: NextRequest) => {
   // Check if the user session is valid before processing the request
   // const session = await getSession();
@@ -122,16 +123,34 @@ export const POST = async (request: NextRequest) => {
 
   // Execute the query to insert data into the database
   try {
-    await query({
+    const response: any = await query({
       query: queryString,
       values: values,
     });
 
+    const dateUtils = new DatetimeUtils();
+    const { insertId } = response;
+    const result = [
+      {
+        id: insertId,
+        fb_account_id: 0,
+        profile_name: data.profile_name,
+        remarks: data.remarks || null,
+        status: "available",
+        created_by: {
+          full_name: "SUPER ADMIN",
+          team_name: "Management Team",
+        },
+        created_at: dateUtils.formatDateTime(
+          dateUtils.convertToUTC8(await getServerCurrentDatetime())
+        ),
+      },
+    ];
     return NextResponse.json(
       {
         isSuccess: true,
         message: "Data have been submitted successfully.",
-        data: [],
+        data: result,
       },
       { status: 201 }
     );
@@ -146,4 +165,12 @@ export const POST = async (request: NextRequest) => {
       { status: 500 }
     );
   }
+};
+
+const getServerCurrentDatetime = async () => {
+  const date: any = await query({
+    query: "SELECT CURRENT_TIMESTAMP AS date_now;",
+    values: [],
+  });
+  return date[0].date_now;
 };

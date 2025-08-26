@@ -11,6 +11,7 @@ import { OtpGeneratorService } from "@/lib/features/security/otp-generator/OtpGe
 import { GeneratorCardLoading } from "./GeneratorCardLoading";
 import { SearchQuery } from "./type";
 import { GeneratorSearchResults } from "./search/GeneratorSearchResults";
+import { SearchInput } from "../search/SearchInput";
 
 export function GeneratorContainer() {
   const profilesService = new ApProfilesService();
@@ -90,24 +91,12 @@ export function GeneratorContainer() {
       </div>
       <div className="flex flex-col gap-10">
         <div className="relative max-w-xs w-[25%]">
-          <Input
-            autoComplete=""
-            className="pr-8"
-            name="search"
-            value={searchQuery.query}
-            onChange={handleSearchQueryChange}
-            onFocus={handleSearchFocus}
+          <SearchInput
+            searchQuery={searchQuery}
+            onSearchQueryChange={handleSearchQueryChange}
+            onSearchFocus={handleSearchFocus}
             placeholder="Search profile"
-            disabled={searchQuery.isSearching}
           />
-
-          <div className="absolute right-2 top-1/2 -translate-y-1/2">
-            {searchQuery.isSearching ? (
-              <ReloadIcon className="h-4 w-4 animate-spin stroke-primary stroke-1" />
-            ) : (
-              <SearchIcon className="text-muted-foreground w-5" />
-            )}
-          </div>
 
           {showResults && (
             <SearchResult setShowResults={setShowResults}>

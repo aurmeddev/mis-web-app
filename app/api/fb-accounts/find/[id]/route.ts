@@ -3,6 +3,7 @@ import { SearchKeywordService } from "@/lib/features/search-keyword/SearchKeywor
 import { CryptoServerService } from "@/lib/features/security/cryptography/CryptoServerService";
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { DatetimeUtils } from "@/lib/utils/date/DatetimeUtils";
+import { ObjectUtils } from "@/lib/utils/object/ObjectUtils";
 import { NextResponse, NextRequest } from "next/server";
 export const POST = async (
   request: NextRequest,
@@ -75,6 +76,7 @@ export const POST = async (
 
     const cipher = new CryptoServerService();
     const dateUtils = new DatetimeUtils();
+    const objUtils = new ObjectUtils();
     const formattedResponse = await Promise.all(
       response.map(async (item: any) => {
         const {
@@ -93,9 +95,11 @@ export const POST = async (
           rest.app_2fa_key = isSuccess ? encryptedData : message;
         }
 
-        rest.ap_profile.created_at = dateUtils.formatDateTime(
-          dateUtils.convertToUTC8(rest.ap_profile.created_at)
-        );
+        if (objUtils.isValidObject(rest.ap_profile)) {
+          rest.ap_profile.created_at = dateUtils.formatDateTime(
+            dateUtils.convertToUTC8(rest.ap_profile.created_at)
+          );
+        }
 
         return {
           ...rest,

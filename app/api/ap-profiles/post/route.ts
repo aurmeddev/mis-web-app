@@ -133,9 +133,10 @@ export const POST = async (request: NextRequest) => {
     const result = [
       {
         id: insertId,
-        fb_account_id: 0,
+        fb_account_id: data.fb_account_id || 0,
         profile_name: data.profile_name,
         remarks: data.remarks || null,
+        fb_account: {},
         status: "available",
         created_by: {
           full_name: "SUPER ADMIN",

@@ -8,6 +8,7 @@ import { SearchInput } from "../search/SearchInput";
 import { ManageApProfilesDialog } from "../dialog/ManageApProfilesDialog";
 import { useRouter } from "next/navigation";
 import { Pagination } from "@/components/pagination/route-based/Pagination";
+import { SearchResult } from "@/components/search/SearchResult";
 
 type ManageApProfilesTableContainerProps = {
   response: any;
@@ -262,6 +263,9 @@ export function ManageApProfilesTableContainer({
           onSearch={handleSearch}
           isSearching={isSearching}
         />
+        <SearchResult setShowResults={() => {}}>
+          <div></div>
+        </SearchResult>
       </div>
       <ScrollArea className="h-[75dvh] mt-4">
         <ManageApProfilesTable

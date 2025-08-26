@@ -39,6 +39,7 @@ export const POST = async (request: NextRequest) => {
   const data: PostApProfilesProps = await request.json();
   const objUtil = new ObjectUtils();
   const aps = new ApProfilesService();
+  const fbs = new FbAccountsService();
   const validationPostQueryParams = objUtil.removeInvalidKeys({
     profile_name: data.profile_name,
     fb_account_id: data.fb_account_id,
@@ -82,7 +83,6 @@ export const POST = async (request: NextRequest) => {
     payload = { ...payload, is_active: 1 }; // Set the status to active if fb_account_id is provided
 
     // Validate if the assigned fb_account_id exists in FB Accounts db table
-    const fbs = new FbAccountsService();
     const validationResponse = await fbs.find({
       searchKeyword: "validation",
       method: "find-one",
@@ -130,13 +130,25 @@ export const POST = async (request: NextRequest) => {
 
     const dateUtils = new DatetimeUtils();
     const { insertId } = response;
+
+    let getFbAccountInfo: any;
+    if (data.fb_account_id !== 0) {
+      const { data } = await fbs.find({
+        searchKeyword: "validation",
+        method: "find-one",
+        dynamicSearchPayload: { id: payload.fb_account_id },
+      });
+
+      getFbAccountInfo = data[0];
+    }
+
     const result = [
       {
         id: insertId,
         fb_account_id: data.fb_account_id || 0,
         profile_name: data.profile_name,
         remarks: data.remarks || null,
-        fb_account: {},
+        fb_account: getFbAccountInfo || {},
         status: "available",
         created_by: {
           full_name: "SUPER ADMIN",

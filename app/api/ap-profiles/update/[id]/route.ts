@@ -52,9 +52,10 @@ export const PUT = async (
     const { fb_account_id, ...rest } = payload;
     validationUpdateQueryParams = objUtil.removeInvalidKeys(rest);
     validationUpdateQueryParams.fb_account_id = fb_account_id;
-    validationUpdateQueryParams.is_active = 0;
+    validationUpdateQueryParams.is_active = 0; // Set status to inactive or available
   } else {
     validationUpdateQueryParams = objUtil.removeInvalidKeys(payload);
+    validationUpdateQueryParams.is_active = 1; // Set status to active
   }
 
   const mysqlUtils = new MySqlUtils();

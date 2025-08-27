@@ -52,7 +52,7 @@ export const PUT = async (
     const { fb_account_id, ...rest } = payload;
     validationUpdateQueryParams = objUtil.removeInvalidKeys(rest);
     validationUpdateQueryParams.fb_account_id = fb_account_id;
-    validationUpdateQueryParams.is_active = 0; // Set status to inactive or available
+    validationUpdateQueryParams.is_active = 0; // Set status to available
   } else {
     validationUpdateQueryParams = objUtil.removeInvalidKeys(payload);
     validationUpdateQueryParams.is_active = 1; // Set status to active
@@ -73,11 +73,22 @@ export const PUT = async (
       query: queryString,
       values: values,
     });
+
+    const response = [
+      {
+        fb_account_id: prop.fb_account_id,
+        status:
+          payload.fb_account_id === 0 &&
+          validationUpdateQueryParams.is_active === 0
+            ? "available"
+            : "active",
+      },
+    ];
     return NextResponse.json(
       {
         isSuccess: true,
         message: "Data have been updated successfully.",
-        data: [],
+        data: response,
       },
       { status: 201 }
     );

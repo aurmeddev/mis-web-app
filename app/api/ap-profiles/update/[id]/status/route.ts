@@ -22,7 +22,7 @@ export const PUT = async (
   const apProfileId = `${(await params).id}`;
   const data: ToggleApProfilesStatusProps = await request.json();
   const { is_active } = data;
-  if (is_active < 0 || is_active >= 1) {
+  if (is_active < 0 || is_active > 1) {
     return NextResponse.json(
       {
         isSuccess: false,
@@ -54,7 +54,11 @@ export const PUT = async (
         message: `AP Profile has been ${
           is_active ? "activated" : "deactivated"
         } successfully.`,
-        data: [],
+        data: [
+          {
+            status: is_active ? "active" : "inactive",
+          },
+        ],
       },
       { status: 201 }
     );

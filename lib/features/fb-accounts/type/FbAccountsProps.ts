@@ -3,29 +3,45 @@ import { BaseSearchKeywordProps } from "../../search-keyword/type/SearchKeywordP
 
 type BaseFbAccountsProps = {
   id: number; // auto-incremented in the database
-  fb_owner_name: string;
+  fb_owner_name: string; // required
   recruited_by:
     | {
         full_name: string;
         team_name: string;
       }
     | number;
-  contact_no: string;
-  email_address: string;
-  username: string;
-  password: string;
-  app_2fa_key: string;
-  marketing_api_access_token: string;
-  recovery_code: string;
-  fb_owner_account_created: Date;
-  no_of_friends: number;
-  fb_account_quality_status_id: number;
+  contact_no?: string;
+  email_address?: string;
+  username: string; // required
+  password: string; // required
+  app_2fa_key?: string;
+  marketing_api_access_token?: string;
+  recovery_code?: string;
+  fb_owner_account_created?: Date;
+  no_of_friends?: number;
+  fb_account_quality_type_id?: number;
   created_at: Date; // auto-generated in the database
 };
 
 type PostFbAccountsProps = Omit<
   BaseFbAccountsProps,
-  "id" | "recruited_by" | "created_at" | "fb_account_quality_status_id"
+  "id" | "recruited_by" | "created_at" | "fb_account_quality_type_id"
+>;
+
+type ToggleFbAccountQualityStatusProps = Omit<
+  BaseFbAccountsProps,
+  | "fb_owner_name"
+  | "recruited_by"
+  | "contact_no"
+  | "email_address"
+  | "username"
+  | "password"
+  | "app_2fa_key"
+  | "marketing_api_access_token"
+  | "recovery_code"
+  | "fb_owner_account_created"
+  | "no_of_friends"
+  | "created_at"
 >;
 
 type PostRecoveryCodesProps = {
@@ -45,4 +61,5 @@ export type {
   PostRecoveryCodesProps,
   GetAllFbAccountsProps,
   FindFbAccountsProps,
+  ToggleFbAccountQualityStatusProps,
 };

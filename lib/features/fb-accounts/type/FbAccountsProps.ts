@@ -28,6 +28,11 @@ type PostFbAccountsProps = Omit<
   "id" | "recruited_by" | "created_at" | "fb_account_quality_type_id"
 >;
 
+type UpdateFbAccountsProps = Omit<
+  BaseFbAccountsProps,
+  "recruited_by" | "created_at" | "fb_account_quality_type_id"
+>;
+
 type ToggleFbAccountQualityStatusProps = Omit<
   BaseFbAccountsProps,
   | "fb_owner_name"
@@ -62,4 +67,5 @@ export type {
   GetAllFbAccountsProps,
   FindFbAccountsProps,
   ToggleFbAccountQualityStatusProps,
+  UpdateFbAccountsProps,
 };

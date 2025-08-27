@@ -1,6 +1,7 @@
 import { query } from "@/database/dbConnection";
 import { ApProfilesService } from "@/lib/features/ap-profiles/ApProfilesService";
 import { UpdateApProfilesProps } from "@/lib/features/ap-profiles/type/ApProfilesProps";
+import { FbAccountsService } from "@/lib/features/fb-accounts/FbAccountsService";
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { MySqlUtils } from "@/lib/utils/mysql/MySqlUtils";
 import { ObjectUtils } from "@/lib/utils/object/ObjectUtils";
@@ -74,9 +75,22 @@ export const PUT = async (
       values: values,
     });
 
+    const fbs = new FbAccountsService();
+    let getFbAccountInfo: any;
+    if (prop.fb_account_id && prop.fb_account_id > 0) {
+      const { data } = await fbs.find({
+        searchKeyword: "validation",
+        method: "find-one",
+        dynamicSearchPayload: { id: prop.fb_account_id },
+      });
+
+      getFbAccountInfo = data[0];
+    }
+
     const response = [
       {
         fb_account_id: prop.fb_account_id,
+        fb_account: getFbAccountInfo || {},
         status:
           payload.fb_account_id === 0 &&
           validationUpdateQueryParams.is_active === 0

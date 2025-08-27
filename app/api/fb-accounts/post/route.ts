@@ -68,7 +68,7 @@ export const POST = async (request: NextRequest) => {
       {
         isSuccess: false,
         message:
-          "The FB account information (fb owner name, contact number, email address and username) you provided already exists. Please check and try again.",
+          "The FB account information you provided already exists. Please check and try again.",
         data: [],
       },
       { status: 409 }

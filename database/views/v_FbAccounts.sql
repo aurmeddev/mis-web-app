@@ -18,6 +18,7 @@ SELECT
   END) AS age_of_fb,
   fb.no_of_friends,
   (CONCAT(
+    COALESCE((SELECT ap.profile_name FROM `Ap_Profiles` AS ap WHERE fb.id=ap.fb_account_id),''),' ',
     COALESCE(fb.fb_owner_name,''),' ',
 	  COALESCE(fb.contact_no,''), ' ',
     COALESCE(fb.email_address,''), ' ',

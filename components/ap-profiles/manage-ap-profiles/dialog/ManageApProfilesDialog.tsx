@@ -20,15 +20,15 @@ import { FbAccountsService } from "@/lib/features/fb-accounts/FbAccountsService"
 import { ManageApProfilesSearchResults } from "../search/ManageApProfilesSearchResults";
 import { Loader2, X } from "lucide-react";
 import { ApProfilesService } from "@/lib/features/ap-profiles/ApProfilesService";
+import { toast } from "sonner";
 
 type ConfirmDialogProps = {
   form: any;
   open: boolean;
   setOpen: (open: boolean) => void;
-  editingRow: number | null;
+  editingData: any;
   handleSubmit: (ev: any) => void;
-  handleEditChange: (id: number | null) => void;
-  handleInputChange: (name: string, value: string) => void;
+  handleInputChange: (name: string, value: string | number) => void;
   handleStatusChange: (value: string) => void;
   isActionDisabled: boolean;
 };
@@ -37,6 +37,7 @@ export function ManageApProfilesDialog({
   form,
   open,
   setOpen,
+  editingData,
   handleSubmit,
   handleInputChange,
   handleStatusChange,
@@ -97,7 +98,32 @@ export function ManageApProfilesDialog({
     setShowResults(false);
   };
 
-  const handleRemoveSelected = () => {
+  const handleRemoveSelected = async () => {
+    console.log("searchQuery ", searchQuery);
+    const payload: any = { id: editingData.id, fb_account_id: 0 };
+    const { isSuccess, message } = await profilesService.update(payload);
+    if (!isSuccess) {
+      toast.error(message);
+      return;
+    }
+    setSearchQuery((prevState: any) => ({
+      ...prevState,
+      query: "",
+      result: {
+        data: [],
+      },
+      selectedResult: null,
+    }));
+    handleInputChange("fb_account_id", 0);
+    setShowResults(false);
+  };
+
+  const handleProfileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    handleInputChange("profile_name", e.target.value);
+    handleProfileDebounce(e.target.value);
+  };
+
+  const handleClose = () => {
     setSearchQuery((prevState: any) => ({
       ...prevState,
       query: "",
@@ -109,15 +135,6 @@ export function ManageApProfilesDialog({
     setShowResults(false);
   };
 
-  const handleClose = () => {
-    handleRemoveSelected();
-  };
-
-  const handleProfileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    handleInputChange("profile_name", e.target.value);
-    handleProfileDebounce(e.target.value);
-  };
-
   useEffect(() => {
     if (searchQuery.query) {
       handleSearchDebounce(searchQuery.query);
@@ -125,8 +142,20 @@ export function ManageApProfilesDialog({
   }, [searchQuery.query]);
 
   useEffect(() => {
-    if (open) handleRemoveSelected();
+    if (open) handleClose();
   }, [open]);
+
+  useEffect(() => {
+    const fbAccount = editingData.fb_account;
+    const validFbAccount =
+      !fbAccount || Object.keys(fbAccount).length !== 0 ? fbAccount : null;
+    setSearchQuery((prevState: any) => ({
+      ...prevState,
+      selectedResult: validFbAccount,
+    }));
+  }, [editingData]);
+
+  const isUpdateMode = Object.keys(editingData).length >= 1;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -137,9 +166,12 @@ export function ManageApProfilesDialog({
         showCloseButton={false}
       >
         <DialogHeader>
-          <DialogTitle>New Profile Form</DialogTitle>
+          <DialogTitle>
+            {isUpdateMode ? "Update" : "New"} Profile Form
+          </DialogTitle>
           <DialogDescription>
-            Fill out the form below to create a new profile.
+            Fill out the form below to{" "}
+            {isUpdateMode ? "update" : "create a new"} profile.
           </DialogDescription>
           <DialogClose className="absolute right-4 top-4 rounded-sm opacity-70 transition-opacity hover:opacity-100 cursor-pointer">
             <X className="h-4 w-4" />
@@ -200,13 +232,13 @@ export function ManageApProfilesDialog({
                     </svg>
                   </div>
                   <div className="text-sm">
-                    {searchQuery.selectedResult.fb_owner_name ||
-                      "FB Account Selected"}
+                    {searchQuery.selectedResult.fb_owner_name}
                   </div>
                   <Button
                     variant={"ghost"}
                     className="bg-transparent cursor-pointer h-3 rounded w-3 text-muted-foreground"
                     onClick={handleRemoveSelected}
+                    type="button"
                   >
                     <X />
                   </Button>
@@ -228,7 +260,7 @@ export function ManageApProfilesDialog({
             <Textarea
               className="border h-8 px-2 py-1 rounded w-full"
               disabled={isActionDisabled}
-              value={form.remarks}
+              value={form.remarks || ""}
               onChange={(e) => handleInputChange("remarks", e.target.value)}
             />
           </div>
@@ -247,7 +279,7 @@ export function ManageApProfilesDialog({
               type="submit"
               disabled={isActionDisabled || isExisting}
             >
-              Save
+              {isActionDisabled ? "Saving..." : "Save"}
             </Button>
           </DialogFooter>
         </form>

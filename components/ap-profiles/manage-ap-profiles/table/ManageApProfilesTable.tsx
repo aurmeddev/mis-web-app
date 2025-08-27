@@ -6,21 +6,19 @@ import {
   CircleFadingPlus,
   CircleStop,
   FileText,
+  Pencil,
   SearchX,
   User2,
 } from "lucide-react";
 import { ManageApProfilesTableHeader } from "./ManageApProfilesTableHeader";
-import { RowAddMode } from "./row-actions/RowAddMode";
 import { Input } from "@/components/ui/input";
 import { StatusSelect } from "../select/StatusSelect";
-import { RowActions } from "./row-actions/RowActions";
+import { Button } from "@/components/ui/button";
 
 type UserManagementTableProps = {
   data: any;
   form: any;
-  addMode: boolean;
   editingRow: number | null;
-  handleConfirm: (id: number) => void;
   handleEditChange: (id: number | null) => void;
   handleInputChange: (name: string, value: string) => void;
   handleStatusChange: (value: string) => void;
@@ -29,8 +27,8 @@ type UserManagementTableProps = {
 
 function BadgeStatus({ status }: { status: string }) {
   const statusMap: Record<string, { text: string; color: string }> = {
-    active: { text: "Inactive", color: "bg-rose-500" },
-    inactive: { text: "Active", color: "bg-green-500" },
+    inactive: { text: "Inactive", color: "bg-rose-500" },
+    active: { text: "Active", color: "bg-green-500" },
   };
 
   const { text, color } = statusMap[status] || {
@@ -55,9 +53,7 @@ function BadgeStatus({ status }: { status: string }) {
 export function ManageApProfilesTable({
   data,
   form,
-  addMode,
   editingRow,
-  handleConfirm,
   handleEditChange,
   handleInputChange,
   handleStatusChange,
@@ -106,17 +102,6 @@ export function ManageApProfilesTable({
     <Table className="border-t border-r-0 table-auto">
       <ManageApProfilesTableHeader headers={tableHeaders} />
       <TableBody>
-        {addMode && (
-          <RowAddMode
-            form={form}
-            handleConfirm={handleConfirm}
-            onInputChange={handleInputChange}
-            onStatusChange={handleStatusChange}
-            handleEditChange={handleEditChange}
-            isActionDisabled={isActionDisabled}
-          />
-        )}
-
         {!data?.length && (
           <TableRow className="bg-muted">
             <TableCell className="py-0 text-center" colSpan={11}>
@@ -194,13 +179,14 @@ export function ManageApProfilesTable({
               </TableCell>
               <TableCell>
                 <div className="flex justify-center gap-2 text-center">
-                  <RowActions
-                    id={rowData.id}
-                    isEditing={isEditing}
-                    onConfirm={handleConfirm}
-                    onEditChange={handleEditChange}
-                    isActionDisabled={isActionDisabled}
-                  />
+                  <Button
+                    className="cursor-pointer h-7 py-0 px-3"
+                    variant="outline"
+                    onClick={() => handleEditChange(rowData.id)}
+                    disabled={isActionDisabled}
+                  >
+                    <Pencil style={{ height: "14px", width: "14px" }} /> Edit
+                  </Button>
                 </div>
               </TableCell>
             </TableRow>

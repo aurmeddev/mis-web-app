@@ -40,8 +40,7 @@ export function ManageApProfilesTableContainer({
     }
   };
 
-  const [editingRow, setEditingRow] = useState<number | null>(null);
-  const [isAddingNew, setIsAddingNew] = useState(false);
+  const [editingData, setEditingData] = useState<any>({});
   const [form, setForm] = useState<ProfileForm>({
     profile_name: "",
     fb_account_id: undefined,
@@ -63,7 +62,7 @@ export function ManageApProfilesTableContainer({
     setTableData(response.data);
   }, [response.data]);
 
-  const handleInputChange = (name: string, value: string) => {
+  const handleInputChange = (name: string, value: string | number) => {
     setForm((prevState: any) => ({
       ...prevState,
       [name]: value,
@@ -71,55 +70,90 @@ export function ManageApProfilesTableContainer({
   };
 
   const handleStatusChange = (value: string) => {
-    const selectedRecord = tableData.find(
-      (record: any) => record.id === editingRow
-    );
-    const originalValue = String(selectedRecord?.is_active);
-    setForm((prevState: any) => ({
-      ...prevState,
-      is_active: value,
-    }));
-    // Detect if the value is actually different from original
-    setHasStatusChanged(value !== originalValue);
+    // const selectedRecord = tableData.find(
+    //   (record: any) => record.id === editingRow
+    // );
+    // const originalValue = String(selectedRecord?.is_active);
+    // setForm((prevState: any) => ({
+    //   ...prevState,
+    //   is_active: value,
+    // }));
+    // // Detect if the value is actually different from original
+    // setHasStatusChanged(value !== originalValue);
+  };
+
+  const buildPayload = () => {
+    if (!editingData) return {};
+
+    const payload: any = {};
+
+    if (form.profile_name !== editingData.profile_name) {
+      payload.profile_name = form.profile_name;
+    }
+
+    if (form.fb_account_id !== editingData.fb_account?.id) {
+      payload.fb_account_id = form.fb_account_id;
+    }
+
+    if (form.remarks !== editingData.remarks) {
+      payload.remarks = form.remarks;
+    }
+
+    return payload;
   };
 
   const handleSubmit = async (ev: any) => {
     ev.preventDefault();
 
+    const payload = buildPayload();
+    // if (Object.keys(payload).length === 0) {
+    //   toast.info("No changes detected");
+    //   return;
+    // }
+
     setIsSubmitInProgress(true);
-    const payload: ProfileForm = {
-      profile_name: form.profile_name,
-      fb_account_id: form.fb_account_id,
-      remarks: form.remarks,
-    };
-    const response = await profilesService.post(payload);
+    const isUpdateMode = Object.keys(editingData).length >= 1;
+
+    const response = isUpdateMode
+      ? await profilesService.update({ id: editingData.id, ...payload })
+      : await profilesService.post(payload);
     setIsSubmitInProgress(false);
     if (!response.isSuccess) {
-      toast.error(response.message);
+      showToast(false, response.message);
       return setOpen(false);
     }
 
-    handleNewEntry(response);
-    toast.success(response.message);
+    if (isUpdateMode) {
+      handleUpdateEntry(response, payload);
+    } else {
+      handleNewEntry(response);
+    }
+    showToast(true, response.message);
     setOpen(false);
   };
 
   const handleNewEntry = (response: ApiResponseProps) => {
     const { data } = response;
+    const createdBy = data[0].created_by;
     const updatedForm = {
+      id: data[0].id,
       row_id: 1,
       profile_name: form.profile_name,
       fb_account: {
-        fb_owner_name: "",
+        fb_owner_name: data[0].fb_account.fb_owner_name,
       },
       created_by: {
-        full_name: data[0].created_by.full_name,
-        team_name: data[0].created_by.team_name,
+        full_name: createdBy.full_name,
+        team_name: createdBy.team_name,
       },
       created_at: data[0].created_at,
       remarks: form.remarks,
       status: data[0].status,
     };
+
+    if (!Object.keys(data[0].fb_account).length) {
+      updatedForm["fb_account"] = {} as any;
+    }
 
     setTableData((prevData: any[]) => [
       updatedForm,
@@ -128,52 +162,43 @@ export function ManageApProfilesTableContainer({
         row_id: row.row_id + 1, // increment each old row_id by 1
       })),
     ]);
+    setForm({ profile_name: "", fb_account_id: undefined, remarks: "" });
   };
 
-  // const handleUpdateEntry = () => {
-  //   setTableData((prevData: ManageApProfilesRecordRaw[]) =>
-  //     prevData.map((item) =>
-  //       item.id === form.id
-  //         ? { ...item, ...form, is_active: Number(form.is_active) }
-  //         : item
-  //     )
-  //   );
+  const handleUpdateEntry = (response: ApiResponseProps, payload: any) => {
+    setTableData((prevData: any[]) =>
+      prevData.map((item) => {
+        const hasOnlyRemarks =
+          Object.keys(payload).length === 1 && "remarks" in payload;
 
-  //   setEditingRow(null);
-  // };
+        console.log(hasOnlyRemarks);
+        const output =
+          item.id === editingData.id
+            ? {
+                ...item,
+                ...form,
+                fb_account: hasOnlyRemarks
+                  ? item.fb_account
+                  : response.data[0].fb_account,
+                status: response.data[0].status,
+              }
+            : item;
+        return output;
+      })
+    );
+    setForm({ profile_name: "", fb_account_id: undefined, remarks: "" });
+  };
 
   const handleEditChange = (id: number | null) => {
-    // if (id === null) {
-    //   setIsAddingNew(false);
-    // }
-    // const selectedWhitelistData = response.data.find(
-    //   (data: { id: number }) => data.id === id
-    // );
-    // setEditingRow(id);
-    // if (selectedWhitelistData) {
-    //   setForm(selectedWhitelistData);
-    // }
+    const selectedProfile = tableData.find(
+      (data: { id: number }) => data.id === id
+    );
+    setEditingData(selectedProfile);
+    if (selectedProfile) {
+      setForm(selectedProfile);
+      setOpen(true);
+    }
   };
-
-  // const hasInputChanged = () => {
-  //   if (isAddingNew) return true;
-  //   const selectedRecord = tableData.find(
-  //     (record: ManageApProfilesRecordRaw) => record.id === editingRow
-  //   );
-
-  //   if (selectedRecord) {
-  //     const ip_address = selectedRecord["ip_address"];
-  //     const name = selectedRecord["name"];
-  //     const is_active = selectedRecord["is_active"];
-
-  //     const hasChanged =
-  //       ip_address !== form?.profile_name ||
-  //       name !== form?.fb_account_id ||
-  //       is_active !== form?.remarks;
-  //     return hasChanged;
-  //   }
-  //   return false;
-  // };
 
   const handlePagination = (page: number, limit: number) => {
     router.push(`?page=${page}&limit=${limit}`);
@@ -184,9 +209,16 @@ export function ManageApProfilesTableContainer({
   const limit = response.pagination?.limit || 10;
 
   const handleNewProfile = () => {
+    setEditingData({});
     setForm({ profile_name: "", fb_account_id: undefined, remarks: "" });
     setOpen(true);
   };
+
+  useEffect(() => {
+    if (!open) {
+      setEditingData({});
+    }
+  }, [open]);
 
   return (
     <>
@@ -194,9 +226,8 @@ export function ManageApProfilesTableContainer({
         form={form}
         open={open}
         setOpen={setOpen}
-        editingRow={editingRow}
+        editingData={editingData}
         handleSubmit={handleSubmit}
-        handleEditChange={handleEditChange}
         handleInputChange={handleInputChange}
         handleStatusChange={handleStatusChange}
         isActionDisabled={isSubmitInProgress}
@@ -230,9 +261,7 @@ export function ManageApProfilesTableContainer({
         <ManageApProfilesTable
           form={form}
           data={tableData}
-          addMode={isAddingNew}
-          editingRow={editingRow}
-          handleConfirm={() => {}}
+          editingRow={editingData}
           handleEditChange={handleEditChange}
           handleInputChange={handleInputChange}
           handleStatusChange={handleStatusChange}

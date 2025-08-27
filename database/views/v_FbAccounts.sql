@@ -10,9 +10,11 @@ SELECT
   fb.recovery_code,
   fb.fb_owner_account_created,
   (CASE
-	  WHEN TIMESTAMPDIFF(MONTH, fb.fb_owner_account_created, CURDATE()) <= 3 THEN 'NEW'
-	  WHEN TIMESTAMPDIFF(MONTH, fb.fb_owner_account_created, CURDATE()) >= 12  THEN 'AGED'
-    ELSE 'OLD'
+	  WHEN TIMESTAMPDIFF(MONTH, COALESCE(fb.fb_owner_account_created,''), CURDATE()) <= 3 THEN 'NEW'
+	  WHEN TIMESTAMPDIFF(MONTH, COALESCE(fb.fb_owner_account_created,''), CURDATE()) > 3
+      AND TIMESTAMPDIFF(MONTH, COALESCE(fb.fb_owner_account_created,''), CURDATE()) <= 11 THEN 'OLD'
+	  WHEN TIMESTAMPDIFF(MONTH, COALESCE(fb.fb_owner_account_created,''), CURDATE()) >= 12 THEN 'AGED'
+    ELSE 'The FB account creation date is missing.'
   END) AS age_of_fb,
   fb.no_of_friends,
   (CONCAT(

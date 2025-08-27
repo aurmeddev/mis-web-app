@@ -92,7 +92,7 @@ export const PUT = async (
         fb_account_id: prop.fb_account_id,
         fb_account: getFbAccountInfo || {},
         status:
-          payload.fb_account_id === 0 &&
+          prop.fb_account_id === 0 &&
           validationUpdateQueryParams.is_active === 0
             ? "available"
             : "active",

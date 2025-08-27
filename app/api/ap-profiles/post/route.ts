@@ -149,7 +149,7 @@ export const POST = async (request: NextRequest) => {
         profile_name: data.profile_name,
         remarks: data.remarks || null,
         fb_account: getFbAccountInfo || {},
-        status: "available",
+        status: isFbAccountIdProvided ? "active" : "available",
         created_by: {
           full_name: "SUPER ADMIN",
           team_name: "Management Team",

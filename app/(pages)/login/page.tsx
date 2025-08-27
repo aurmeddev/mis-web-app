@@ -8,9 +8,9 @@ export default async function Page() {
   if (session) {
     const { team_name } = session.user;
     if (team_name === "Traffic Team") {
-      return redirect("/2fa-generator");
+      return redirect("/otp-generator/facebook");
     }
-    return redirect("/ap-profiles/manage-ap-profiles");
+    return redirect("/accounts/ap-profiles");
   }
   return (
     <LoginPageContainer>

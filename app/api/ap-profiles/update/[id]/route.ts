@@ -1,6 +1,7 @@
 import { query } from "@/database/dbConnection";
 import { ApProfilesServerService } from "@/lib/features/ap-profiles/ApProfilesServerService";
 import { UpdateApProfilesProps } from "@/lib/features/ap-profiles/type/ApProfilesProps";
+import { FbAccountsServerService } from "@/lib/features/fb-accounts/FbAccountsServerService";
 import { FbAccountsService } from "@/lib/features/fb-accounts/FbAccountsService";
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { MySqlUtils } from "@/lib/utils/mysql/MySqlUtils";
@@ -84,31 +85,37 @@ export const PUT = async (
       values: values,
     });
 
-    const fbs = new FbAccountsService();
     let getFbAccountInfo: any;
     if (prop.fb_account_id && prop.fb_account_id > 0) {
+      const fbs = new FbAccountsServerService();
+      const customSearchParams = new URLSearchParams();
+      customSearchParams.set("method", "find-one");
       const { data } = await fbs.find({
         searchKeyword: "validation",
-        method: "find-one",
-        dynamicSearchPayload: { id: prop.fb_account_id },
+        requestUrlSearchParams: customSearchParams,
+        payload: { id: prop.fb_account_id },
       });
 
       getFbAccountInfo = data[0];
     }
 
+    const hasReassignedFbAccount =
+      prop.fb_account_id === 0 && validationUpdateQueryParams.is_active === 0;
+    const hasAssignedFbAccount =
+      prop.fb_account_id &&
+      prop.fb_account_id > 0 &&
+      validationUpdateQueryParams.is_active === 1;
+    const hasUpdatedRemarks = validationUpdateQueryParams.remarks !== undefined;
+
     const response = [
       {
         fb_account_id: prop.fb_account_id,
         fb_account: getFbAccountInfo || {},
-        status:
-          prop.fb_account_id === 0 &&
-          validationUpdateQueryParams.is_active === 0
-            ? "available"
-            : prop.fb_account_id &&
-              prop.fb_account_id > 0 &&
-              validationUpdateQueryParams.is_active === 1
-            ? "active"
-            : "inactive",
+        status: hasReassignedFbAccount
+          ? "available"
+          : hasAssignedFbAccount || hasUpdatedRemarks
+          ? "active"
+          : "inactive",
       },
     ];
     return NextResponse.json(

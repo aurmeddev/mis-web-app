@@ -13,9 +13,11 @@ import { ApiResponseProps } from "@/database/dbConnection";
 import { useDebouncedCallback } from "use-debounce";
 import { ApProfilesSearchResults } from "../search/ApProfilesSearchResults";
 import { SearchWrapper } from "../search/SearchWrapper";
+import { Profile } from "../type";
+import { PaginationProps } from "@/lib/utils/pagination/type/PaginationProps";
 
 type ManageApProfilesTableContainerProps = {
-  response: any;
+  response: ApiResponseProps & { pagination?: PaginationProps };
 };
 
 type Pagination = { page: number; limit: number };
@@ -40,24 +42,24 @@ export function ManageApProfilesTableContainer({
     }
   };
 
-  const [editingData, setEditingData] = useState<any>({});
+  const [editingData, setEditingData] = useState<Partial<Profile>>({});
   const [form, setForm] = useState<ProfileForm>({
     profile_name: "",
     fb_account_id: undefined,
     remarks: "",
   });
-  const [tableData, setTableData] = useState<any>(response.data);
+  const [tableData, setTableData] = useState<Profile[]>(response.data);
   const [open, setOpen] = useState(false);
   const [canSave, setCanSave] = useState(false);
   const [isSubmitInProgress, setIsSubmitInProgress] = useState(false);
   const [hasStatusChanged, setHasStatusChanged] = useState(false);
+  const [showResults, setShowResults] = useState(false);
   const [searchQuery, setSearchQuery] = useState<SearchQuery>({
     query: "",
     isSearching: false,
     result: { data: [], isSuccess: false, message: "" },
     selectedResult: null,
   });
-  const [showResults, setShowResults] = useState(false);
 
   useEffect(() => {
     setTableData(response.data);
@@ -109,21 +111,14 @@ export function ManageApProfilesTableContainer({
     }
   };
 
-  const handleSelectItem = (item: any) => {
+  const handleSelectItem = (item: Profile) => {
     setSearchQuery((prevState: any) => ({
       ...prevState,
       query: "",
       selectedResult: item,
     }));
 
-    setTableData((prevData: any[]) => {
-      const output = prevData.filter((data) => {
-        if (!item) return;
-        return data.id === item.id;
-      });
-      return output;
-    });
-
+    setTableData([item]);
     setShowResults(false);
   };
 
@@ -151,11 +146,6 @@ export function ManageApProfilesTableContainer({
     ev.preventDefault();
 
     const payload = buildPayload();
-    // if (Object.keys(payload).length === 0) {
-    //   toast.info("No changes detected");
-    //   return;
-    // }
-
     setIsSubmitInProgress(true);
     const isUpdateMode = Object.keys(editingData).length >= 1;
 
@@ -236,7 +226,7 @@ export function ManageApProfilesTableContainer({
   const handleEditChange = (id: number | null) => {
     const selectedProfile = tableData.find(
       (data: { id: number }) => data.id === id
-    );
+    ) as any;
     setEditingData(selectedProfile);
     if (selectedProfile) {
       setForm(selectedProfile);
@@ -266,8 +256,6 @@ export function ManageApProfilesTableContainer({
     setForm({ profile_name: "", fb_account_id: undefined, remarks: "" });
     setOpen(true);
   };
-
-  useEffect(() => {});
 
   useEffect(() => {
     if (!open) {
@@ -336,9 +324,9 @@ export function ManageApProfilesTableContainer({
         />
 
         <Pagination
-          currentPage={currentPage}
+          currentPage={Number(currentPage)}
           limit={limit}
-          total_pages={total_pages}
+          total_pages={Number(total_pages)}
           handlePagination={handlePagination}
         />
       </ScrollArea>

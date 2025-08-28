@@ -13,8 +13,8 @@ type SearchWrapperProps = {
   setShowResults: Dispatch<SetStateAction<boolean>>;
   handleSelectItem: (item: any) => void;
   disabled?: boolean;
-  SelectedRenderer: React.ReactNode; // <-- custom selected UI
-  ResultsRenderer: React.ReactNode; // <-- custom results component
+  SelectedRenderer: React.ReactNode; // custom selected UI
+  ResultsRenderer: React.ReactNode; // custom results component
 };
 
 export function SearchWrapper({

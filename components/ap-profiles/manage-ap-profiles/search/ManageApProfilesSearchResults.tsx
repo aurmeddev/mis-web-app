@@ -4,7 +4,6 @@ export function ManageApProfilesSearchResults({
   result,
   handleSelectItem,
 }: GeneratorSearchResultsProps) {
-  console.log("result ", result);
   return (
     <>
       {result?.data.length === 0 ? (
@@ -13,13 +12,11 @@ export function ManageApProfilesSearchResults({
         </li>
       ) : (
         result.data.map((item: any) => {
-          const normalCase =
-            item.status.charAt(0).toUpperCase() +
-            item.status.substr(1, item.status.length);
+          const statusText =
+            item.status == "active"
+              ? `Currently assigned to ${item.ap_profile.profile_name}`
+              : item.status;
           const isProfileAvailable = item.status == "available";
-          const status = !isProfileAvailable
-            ? "There is no FB account assigned to this AP Profile yet. Unable to generate an OTP."
-            : normalCase;
           return (
             <li
               key={item.id}
@@ -39,7 +36,7 @@ export function ManageApProfilesSearchResults({
                 <div className="font-semibold text-sm">
                   {item.fb_owner_name}
                 </div>
-                <p className="text-sm text-gray-500">{normalCase}</p>
+                <p className="text-sm text-gray-500">{statusText}</p>
               </div>
             </li>
           );

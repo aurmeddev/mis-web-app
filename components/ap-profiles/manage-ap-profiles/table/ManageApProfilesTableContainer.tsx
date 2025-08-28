@@ -47,9 +47,10 @@ export function ManageApProfilesTableContainer({
     remarks: "",
   });
   const [tableData, setTableData] = useState<any>(response.data);
+  const [open, setOpen] = useState(false);
+  const [canSave, setCanSave] = useState(false);
   const [isSubmitInProgress, setIsSubmitInProgress] = useState(false);
   const [hasStatusChanged, setHasStatusChanged] = useState(false);
-  const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState<SearchQuery>({
     query: "",
     isSearching: false,
@@ -63,6 +64,9 @@ export function ManageApProfilesTableContainer({
   }, [response.data]);
 
   const handleInputChange = (name: string, value: string | number) => {
+    if (!canSave) {
+      setCanSave(true);
+    }
     setForm((prevState: any) => ({
       ...prevState,
       [name]: value,
@@ -171,7 +175,6 @@ export function ManageApProfilesTableContainer({
         const hasOnlyRemarks =
           Object.keys(payload).length === 1 && "remarks" in payload;
 
-        console.log(hasOnlyRemarks);
         const output =
           item.id === editingData.id
             ? {
@@ -216,6 +219,7 @@ export function ManageApProfilesTableContainer({
 
   useEffect(() => {
     if (!open) {
+      setCanSave(false);
       setEditingData({});
     }
   }, [open]);
@@ -225,6 +229,7 @@ export function ManageApProfilesTableContainer({
       <ManageApProfilesDialog
         form={form}
         open={open}
+        canSave={canSave}
         setOpen={setOpen}
         editingData={editingData}
         handleSubmit={handleSubmit}

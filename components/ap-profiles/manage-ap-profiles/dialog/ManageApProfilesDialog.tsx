@@ -25,6 +25,7 @@ import { toast } from "sonner";
 type ConfirmDialogProps = {
   form: any;
   open: boolean;
+  canSave: boolean;
   setOpen: (open: boolean) => void;
   editingData: any;
   handleSubmit: (ev: any) => void;
@@ -36,6 +37,7 @@ type ConfirmDialogProps = {
 export function ManageApProfilesDialog({
   form,
   open,
+  canSave,
   setOpen,
   editingData,
   handleSubmit,
@@ -54,18 +56,6 @@ export function ManageApProfilesDialog({
   const [showResults, setShowResults] = useState(false);
   const [isExisting, setIsExisting] = useState(false);
   const [isPending, startTransition] = useTransition();
-
-  const handleSearchQueryChange = (ev: ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery({ ...searchQuery, query: ev.target.value });
-  };
-
-  const handleSearchFocus = () => {
-    if (searchQuery.result.data?.length) {
-      setShowResults(true);
-    } else {
-      setShowResults(false);
-    }
-  };
 
   const handleSearchDebounce = useDebouncedCallback(async (data: string) => {
     setSearchQuery({ ...searchQuery, isSearching: true });
@@ -88,6 +78,18 @@ export function ManageApProfilesDialog({
     });
   }, 500);
 
+  const handleSearchQueryChange = (ev: ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery({ ...searchQuery, query: ev.target.value });
+  };
+
+  const handleSearchFocus = () => {
+    if (searchQuery.result.data?.length) {
+      setShowResults(true);
+    } else {
+      setShowResults(false);
+    }
+  };
+
   const handleSelectItem = (item: any) => {
     setSearchQuery((prevState: any) => ({
       ...prevState,
@@ -99,13 +101,6 @@ export function ManageApProfilesDialog({
   };
 
   const handleRemoveSelected = async () => {
-    console.log("searchQuery ", searchQuery);
-    const payload: any = { id: editingData.id, fb_account_id: 0 };
-    const { isSuccess, message } = await profilesService.update(payload);
-    if (!isSuccess) {
-      toast.error(message);
-      return;
-    }
     setSearchQuery((prevState: any) => ({
       ...prevState,
       query: "",
@@ -239,6 +234,7 @@ export function ManageApProfilesDialog({
                     className="bg-transparent cursor-pointer h-3 rounded w-3 text-muted-foreground"
                     onClick={handleRemoveSelected}
                     type="button"
+                    disabled={isActionDisabled}
                   >
                     <X />
                   </Button>
@@ -277,7 +273,7 @@ export function ManageApProfilesDialog({
             <Button
               className="cursor-pointer"
               type="submit"
-              disabled={isActionDisabled || isExisting}
+              disabled={isActionDisabled || isExisting || !canSave}
             >
               {isActionDisabled ? "Saving..." : "Save"}
             </Button>

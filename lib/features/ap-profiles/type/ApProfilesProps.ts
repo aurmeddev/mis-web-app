@@ -13,7 +13,7 @@ type BaseApProfilesProps = {
         team_name: string;
       }
     | number;
-  created_at: Date;
+  created_at: string;
 };
 
 type PostApProfilesProps = Omit<

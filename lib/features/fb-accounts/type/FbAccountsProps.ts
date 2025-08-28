@@ -20,7 +20,7 @@ type BaseFbAccountsProps = {
   fb_owner_account_created?: Date;
   no_of_friends?: number;
   fb_account_quality_type_id?: number;
-  created_at: Date; // auto-generated in the database
+  created_at: string; // auto-generated in the database
 };
 
 type PostFbAccountsProps = Omit<

@@ -19,7 +19,7 @@ export const GET = async (request: NextRequest) => {
   const { queryValues } = mysqlUtils.generateSelectQuery({
     data: { limit, offset },
   });
-  const queryString = `SELECT * FROM v_FbAccounts LIMIT ? OFFSET ?`;
+  const queryString = `SELECT * FROM v_FbAccountsV2 LIMIT ? OFFSET ?`;
   console.log(queryString);
   console.log(queryValues);
 
@@ -43,7 +43,7 @@ export const GET = async (request: NextRequest) => {
 
     // Get the total count of rows for pagination
     const rows: any = await query({
-      query: "SELECT COUNT(*) AS total_count FROM v_FbAccounts",
+      query: "SELECT COUNT(*) AS total_count FROM v_FbAccountsV2",
       values: [],
     });
     const totalRows: number = rows[0].total_count;

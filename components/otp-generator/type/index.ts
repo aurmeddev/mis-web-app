@@ -1,3 +1,4 @@
+import { Profile } from "@/components/ap-profiles/manage-ap-profiles/type";
 import { ApiResponseProps } from "@/database/dbConnection";
 
 type GeneratorBaseProps = {
@@ -14,7 +15,7 @@ export type SearchQuery = {
 
 export type GeneratorSearchResultsProps = {
   result: ApiResponseProps;
-  handleSelectItem: (item: Record<string, any>) => void;
+  handleSelectItem: (item: Profile) => void;
 };
 
 export type GeneratorCardProps = GeneratorBaseProps & {

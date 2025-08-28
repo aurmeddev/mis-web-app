@@ -14,11 +14,12 @@ import { ManageApProfilesTableHeader } from "./ManageApProfilesTableHeader";
 import { Input } from "@/components/ui/input";
 import { StatusSelect } from "../select/StatusSelect";
 import { Button } from "@/components/ui/button";
+import { Profile } from "../type";
 
 type UserManagementTableProps = {
   data: any;
   form: any;
-  editingRow: number | null;
+  editingRow: Partial<Profile>;
   handleEditChange: (id: number | null) => void;
   handleInputChange: (name: string, value: string) => void;
   handleStatusChange: (value: string) => void;

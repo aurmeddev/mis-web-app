@@ -1,4 +1,4 @@
-import { Profile } from "@/components/ap-profiles/manage-ap-profiles/type";
+import { Profile } from "@/components/accounts/ap-profiles/type";
 import { ApiResponseProps } from "@/database/dbConnection";
 
 type GeneratorBaseProps = {

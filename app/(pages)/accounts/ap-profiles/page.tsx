@@ -1,6 +1,6 @@
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { NotFound } from "@/components/not-found/not-found";
-import { ManageApProfilesContainer } from "@/components/ap-profiles/manage-ap-profiles/ManageApProfilesContainer";
+import { ManageApProfilesContainer } from "@/components/accounts/ap-profiles/ManageApProfilesContainer";
 export default async function Page({ searchParams }: any) {
   const session = await getSession();
   const awaitedParams = await searchParams;

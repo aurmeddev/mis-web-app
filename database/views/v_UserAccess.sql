@@ -1,7 +1,7 @@
 SELECT
     u.id,
     u.full_name,
-    u.display_name,
+    COALESCE(u.display_name, u.full_name) AS display_name,
     u.email,
     u.password,
     u.is_active,

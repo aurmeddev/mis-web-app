@@ -5,9 +5,9 @@ import { ObjectUtils } from "@/lib/utils/object/ObjectUtils";
 import { CryptoServerService } from "@/lib/features/security/cryptography/CryptoServerService";
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { NextResponse, NextRequest } from "next/server";
-import { ApProfilesService } from "@/lib/features/ap-profiles/ApProfilesService";
 import { FbAccountsService } from "@/lib/features/fb-accounts/FbAccountsService";
 import { DatetimeUtils } from "@/lib/utils/date/DatetimeUtils";
+import { ApProfilesServerService } from "@/lib/features/ap-profiles/ApProfilesServerService";
 export const POST = async (request: NextRequest) => {
   // Check if the user session is valid before processing the request
   const session = await getSession();
@@ -26,6 +26,7 @@ export const POST = async (request: NextRequest) => {
   const { isSuccess, decryptedData } = await decipher.decrypt({
     data: session.user.id,
   });
+
   if (!isSuccess) {
     return NextResponse.json(
       {
@@ -35,22 +36,26 @@ export const POST = async (request: NextRequest) => {
       { status: 500 }
     );
   }
+
   const USER_ID = decryptedData;
 
   const data: PostApProfilesProps = await request.json();
   const objUtil = new ObjectUtils();
-  const aps = new ApProfilesService();
+  const aps = new ApProfilesServerService();
   const fbs = new FbAccountsService();
   const validationPostQueryParams = objUtil.removeInvalidKeys({
     profile_name: data.profile_name,
     fb_account_id: data.fb_account_id,
   });
+
   // Validate if the AP Profile already exists
+  const customSearchParams = new URLSearchParams();
+  customSearchParams.set("method", "find-one");
+  customSearchParams.set("condition", "at-least-one");
   const validationResponse = await aps.find({
     searchKeyword: "validation",
-    method: "find-one",
-    condition: "at-least-one",
-    dynamicSearchPayload: validationPostQueryParams,
+    requestUrlSearchParams: customSearchParams,
+    payload: validationPostQueryParams,
   });
 
   if (!validationResponse.isSuccess) {

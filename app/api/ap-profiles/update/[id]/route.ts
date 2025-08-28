@@ -1,5 +1,5 @@
 import { query } from "@/database/dbConnection";
-import { ApProfilesService } from "@/lib/features/ap-profiles/ApProfilesService";
+import { ApProfilesServerService } from "@/lib/features/ap-profiles/ApProfilesServerService";
 import { UpdateApProfilesProps } from "@/lib/features/ap-profiles/type/ApProfilesProps";
 import { FbAccountsService } from "@/lib/features/fb-accounts/FbAccountsService";
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
@@ -11,16 +11,16 @@ export const PUT = async (
   { params }: { params: Promise<{ id: string }> }
 ) => {
   // Check if the user session is valid before processing the request
-  const session = await getSession();
-  if (!session) {
-    return NextResponse.json(
-      {
-        isSuccess: false,
-        message: "Session expired or invalid",
-      },
-      { status: 403 }
-    );
-  }
+  // const session = await getSession();
+  // if (!session) {
+  //   return NextResponse.json(
+  //     {
+  //       isSuccess: false,
+  //       message: "Session expired or invalid",
+  //     },
+  //     { status: 403 }
+  //   );
+  // }
 
   const apProfileId = `${(await params).id}`;
   const data: UpdateApProfilesProps = await request.json();
@@ -56,7 +56,9 @@ export const PUT = async (
     validationUpdateQueryParams.is_active = 0; // Set status to available
   } else {
     validationUpdateQueryParams = objUtil.removeInvalidKeys(payload);
-    validationUpdateQueryParams.is_active = 1; // Set status to active
+    if (payload.fb_account_id && payload.fb_account_id > 0) {
+      validationUpdateQueryParams.is_active = 1; // Set status to active
+    }
   }
 
   const mysqlUtils = new MySqlUtils();
@@ -95,7 +97,11 @@ export const PUT = async (
           prop.fb_account_id === 0 &&
           validationUpdateQueryParams.is_active === 0
             ? "available"
-            : "active",
+            : prop.fb_account_id &&
+              prop.fb_account_id > 0 &&
+              validationUpdateQueryParams.is_active === 1
+            ? "active"
+            : "inactive",
       },
     ];
     return NextResponse.json(
@@ -128,13 +134,15 @@ const validateFbAccountAssignment = async (
   params: ValidateFbAccountAssignmentProps
 ) => {
   const { fb_account_id, profile_name } = params;
-  const aps = new ApProfilesService();
+  const aps = new ApProfilesServerService();
 
+  const customSearchParams = new URLSearchParams();
+  customSearchParams.set("method", "find-one");
   if (fb_account_id) {
     const validationResponse = await aps.find({
       searchKeyword: "validation",
-      method: "find-one",
-      dynamicSearchPayload: {
+      requestUrlSearchParams: customSearchParams,
+      payload: {
         fb_account_id: fb_account_id,
       },
     });
@@ -160,8 +168,8 @@ const validateFbAccountAssignment = async (
   if (profile_name) {
     const validationResponse = await aps.find({
       searchKeyword: "validation",
-      method: "find-one",
-      dynamicSearchPayload: {
+      requestUrlSearchParams: customSearchParams,
+      payload: {
         profile_name: profile_name,
       },
     });

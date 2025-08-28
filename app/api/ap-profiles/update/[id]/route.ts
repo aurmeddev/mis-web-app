@@ -48,14 +48,21 @@ export const PUT = async (
   };
 
   let validationUpdateQueryParams: { [key: string]: any } = {};
+
   if (payload.fb_account_id === 0) {
     // Remove FB Account from the AP Profile
     const { fb_account_id, ...rest } = payload;
     validationUpdateQueryParams = objUtil.removeInvalidKeys(rest);
     validationUpdateQueryParams.fb_account_id = fb_account_id;
     validationUpdateQueryParams.is_active = 0; // Set status to available
+    if (payload.remarks !== undefined) {
+      validationUpdateQueryParams.remarks = payload.remarks;
+    }
   } else {
     validationUpdateQueryParams = objUtil.removeInvalidKeys(payload);
+    if (payload.remarks !== undefined) {
+      validationUpdateQueryParams.remarks = payload.remarks;
+    }
     if (payload.fb_account_id && payload.fb_account_id > 0) {
       validationUpdateQueryParams.is_active = 1; // Set status to active
     }

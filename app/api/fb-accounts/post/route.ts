@@ -5,7 +5,7 @@ import { CryptoServerService } from "@/lib/features/security/cryptography/Crypto
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { NextResponse, NextRequest } from "next/server";
 import { PostFbAccountsProps } from "@/lib/features/fb-accounts/type/FbAccountsProps";
-import { FbAccountsService } from "@/lib/features/fb-accounts/FbAccountsService";
+import { FbAccountsServerService } from "@/lib/features/fb-accounts/FbAccountsServerService";
 export const POST = async (request: NextRequest) => {
   // Check if the user session is valid before processing the request
   const session = await getSession();
@@ -37,7 +37,7 @@ export const POST = async (request: NextRequest) => {
 
   const data: PostFbAccountsProps = await request.json();
   const objUtil = new ObjectUtils();
-  const fbs = new FbAccountsService();
+  const fbs = new FbAccountsServerService();
   const validationPostQueryParams = objUtil.removeInvalidKeys({
     fb_owner_name: data.fb_owner_name,
     contact_no: data.contact_no || "",
@@ -46,11 +46,13 @@ export const POST = async (request: NextRequest) => {
   });
 
   // Validate if the fb account already exists
+  const customSearchParams = new URLSearchParams();
+  customSearchParams.set("method", "find-one");
+  customSearchParams.set("condition", "all");
   const validationResponse = await fbs.find({
     searchKeyword: "validation",
-    method: "find-one",
-    condition: "all",
-    dynamicSearchPayload: validationPostQueryParams,
+    requestUrlSearchParams: customSearchParams,
+    payload: validationPostQueryParams,
   });
 
   if (!validationResponse.isSuccess) {

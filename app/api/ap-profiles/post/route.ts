@@ -10,31 +10,32 @@ import { FbAccountsService } from "@/lib/features/fb-accounts/FbAccountsService"
 import { DatetimeUtils } from "@/lib/utils/date/DatetimeUtils";
 export const POST = async (request: NextRequest) => {
   // Check if the user session is valid before processing the request
-  // const session = await getSession();
-  // if (!session) {
-  //   return NextResponse.json(
-  //     {
-  //       isSuccess: false,
-  //       message: "Session expired or invalid",
-  //     },
-  //     { status: 403 }
-  //   );
-  // }
+  const session = await getSession();
+  if (!session) {
+    return NextResponse.json(
+      {
+        isSuccess: false,
+        message: "Session expired or invalid",
+      },
+      { status: 403 }
+    );
+  }
 
-  // // Decrypt the user ID from the session
-  // const decipher = new CryptoServerService();
-  // const { isSuccess, decryptedData } = await decipher.decrypt({
-  //   data: session.user.id,
-  // });
-  // if (!isSuccess) {
-  //   return NextResponse.json(
-  //     {
-  //       isSuccess,
-  //       message: "Data parse error occurred.",
-  //     },
-  //     { status: 500 }
-  //   );
-  // }
+  // Decrypt the user ID from the session
+  const decipher = new CryptoServerService();
+  const { isSuccess, decryptedData } = await decipher.decrypt({
+    data: session.user.id,
+  });
+  if (!isSuccess) {
+    return NextResponse.json(
+      {
+        isSuccess,
+        message: "Data parse error occurred.",
+      },
+      { status: 500 }
+    );
+  }
+  const USER_ID = decryptedData;
 
   const data: PostApProfilesProps = await request.json();
   const objUtil = new ObjectUtils();
@@ -114,7 +115,7 @@ export const POST = async (request: NextRequest) => {
   }
   const mysql = new MySqlUtils();
   const { columns, values, questionMarksValue } = mysql.generateInsertQuery({
-    created_by: 1,
+    created_by: USER_ID,
     ...payload,
   });
   const queryString = `INSERT INTO Ap_Profiles ${columns} ${questionMarksValue}`;

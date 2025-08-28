@@ -8,31 +8,32 @@ import { PostFbAccountsProps } from "@/lib/features/fb-accounts/type/FbAccountsP
 import { FbAccountsService } from "@/lib/features/fb-accounts/FbAccountsService";
 export const POST = async (request: NextRequest) => {
   // Check if the user session is valid before processing the request
-  // const session = await getSession();
-  // if (!session) {
-  //   return NextResponse.json(
-  //     {
-  //       isSuccess: false,
-  //       message: "Session expired or invalid",
-  //     },
-  //     { status: 403 }
-  //   );
-  // }
+  const session = await getSession();
+  if (!session) {
+    return NextResponse.json(
+      {
+        isSuccess: false,
+        message: "Session expired or invalid",
+      },
+      { status: 403 }
+    );
+  }
 
   // Decrypt the user ID from the session
-  // const decipher = new CryptoServerService();
-  // const { isSuccess, decryptedData } = await decipher.decrypt({
-  //   data: session.user.id,
-  // });
-  // if (!isSuccess) {
-  //   return NextResponse.json(
-  //     {
-  //       isSuccess,
-  //       message: "Data parse error occurred.",
-  //     },
-  //     { status: 500 }
-  //   );
-  // }
+  const decipher = new CryptoServerService();
+  const { isSuccess, decryptedData } = await decipher.decrypt({
+    data: session.user.id,
+  });
+  if (!isSuccess) {
+    return NextResponse.json(
+      {
+        isSuccess,
+        message: "Data parse error occurred.",
+      },
+      { status: 500 }
+    );
+  }
+  const USER_ID = decryptedData;
 
   const data: PostFbAccountsProps = await request.json();
   const objUtil = new ObjectUtils();
@@ -78,7 +79,7 @@ export const POST = async (request: NextRequest) => {
   const payload = objUtil.removeInvalidKeys(data);
   const mysqlUtils = new MySqlUtils();
   const { columns, values, questionMarksValue } =
-    mysqlUtils.generateInsertQuery({ recruited_by: 3, ...payload });
+    mysqlUtils.generateInsertQuery({ recruited_by: USER_ID, ...payload });
   const queryString = `INSERT INTO Fb_Accounts ${columns} ${questionMarksValue}`;
   console.log(queryString);
   console.log(values);

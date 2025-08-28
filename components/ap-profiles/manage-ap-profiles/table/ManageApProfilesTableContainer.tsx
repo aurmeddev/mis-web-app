@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -7,12 +7,12 @@ import { ManageApProfilesTable } from "./ManageApProfilesTable";
 import { ManageApProfilesDialog } from "../dialog/ManageApProfilesDialog";
 import { useRouter } from "next/navigation";
 import { Pagination } from "@/components/pagination/route-based/Pagination";
-import { SearchResult } from "@/components/search/SearchResult";
-import { SearchInput } from "@/components/search/SearchInput";
 import { SearchQuery } from "@/components/otp-generator/type";
-import { ManageApProfilesSearchResults } from "../search/ManageApProfilesSearchResults";
 import { ApProfilesService } from "@/lib/features/ap-profiles/ApProfilesService";
 import { ApiResponseProps } from "@/database/dbConnection";
+import { useDebouncedCallback } from "use-debounce";
+import { ApProfilesSearchResults } from "../search/ApProfilesSearchResults";
+import { SearchWrapper } from "../search/SearchWrapper";
 
 type ManageApProfilesTableContainerProps = {
   response: any;
@@ -86,6 +86,47 @@ export function ManageApProfilesTableContainer({
     // setHasStatusChanged(value !== originalValue);
   };
 
+  const handleSearchDebounce = useDebouncedCallback(async (data: string) => {
+    setSearchQuery({ ...searchQuery, isSearching: true });
+    const response = await profilesService.find({
+      method: "find-one",
+      searchKeyword: data,
+    });
+    setSearchQuery({ ...searchQuery, result: response, isSearching: false });
+    setShowResults(true);
+  }, 500);
+
+  const handleSearchQueryChange = (ev: ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery({ ...searchQuery, query: ev.target.value });
+    handleSearchDebounce(ev.target.value);
+  };
+
+  const handleSearchFocus = () => {
+    if (searchQuery.result.data?.length) {
+      setShowResults(true);
+    } else {
+      setShowResults(false);
+    }
+  };
+
+  const handleSelectItem = (item: any) => {
+    setSearchQuery((prevState: any) => ({
+      ...prevState,
+      query: "",
+      selectedResult: item,
+    }));
+
+    setTableData((prevData: any[]) => {
+      const output = prevData.filter((data) => {
+        if (!item) return;
+        return data.id === item.id;
+      });
+      return output;
+    });
+
+    setShowResults(false);
+  };
+
   const buildPayload = () => {
     if (!editingData) return {};
 
@@ -106,7 +147,7 @@ export function ManageApProfilesTableContainer({
     return payload;
   };
 
-  const handleSubmit = async (ev: any) => {
+  const handleSubmit = async (ev: FormEvent<HTMLFormElement>) => {
     ev.preventDefault();
 
     const payload = buildPayload();
@@ -207,9 +248,18 @@ export function ManageApProfilesTableContainer({
     router.push(`?page=${page}&limit=${limit}`);
   };
 
-  const currentPage = response.pagination?.page;
-  const total_pages = response.pagination?.total_pages;
-  const limit = response.pagination?.limit || 10;
+  const handleRemoveSelected = async () => {
+    setSearchQuery((prevState: any) => ({
+      ...prevState,
+      query: "",
+      result: {
+        data: [],
+      },
+      selectedResult: null,
+    }));
+    setShowResults(false);
+    setTableData(response.data);
+  };
 
   const handleNewProfile = () => {
     setEditingData({});
@@ -217,12 +267,18 @@ export function ManageApProfilesTableContainer({
     setOpen(true);
   };
 
+  useEffect(() => {});
+
   useEffect(() => {
     if (!open) {
       setCanSave(false);
       setEditingData({});
     }
   }, [open]);
+
+  const currentPage = response.pagination?.page;
+  const total_pages = response.pagination?.total_pages;
+  const limit = response.pagination?.limit || 10;
 
   return (
     <>
@@ -234,7 +290,6 @@ export function ManageApProfilesTableContainer({
         editingData={editingData}
         handleSubmit={handleSubmit}
         handleInputChange={handleInputChange}
-        handleStatusChange={handleStatusChange}
         isActionDisabled={isSubmitInProgress}
       />
       <div className="flex justify-start gap-2 2xl:w-1/3 mt-4 w-[40%]">
@@ -247,19 +302,26 @@ export function ManageApProfilesTableContainer({
         </Button>
 
         <div className="relative w-full">
-          <SearchInput
+          <SearchWrapper
             searchQuery={searchQuery}
-            onSearchQueryChange={() => {}}
-            onSearchFocus={() => {}}
-          />
-          {showResults && (
-            <SearchResult setShowResults={setShowResults}>
-              <ManageApProfilesSearchResults
+            onSearchQueryChange={handleSearchQueryChange}
+            onSearchFocus={handleSearchFocus}
+            onRemoveSelected={handleRemoveSelected}
+            showResults={showResults}
+            setShowResults={setShowResults}
+            handleSelectItem={handleSelectItem}
+            SelectedRenderer={
+              <div className="text-sm">
+                {searchQuery.selectedResult?.profile_name}
+              </div>
+            }
+            ResultsRenderer={
+              <ApProfilesSearchResults
                 result={searchQuery.result}
-                handleSelectItem={() => {}}
+                handleSelectItem={handleSelectItem}
               />
-            </SearchResult>
-          )}
+            }
+          />
         </div>
       </div>
       <ScrollArea className="h-[75dvh] mt-4">

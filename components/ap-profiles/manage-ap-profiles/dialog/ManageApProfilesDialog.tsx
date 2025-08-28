@@ -12,15 +12,21 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { SearchInput } from "@/components/search/SearchInput";
-import { ChangeEvent, useEffect, useState, useTransition } from "react";
+import {
+  ChangeEvent,
+  FormEvent,
+  useEffect,
+  useState,
+  useTransition,
+} from "react";
 import { SearchQuery } from "@/components/otp-generator/type";
 import { SearchResult } from "@/components/search/SearchResult";
 import { useDebouncedCallback } from "use-debounce";
 import { FbAccountsService } from "@/lib/features/fb-accounts/FbAccountsService";
-import { ManageApProfilesSearchResults } from "../search/ManageApProfilesSearchResults";
 import { Loader2, X } from "lucide-react";
 import { ApProfilesService } from "@/lib/features/ap-profiles/ApProfilesService";
-import { toast } from "sonner";
+import { AssignFBSearchResults } from "../search/AssignFBSearchResults";
+import { SearchWrapper } from "../search/SearchWrapper";
 
 type ConfirmDialogProps = {
   form: any;
@@ -28,9 +34,8 @@ type ConfirmDialogProps = {
   canSave: boolean;
   setOpen: (open: boolean) => void;
   editingData: any;
-  handleSubmit: (ev: any) => void;
+  handleSubmit: (ev: FormEvent<HTMLFormElement>) => void;
   handleInputChange: (name: string, value: string | number) => void;
-  handleStatusChange: (value: string) => void;
   isActionDisabled: boolean;
 };
 
@@ -42,7 +47,6 @@ export function ManageApProfilesDialog({
   editingData,
   handleSubmit,
   handleInputChange,
-  handleStatusChange,
   isActionDisabled,
 }: ConfirmDialogProps) {
   const fbAccountsService = new FbAccountsService();
@@ -203,51 +207,40 @@ export function ManageApProfilesDialog({
               {searchQuery.selectedResult ? "Assigned" : "Assign"} FB Account
             </div>
             <div className="relative w-full">
-              <SearchInput
-                className={
-                  searchQuery.selectedResult || isActionDisabled
-                    ? "pointer-events-none"
-                    : ""
-                }
+              <SearchWrapper
                 searchQuery={searchQuery}
                 onSearchQueryChange={handleSearchQueryChange}
                 onSearchFocus={handleSearchFocus}
-              />
-              {searchQuery.selectedResult && (
-                <div className="absolute bg-primary-foreground top-1/2 -translate-y-1/2 flex items-center gap-2 left-2 rounded px-2 py-1">
-                  <div className="w-4">
-                    <svg
-                      role="img"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="blue"
-                    >
-                      <title>Facebook</title>
-                      <path d="M9.101 23.691v-7.98H6.627v-3.667h2.474v-1.58c0-4.085 1.848-5.978 5.858-5.978.401 0 .955.042 1.468.103a8.68 8.68 0 0 1 1.141.195v3.325a8.623 8.623 0 0 0-.653-.036 26.805 26.805 0 0 0-.733-.009c-.707 0-1.259.096-1.675.309a1.686 1.686 0 0 0-.679.622c-.258.42-.374.995-.374 1.752v1.297h3.919l-.386 2.103-.287 1.564h-3.246v8.245C19.396 23.238 24 18.179 24 12.044c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.628 3.874 10.35 9.101 11.647Z" />
-                    </svg>
-                  </div>
-                  <div className="text-sm">
-                    {searchQuery.selectedResult.fb_owner_name}
-                  </div>
-                  <Button
-                    variant={"ghost"}
-                    className="bg-transparent cursor-pointer h-3 rounded w-3 text-muted-foreground"
-                    onClick={handleRemoveSelected}
-                    type="button"
-                    disabled={isActionDisabled}
-                  >
-                    <X />
-                  </Button>
-                </div>
-              )}
-              {showResults && (
-                <SearchResult setShowResults={setShowResults}>
-                  <ManageApProfilesSearchResults
+                onRemoveSelected={handleRemoveSelected}
+                showResults={showResults}
+                setShowResults={setShowResults}
+                handleSelectItem={handleSelectItem}
+                disabled={isActionDisabled}
+                SelectedRenderer={
+                  <>
+                    <div className="w-4">
+                      <svg
+                        role="img"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="blue"
+                      >
+                        <title>Facebook</title>
+                        <path d="M9.101 23.691v-7.98H6.627v-3.667h2.474v-1.58c0-4.085 1.848-5.978 5.858-5.978.401 0 .955.042 1.468.103a8.68 8.68 0 0 1 1.141.195v3.325a8.623 8.623 0 0 0-.653-.036 26.805 26.805 0 0 0-.733-.009c-.707 0-1.259.096-1.675.309a1.686 1.686 0 0 0-.679.622c-.258.42-.374.995-.374 1.752v1.297h3.919l-.386 2.103-.287 1.564h-3.246v8.245C19.396 23.238 24 18.179 24 12.044c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.628 3.874 10.35 9.101 11.647Z" />
+                      </svg>
+                    </div>
+                    <div className="text-sm">
+                      {searchQuery.selectedResult?.fb_owner_name}
+                    </div>
+                  </>
+                }
+                ResultsRenderer={
+                  <AssignFBSearchResults
                     result={searchQuery.result}
                     handleSelectItem={handleSelectItem}
                   />
-                </SearchResult>
-              )}
+                }
+              />
             </div>
           </div>
 

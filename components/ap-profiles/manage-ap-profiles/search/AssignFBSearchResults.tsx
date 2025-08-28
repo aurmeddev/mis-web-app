@@ -1,6 +1,6 @@
 import { GeneratorSearchResultsProps } from "@/components/otp-generator/type";
 import { cn } from "@/lib/utils";
-export function ManageApProfilesSearchResults({
+export function AssignFBSearchResults({
   result,
   handleSelectItem,
 }: GeneratorSearchResultsProps) {
@@ -16,6 +16,9 @@ export function ManageApProfilesSearchResults({
             item.status == "active"
               ? `Currently assigned to ${item.ap_profile.profile_name}`
               : item.status;
+          const normalCase =
+            statusText.charAt(0).toUpperCase() +
+            statusText.substr(1, statusText.length);
           const isProfileAvailable = item.status == "available";
           return (
             <li
@@ -36,7 +39,7 @@ export function ManageApProfilesSearchResults({
                 <div className="font-semibold text-sm">
                   {item.fb_owner_name}
                 </div>
-                <p className="text-sm text-gray-500">{statusText}</p>
+                <p className="text-sm text-gray-500">{normalCase}</p>
               </div>
             </li>
           );

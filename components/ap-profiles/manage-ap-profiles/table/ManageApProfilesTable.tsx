@@ -183,7 +183,6 @@ export function ManageApProfilesTable({
                     className="cursor-pointer h-7 py-0 px-3"
                     variant="outline"
                     onClick={() => handleEditChange(rowData.id)}
-                    disabled={isActionDisabled}
                   >
                     <Pencil style={{ height: "14px", width: "14px" }} /> Edit
                   </Button>

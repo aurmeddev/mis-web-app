@@ -10,31 +10,16 @@ export const PUT = async (
   { params }: { params: Promise<{ id: string }> }
 ) => {
   // Check if the user session is valid before processing the request
-  // const session = await getSession();
-  // if (!session) {
-  //   return NextResponse.json(
-  //     {
-  //       isSuccess: false,
-  //       message: "Session expired or invalid",
-  //     },
-  //     { status: 403 }
-  //   );
-  // }
-
-  // Decrypt the user ID from the session
-  // const decipher = new CryptoServerService();
-  // const { isSuccess, decryptedData } = await decipher.decrypt({
-  //   data: session.user.id,
-  // });
-  // if (!isSuccess) {
-  //   return NextResponse.json(
-  //     {
-  //       isSuccess,
-  //       message: "Data parse error occurred.",
-  //     },
-  //     { status: 500 }
-  //   );
-  // }
+  const session = await getSession();
+  if (!session) {
+    return NextResponse.json(
+      {
+        isSuccess: false,
+        message: "Session expired or invalid",
+      },
+      { status: 403 }
+    );
+  }
 
   const fbAccountId = `${(await params).id}`;
   const data: UpdateFbAccountsProps = await request.json();

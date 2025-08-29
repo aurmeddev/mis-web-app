@@ -87,7 +87,7 @@ export const PUT = async (
     return NextResponse.json(
       {
         isSuccess: true,
-        message: "Data have been submitted successfully.",
+        message: "Data have been updated successfully.",
         data: [],
       },
       { status: 201 }

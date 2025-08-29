@@ -19,7 +19,7 @@ export class DatetimeUtils {
 
     // Add 8 hours to convert to UTC+8
     // const utc8Timestamp = utcTimestamp + 8 * 60 * 60 * 1000;
-    const utc8Timestamp = utcTimestamp * 60 * 60 * 1000;
+    const utc8Timestamp = utcTimestamp - 8 * 60 * 60 * 1000;
 
     // Create a new Date object for UTC+8
     const utc8Date = new Date(utc8Timestamp);

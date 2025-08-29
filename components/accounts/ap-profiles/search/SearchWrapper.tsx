@@ -11,7 +11,6 @@ type SearchWrapperProps = {
   onRemoveSelected: () => void;
   showResults: boolean;
   setShowResults: Dispatch<SetStateAction<boolean>>;
-  handleSelectItem: (item: any) => void;
   disabled?: boolean;
   SelectedRenderer: React.ReactNode; // custom selected UI
   ResultsRenderer: React.ReactNode; // custom results component
@@ -24,7 +23,6 @@ export function SearchWrapper({
   onRemoveSelected,
   showResults,
   setShowResults,
-  handleSelectItem,
   disabled,
   SelectedRenderer,
   ResultsRenderer,

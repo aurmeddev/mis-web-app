@@ -1,7 +1,6 @@
-import { ReloadIcon } from "@radix-ui/react-icons";
 import { SearchQuery } from "../otp-generator/type";
 import { Input } from "../ui/input";
-import { SearchIcon } from "lucide-react";
+import { Loader2, SearchIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ChangeEvent } from "react";
 
@@ -35,7 +34,7 @@ export function SearchInput({
 
       <div className="absolute right-2 top-1/2 -translate-y-1/2">
         {searchQuery.isSearching ? (
-          <ReloadIcon className="h-4 w-4 animate-spin stroke-primary stroke-1" />
+          <Loader2 className="h-4 w-4 animate-spin stroke-primary stroke-1" />
         ) : (
           <SearchIcon className="text-muted-foreground w-5" />
         )}

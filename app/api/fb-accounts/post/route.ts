@@ -6,6 +6,8 @@ import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService
 import { NextResponse, NextRequest } from "next/server";
 import { PostFbAccountsProps } from "@/lib/features/fb-accounts/type/FbAccountsProps";
 import { FbAccountsServerService } from "@/lib/features/fb-accounts/FbAccountsServerService";
+import { DatetimeUtils } from "@/lib/utils/date/DatetimeUtils";
+import { getServerCurrentDatetime } from "../../ap-profiles/post/route";
 export const POST = async (request: NextRequest) => {
   // Check if the user session is valid before processing the request
   const session = await getSession();
@@ -88,16 +90,32 @@ export const POST = async (request: NextRequest) => {
 
   // Execute the query to insert data into the database
   try {
-    await query({
+    const response: any = await query({
       query: queryString,
       values: values,
     });
 
+    const dateUtils = new DatetimeUtils();
+    const { insertId } = response;
+
+    const result = [
+      {
+        id: insertId,
+        status: "available",
+        recruited_by: {
+          full_name: session.user.full_name,
+          team_name: session.user.team_name,
+        },
+        created_at: dateUtils.formatDateTime(
+          dateUtils.convertToUTC8(await getServerCurrentDatetime())
+        ),
+      },
+    ];
     return NextResponse.json(
       {
         isSuccess: true,
         message: "Data have been submitted successfully.",
-        data: [],
+        data: result,
       },
       { status: 201 }
     );

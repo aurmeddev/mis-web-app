@@ -1,11 +1,14 @@
 import { ApiResponseProps } from "@/database/dbConnection";
 import {
   FindFbAccountsProps,
+  GetAllFbAccountsProps,
   PostFbAccountsProps,
   PostRecoveryCodesProps,
+  UpdateFbAccountsProps,
 } from "./type/FbAccountsProps";
 import { appBaseUrl } from "@/lib/base-url/appBaseUrl";
 import { SearchParamsManager } from "@/lib/utils/search-params/SearchParamsManager";
+import { PaginationProps } from "@/lib/utils/pagination/type/PaginationProps";
 
 export class FbAccountsService {
   async post(params: PostFbAccountsProps): Promise<ApiResponseProps> {
@@ -33,6 +36,19 @@ export class FbAccountsService {
     }
   }
 
+  async update(params: UpdateFbAccountsProps): Promise<ApiResponseProps> {
+    const { id, ...payload } = params;
+    const response = await fetch(`${appBaseUrl}/api/fb-accounts/update/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    return await response.json();
+  }
+
   async find(params: FindFbAccountsProps): Promise<ApiResponseProps> {
     const { searchKeyword, dynamicSearchPayload, ...searchParamsUtils } =
       params;
@@ -46,6 +62,25 @@ export class FbAccountsService {
           "Content-type": "application/json",
         },
         body: JSON.stringify(dynamicSearchPayload || {}),
+      }
+    );
+
+    return await response.json();
+  }
+
+  async getAll(
+    params: GetAllFbAccountsProps
+  ): Promise<ApiResponseProps & { pagination?: PaginationProps }> {
+    const searchParams = new SearchParamsManager();
+    const searchQueryParams = searchParams.append(params);
+    const response = await fetch(
+      `${appBaseUrl}/api/fb-accounts/get-all${searchQueryParams}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-type": "application/json",
+        },
+        cache: "no-store",
       }
     );
 

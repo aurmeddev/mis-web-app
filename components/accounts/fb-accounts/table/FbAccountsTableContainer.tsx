@@ -1,39 +1,39 @@
 "use client";
-import { ChangeEvent, FormEvent, useEffect, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ManageApProfilesTable } from "./ManageApProfilesTable";
-import { ManageApProfilesDialog } from "../dialog/ManageApProfilesDialog";
-import { useRouter } from "next/navigation";
+import { FbAccountsTable } from "./FbAccountsTable";
+import { FbAccountsDialog } from "../dialog/FbAccountsDialog";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Pagination } from "@/components/pagination/route-based/Pagination";
 import { SearchQuery } from "@/components/otp-generator/type";
-import { ApProfilesService } from "@/lib/features/ap-profiles/ApProfilesService";
 import { ApiResponseProps } from "@/database/dbConnection";
 import { useDebouncedCallback } from "use-debounce";
-import { ApProfilesSearchResults } from "../search/ApProfilesSearchResults";
-import { SearchWrapper } from "../search/SearchWrapper";
-import { Profile } from "../type";
 import { PaginationProps } from "@/lib/utils/pagination/type/PaginationProps";
+import { FbAccountsService } from "@/lib/features/fb-accounts/FbAccountsService";
+import { FBAccount, FBAccountForm } from "../type";
+import { CryptoClientService } from "@/lib/features/security/cryptography/CryptoClientService";
+import { SearchWrapper } from "../../ap-profiles/search/SearchWrapper";
+import { ApProfilesSearchResults } from "../../ap-profiles/search/ApProfilesSearchResults";
+import { FbAccountsSearchResults } from "../search/FbAccountsSearchResults";
+import { SearchParamsManager } from "@/lib/utils/search-params/SearchParamsManager";
 
-type ManageApProfilesTableContainerProps = {
+type FbAccountsTableContainerProps = {
   response: ApiResponseProps & { pagination?: PaginationProps };
 };
 
 type Pagination = { page: number; limit: number };
 
-type ProfileForm = {
-  profile_name: string;
-  fb_account_id?: number;
-  remarks?: "";
-};
-
-export function ManageApProfilesTableContainer({
+export function FbAccountsTableContainer({
   response,
-}: ManageApProfilesTableContainerProps) {
-  const profilesService = new ApProfilesService();
+}: FbAccountsTableContainerProps) {
+  const fbAccountsService = new FbAccountsService();
+  const cryptoClientService = new CryptoClientService();
 
   const router = useRouter();
+  const searchParams = useSearchParams();
+
   const showToast = (isSuccess: boolean, message: string) => {
     if (isSuccess) {
       toast.success(message);
@@ -42,17 +42,12 @@ export function ManageApProfilesTableContainer({
     }
   };
 
-  const [editingData, setEditingData] = useState<Partial<Profile>>({});
-  const [form, setForm] = useState<ProfileForm>({
-    profile_name: "",
-    fb_account_id: undefined,
-    remarks: "",
-  });
-  const [tableData, setTableData] = useState<Profile[]>(response.data);
+  const [editingData, setEditingData] = useState<Partial<FBAccount>>({});
+  const [form, setForm] = useState<Partial<FBAccountForm>>({});
+  const [tableData, setTableData] = useState<FBAccount[]>(response.data);
   const [open, setOpen] = useState(false);
   const [canSave, setCanSave] = useState(false);
   const [isSubmitInProgress, setIsSubmitInProgress] = useState(false);
-  const [hasStatusChanged, setHasStatusChanged] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [searchQuery, setSearchQuery] = useState<SearchQuery>({
     query: "",
@@ -60,6 +55,8 @@ export function ManageApProfilesTableContainer({
     result: { data: [], isSuccess: false, message: "" },
     selectedResult: null,
   });
+
+  const memoizedTableData = useMemo(() => tableData, [tableData]);
 
   useEffect(() => {
     setTableData(response.data);
@@ -75,23 +72,10 @@ export function ManageApProfilesTableContainer({
     }));
   };
 
-  const handleStatusChange = (value: string) => {
-    // const selectedRecord = tableData.find(
-    //   (record: any) => record.id === editingRow
-    // );
-    // const originalValue = String(selectedRecord?.is_active);
-    // setForm((prevState: any) => ({
-    //   ...prevState,
-    //   is_active: value,
-    // }));
-    // // Detect if the value is actually different from original
-    // setHasStatusChanged(value !== originalValue);
-  };
-
   const handleSearchDebounce = useDebouncedCallback(async (data: string) => {
     setSearchQuery({ ...searchQuery, isSearching: true });
-    const response = await profilesService.find({
-      method: "find-one",
+    const response = await fbAccountsService.find({
+      method: "find-any",
       searchKeyword: data,
     });
     setSearchQuery({ ...searchQuery, result: response, isSearching: false });
@@ -111,7 +95,7 @@ export function ManageApProfilesTableContainer({
     }
   };
 
-  const handleSelectItem = (item: Profile) => {
+  const handleSelectItem = (item: any) => {
     setSearchQuery((prevState: any) => ({
       ...prevState,
       query: "",
@@ -125,21 +109,22 @@ export function ManageApProfilesTableContainer({
   const buildPayload = () => {
     if (!editingData) return {};
 
-    const payload: any = {};
+    const fields: (keyof typeof form)[] = [
+      "fb_owner_name",
+      "email_address",
+      "contact_no",
+      "username",
+      "password",
+      "app_2fa_key",
+      "recovery_code",
+    ];
 
-    if (form.profile_name !== editingData.profile_name) {
-      payload.profile_name = form.profile_name;
-    }
-
-    if (form.fb_account_id !== editingData.fb_account?.id) {
-      payload.fb_account_id = form.fb_account_id;
-    }
-
-    if (form.remarks !== editingData.remarks) {
-      payload.remarks = form.remarks;
-    }
-
-    return payload;
+    return fields.reduce<any>((acc, key) => {
+      if (form[key] !== editingData[key]) {
+        acc[key] = form[key];
+      }
+      return acc;
+    }, {});
   };
 
   const handleSubmit = async (ev: FormEvent<HTMLFormElement>) => {
@@ -150,8 +135,8 @@ export function ManageApProfilesTableContainer({
     const isUpdateMode = Object.keys(editingData).length >= 1;
 
     const response = isUpdateMode
-      ? await profilesService.update({ id: editingData.id, ...payload })
-      : await profilesService.post(payload);
+      ? await fbAccountsService.update({ id: editingData.id, ...payload })
+      : await fbAccountsService.post(payload);
     setIsSubmitInProgress(false);
     if (!response.isSuccess) {
       showToast(false, response.message);
@@ -159,7 +144,7 @@ export function ManageApProfilesTableContainer({
     }
 
     if (isUpdateMode) {
-      handleUpdateEntry(response, payload);
+      handleUpdateEntry();
     } else {
       handleNewEntry(response);
     }
@@ -169,26 +154,20 @@ export function ManageApProfilesTableContainer({
 
   const handleNewEntry = (response: ApiResponseProps) => {
     const { data } = response;
-    const createdBy = data[0].created_by;
+    const recruited_by = data[0].recruited_by;
     const updatedForm = {
       id: data[0].id,
       row_id: 1,
-      profile_name: form.profile_name,
-      fb_account: {
-        fb_owner_name: data[0].fb_account.fb_owner_name,
-      },
-      created_by: {
-        full_name: createdBy.full_name,
-        team_name: createdBy.team_name,
+      username: form.username,
+      password: form.password,
+      fb_owner_name: form.fb_owner_name,
+      recruited_by: {
+        full_name: recruited_by.full_name,
+        team_name: recruited_by.team_name,
       },
       created_at: data[0].created_at,
-      remarks: form.remarks,
       status: data[0].status,
     };
-
-    if (!Object.keys(data[0].fb_account).length) {
-      updatedForm["fb_account"] = {} as any;
-    }
 
     setTableData((prevData: any[]) => [
       updatedForm,
@@ -197,39 +176,46 @@ export function ManageApProfilesTableContainer({
         row_id: row.row_id + 1, // increment each old row_id by 1
       })),
     ]);
-    setForm({ profile_name: "", fb_account_id: undefined, remarks: "" });
+    resetForm();
   };
 
-  const handleUpdateEntry = (response: ApiResponseProps, payload: any) => {
+  const resetForm = () => {
+    setForm({
+      fb_owner_name: "",
+      username: "",
+      password: "",
+      app_2fa_key: "",
+      recovery_code: "",
+    });
+  };
+
+  const handleUpdateEntry = () => {
     setTableData((prevData: any[]) =>
       prevData.map((item) => {
-        const hasOnlyRemarks =
-          Object.keys(payload).length === 1 && "remarks" in payload;
-
         const output =
           item.id === editingData.id
             ? {
                 ...item,
                 ...form,
-                fb_account: hasOnlyRemarks
-                  ? item.fb_account
-                  : response.data[0].fb_account,
-                status: response.data[0].status,
               }
             : item;
         return output;
       })
     );
-    setForm({ profile_name: "", fb_account_id: undefined, remarks: "" });
+    resetForm();
   };
 
-  const handleEditChange = (id: number | null) => {
-    const selectedProfile = tableData.find(
+  const handleEditChange = async (id: number) => {
+    const selectedAccount = tableData.find(
       (data: { id: number }) => data.id === id
     ) as any;
-    setEditingData(selectedProfile);
-    if (selectedProfile) {
-      setForm(selectedProfile);
+
+    const secretKey = await cryptoClientService.decrypt({
+      data: selectedAccount.app_2fa_key,
+    });
+    setEditingData(selectedAccount);
+    if (selectedAccount) {
+      setForm({ ...selectedAccount, app_2fa_key: secretKey.decryptedData });
       setOpen(true);
     }
   };
@@ -248,12 +234,23 @@ export function ManageApProfilesTableContainer({
       selectedResult: null,
     }));
     setShowResults(false);
-    setTableData(response.data);
+
+    const page = searchParams.get("page") || "";
+    const limit = searchParams.get("limit") || "";
+    const triggerCache = Math.random()
+      .toString(36)
+      .substring(2, 5 + 2);
+    const query = new URLSearchParams();
+
+    if (page) query.set("page", page);
+    if (limit) query.set("limit", limit);
+    query.set("trigger", triggerCache);
+    router.push(`?${query.toString()}`);
   };
 
   const handleNewProfile = () => {
     setEditingData({});
-    setForm({ profile_name: "", fb_account_id: undefined, remarks: "" });
+    resetForm();
     setOpen(true);
   };
 
@@ -269,8 +266,8 @@ export function ManageApProfilesTableContainer({
   const limit = response.pagination?.limit || 10;
 
   return (
-    <>
-      <ManageApProfilesDialog
+    <div className="w-full overflow-auto">
+      <FbAccountsDialog
         form={form}
         open={open}
         canSave={canSave}
@@ -286,7 +283,7 @@ export function ManageApProfilesTableContainer({
           variant="default"
           onClick={handleNewProfile}
         >
-          New Profile Entry
+          New Fb Account Entry
         </Button>
 
         <div className="relative w-full">
@@ -299,11 +296,11 @@ export function ManageApProfilesTableContainer({
             setShowResults={setShowResults}
             SelectedRenderer={
               <div className="text-sm">
-                {searchQuery.selectedResult?.profile_name}
+                {searchQuery.selectedResult?.fb_owner_name}
               </div>
             }
             ResultsRenderer={
-              <ApProfilesSearchResults
+              <FbAccountsSearchResults
                 result={searchQuery.result}
                 handleSelectItem={handleSelectItem}
               />
@@ -312,14 +309,9 @@ export function ManageApProfilesTableContainer({
         </div>
       </div>
       <ScrollArea className="h-[75dvh] mt-4">
-        <ManageApProfilesTable
-          form={form}
-          data={tableData}
-          editingRow={editingData}
+        <FbAccountsTable
+          data={memoizedTableData}
           handleEditChange={handleEditChange}
-          handleInputChange={handleInputChange}
-          handleStatusChange={handleStatusChange}
-          isActionDisabled={isSubmitInProgress}
         />
 
         <Pagination
@@ -329,6 +321,6 @@ export function ManageApProfilesTableContainer({
           handlePagination={handlePagination}
         />
       </ScrollArea>
-    </>
+    </div>
   );
 }

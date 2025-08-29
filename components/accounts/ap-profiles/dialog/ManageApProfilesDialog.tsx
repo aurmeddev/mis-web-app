@@ -214,7 +214,6 @@ export function ManageApProfilesDialog({
                 onRemoveSelected={handleRemoveSelected}
                 showResults={showResults}
                 setShowResults={setShowResults}
-                handleSelectItem={handleSelectItem}
                 disabled={isActionDisabled}
                 SelectedRenderer={
                   <>

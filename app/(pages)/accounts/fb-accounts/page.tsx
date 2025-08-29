@@ -1,12 +1,22 @@
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { NotFound } from "@/components/not-found/not-found";
-export default async function Page() {
+import { FbAccountsContainer } from "@/components/accounts/fb-accounts/FbAccountsContainer";
+export default async function Page({ searchParams }: any) {
   const session = await getSession();
+  const awaitedParams = await searchParams;
 
   const notFoundObj = {
     msg: "You don't have permission to access this page.",
     title: "403 Forbidden",
   };
   if (!session) return <NotFound param={notFoundObj} />;
-  return <>FB Accounts Page</>;
+
+  const page = Number(awaitedParams.page) || 1;
+  const limit = Number(awaitedParams.limit) || 10;
+  const params = {
+    page,
+    limit,
+  };
+
+  return <FbAccountsContainer searchParams={params} />;
 }

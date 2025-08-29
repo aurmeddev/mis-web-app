@@ -186,7 +186,7 @@ export const POST = async (request: NextRequest) => {
   }
 };
 
-const getServerCurrentDatetime = async () => {
+export const getServerCurrentDatetime = async () => {
   const date: any = await query({
     query: "SELECT CURRENT_TIMESTAMP AS date_now;",
     values: [],

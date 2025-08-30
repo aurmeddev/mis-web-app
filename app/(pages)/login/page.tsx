@@ -7,7 +7,7 @@ export default async function Page() {
   const session = await getSession();
   if (session) {
     const { team_name } = session.user;
-    if (team_name === "Traffic Team") {
+    if (team_name === "Traffic Team" || team_name === "Tech Team") {
       return redirect("/otp-generator/facebook");
     }
     if (team_name === "Recruitment Team") {

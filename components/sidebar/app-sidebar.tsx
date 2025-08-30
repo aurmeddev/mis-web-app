@@ -76,10 +76,11 @@ export function AppSidebar({ session, ...props }: AppSidebarProps) {
 
 const addIconPerMenu = (array: any[]) => {
   const icon = [Layers, Users, ShieldCheck];
-  return array.map((item, i) => {
+  return array.map((item) => {
+    const index = item.id - 1;
     return {
       ...item,
-      icon: icon[i] ?? LayoutDashboardIcon, // fallback to a default icon if not enough icons
+      icon: icon[index] ?? LayoutDashboardIcon, // fallback to a default icon if not enough icons
     };
   });
 };

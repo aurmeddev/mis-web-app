@@ -33,14 +33,25 @@ export const POST = async (request: NextRequest) => {
 
   // const USER_ID = decryptedData;
 
-  const data: PostUsersAccessProps = await request.json();
+  const payload: PostUsersAccessProps = await request.json();
   const access = new UsersAccessServerService();
-  const response = await access.post(data);
+  const { isSuccess, data, message } = await access.post(payload);
+  if (!isSuccess) {
+    return NextResponse.json(
+      {
+        isSuccess,
+        message,
+        data,
+      },
+      { status: 201 }
+    );
+  }
+
   return NextResponse.json(
     {
       isSuccess: true,
       message: "Data have been submitted successfully.",
-      data: response,
+      data: data,
     },
     { status: 201 }
   );

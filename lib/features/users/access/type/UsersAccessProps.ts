@@ -7,7 +7,6 @@ type BaseUsersAccessProps = {
     main_menu_id: number;
     sub_menu: {
       sub_menu_id: number;
-      main_menu_id: number;
     }[];
   }[];
   is_active: 0 | 1;

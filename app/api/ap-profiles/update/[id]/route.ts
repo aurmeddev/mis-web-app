@@ -4,8 +4,6 @@ import { UpdateApProfilesProps } from "@/lib/features/ap-profiles/type/ApProfile
 import { FbAccountsServerService } from "@/lib/features/fb-accounts/FbAccountsServerService";
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { MySqlUtils } from "@/lib/utils/mysql/MySqlUtils";
-import { ObjectUtils } from "@/lib/utils/object/ObjectUtils";
-import { stat } from "fs";
 import { NextResponse, NextRequest } from "next/server";
 export const PUT = async (
   request: NextRequest,
@@ -41,11 +39,12 @@ export const PUT = async (
     );
   }
 
-  let payload: { [key: string]: any } = {};
+  const payload: { [key: string]: any } = {};
   const hasFbAccountRemoved = prop.new_fb_account_id === 0;
   const hasProfileAssignedNewFbAccount =
     prop.new_fb_account_id && prop.fb_account_id !== prop.new_fb_account_id;
-  const hasProfileNameChanged = prop.profile_name !== prop.new_profile_name;
+  const hasProfileNameChanged =
+    prop.new_profile_name && prop.profile_name !== prop.new_profile_name;
 
   if (hasFbAccountRemoved) {
     // Remove FB Account from the AP Profile

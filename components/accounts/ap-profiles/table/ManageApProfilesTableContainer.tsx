@@ -100,6 +100,7 @@ export function ManageApProfilesTableContainer({
 
   const handleSearchQueryChange = (ev: ChangeEvent<HTMLInputElement>) => {
     setSearchQuery({ ...searchQuery, query: ev.target.value });
+    if (!ev.target.value) return;
     handleSearchDebounce(ev.target.value);
   };
 
@@ -131,9 +132,12 @@ export function ManageApProfilesTableContainer({
       payload.profile_name = form.profile_name;
     }
 
-    if (form.fb_account_id !== editingData.fb_account?.id) {
-      payload.fb_account_id = form.fb_account_id;
-    }
+    // if (form.fb_account_id !== editingData.fb_account?.id) {
+    //   payload.fb_account_id = form.fb_account_id
+    // }
+
+    payload.fb_account_id =
+      form.fb_account_id || searchQuery.selectedResult?.fb_account_id;
 
     if (form.remarks !== editingData.remarks) {
       payload.remarks = form.remarks;
@@ -146,6 +150,7 @@ export function ManageApProfilesTableContainer({
     ev.preventDefault();
 
     const payload = buildPayload();
+    console.log("");
     setIsSubmitInProgress(true);
     const isUpdateMode = Object.keys(editingData).length >= 1;
 
@@ -313,13 +318,8 @@ export function ManageApProfilesTableContainer({
       </div>
       <ScrollArea className="h-[75dvh] mt-4">
         <ManageApProfilesTable
-          form={form}
           data={tableData}
-          editingRow={editingData}
           handleEditChange={handleEditChange}
-          handleInputChange={handleInputChange}
-          handleStatusChange={handleStatusChange}
-          isActionDisabled={isSubmitInProgress}
         />
 
         <Pagination

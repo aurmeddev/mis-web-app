@@ -10,6 +10,9 @@ export default async function Page() {
     if (team_name === "Traffic Team") {
       return redirect("/otp-generator/facebook");
     }
+    if (team_name === "Recruitment Team") {
+      return redirect("/accounts/fb-accounts");
+    }
     return redirect("/accounts/ap-profiles");
   }
   return (

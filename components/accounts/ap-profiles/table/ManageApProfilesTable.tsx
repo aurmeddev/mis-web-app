@@ -10,20 +10,12 @@ import {
   SearchX,
   User2,
 } from "lucide-react";
-import { ManageApProfilesTableHeader } from "./ManageApProfilesTableHeader";
-import { Input } from "@/components/ui/input";
-import { StatusSelect } from "../select/StatusSelect";
 import { Button } from "@/components/ui/button";
-import { Profile } from "../type";
+import { Header } from "@/components/table/header/Header";
 
 type UserManagementTableProps = {
   data: any;
-  form: any;
-  editingRow: Partial<Profile>;
   handleEditChange: (id: number | null) => void;
-  handleInputChange: (name: string, value: string) => void;
-  handleStatusChange: (value: string) => void;
-  isActionDisabled: boolean;
 };
 
 function BadgeStatus({ status }: { status: string }) {
@@ -53,12 +45,7 @@ function BadgeStatus({ status }: { status: string }) {
 
 export function ManageApProfilesTable({
   data,
-  form,
-  editingRow,
   handleEditChange,
-  handleInputChange,
-  handleStatusChange,
-  isActionDisabled,
 }: UserManagementTableProps) {
   const tableHeaders = [
     { label: "#", className: "border-r text-sm" },
@@ -101,7 +88,7 @@ export function ManageApProfilesTable({
   ];
   return (
     <Table className="border-t border-r-0 table-auto">
-      <ManageApProfilesTableHeader headers={tableHeaders} />
+      <Header headers={tableHeaders} />
       <TableBody>
         {!data?.length && (
           <TableRow className="bg-muted">
@@ -116,82 +103,60 @@ export function ManageApProfilesTable({
           </TableRow>
         )}
 
-        {data.map((rowData: any, idx: number) => {
-          const isEditing = editingRow === rowData.id;
-          return (
-            <TableRow key={idx}>
-              <TableCell className="border-r font-medium text-sm max-w-[10%]">
-                {rowData.row_id}
-              </TableCell>
-              <TableCell className="border-r text-sm">
-                {isEditing ? (
-                  <Input
-                    autoFocus
-                    className="border h-8 px-2 py-0 rounded w-full"
-                    disabled={isActionDisabled}
-                    value={form.profile_name}
-                    onChange={(e) =>
-                      handleInputChange("profile_name", e.target.value)
-                    }
-                  />
-                ) : (
-                  rowData.profile_name
-                )}
-              </TableCell>
-              <TableCell className="border-r text-sm">
-                {isEditing ? (
-                  <Input
-                    className="border h-8 px-2 py-0 rounded w-full"
-                    disabled={isActionDisabled}
-                    value={form.fb_owner_name}
-                    onChange={(e) =>
-                      handleInputChange("fb_owner_name", e.target.value)
-                    }
-                  />
-                ) : (
-                  rowData.fb_account.fb_owner_name
-                )}
-              </TableCell>
-              <TableCell className="border-r text-sm">
-                {rowData.remarks}
-              </TableCell>
-              <TableCell
-                className="border-r font-medium py-0 text-sm"
-                colSpan={2}
-              >
-                {isEditing ? (
-                  <StatusSelect
-                    value={String(form.is_active) || String(rowData.is_active)}
-                    onChange={handleStatusChange}
-                    isDisabled={isActionDisabled}
-                  />
-                ) : (
-                  <BadgeStatus status={rowData.status} />
-                )}
-              </TableCell>
-              <TableCell className="border-r text-sm">
-                <div className="text-xs">{rowData.created_by.full_name}</div>
-                <div className="text-xs text-muted-foreground">
-                  {rowData.created_by.team_name}
+        {data.map((rowData: any, idx: number) => (
+          <TableRow key={idx}>
+            <TableCell className="border-r font-medium text-sm max-w-[10%]">
+              {rowData.row_id}
+            </TableCell>
+            <TableCell className="border-r text-sm">
+              {rowData.profile_name}
+            </TableCell>
+            <TableCell className="border-r text-sm">
+              <div className="flex flex-col">
+                <div className="flex gap-2 items-center">
+                  <div className="text-muted-foreground text-xs">Owner:</div>
+                  <div className="text-xs">
+                    {rowData.fb_account.fb_owner_name}
+                  </div>
                 </div>
-              </TableCell>
-              <TableCell className="border-r text-sm">
-                {rowData.created_at}
-              </TableCell>
-              <TableCell>
-                <div className="flex justify-center gap-2 text-center">
-                  <Button
-                    className="cursor-pointer h-7 py-0 px-3"
-                    variant="outline"
-                    onClick={() => handleEditChange(rowData.id)}
-                  >
-                    <Pencil style={{ height: "14px", width: "14px" }} /> Edit
-                  </Button>
+
+                <div className="flex gap-2 items-center">
+                  <div className="text-muted-foreground text-xs">Username:</div>
+                  <div className="text-xs">{rowData.fb_account.username}</div>
                 </div>
-              </TableCell>
-            </TableRow>
-          );
-        })}
+              </div>
+            </TableCell>
+            <TableCell className="border-r text-sm">
+              {rowData.remarks}
+            </TableCell>
+            <TableCell
+              className="border-r font-medium py-0 text-sm"
+              colSpan={2}
+            >
+              <BadgeStatus status={rowData.status} />
+            </TableCell>
+            <TableCell className="border-r text-sm">
+              <div className="text-xs">{rowData.created_by.full_name}</div>
+              <div className="text-xs text-muted-foreground">
+                {rowData.created_by.team_name}
+              </div>
+            </TableCell>
+            <TableCell className="border-r text-sm">
+              {rowData.created_at}
+            </TableCell>
+            <TableCell>
+              <div className="flex justify-center gap-2 text-center">
+                <Button
+                  className="cursor-pointer h-7 py-0 px-3"
+                  variant="outline"
+                  onClick={() => handleEditChange(rowData.id)}
+                >
+                  <Pencil style={{ height: "14px", width: "14px" }} /> Edit
+                </Button>
+              </div>
+            </TableCell>
+          </TableRow>
+        ))}
       </TableBody>
     </Table>
   );

@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { SearchInput } from "@/components/search/SearchInput";
 import {
   ChangeEvent,
   FormEvent,
@@ -20,7 +19,6 @@ import {
   useTransition,
 } from "react";
 import { SearchQuery } from "@/components/otp-generator/type";
-import { SearchResult } from "@/components/search/SearchResult";
 import { useDebouncedCallback } from "use-debounce";
 import { FbAccountsService } from "@/lib/features/fb-accounts/FbAccountsService";
 import { Loader2, X } from "lucide-react";
@@ -28,7 +26,7 @@ import { ApProfilesService } from "@/lib/features/ap-profiles/ApProfilesService"
 import { AssignFBSearchResults } from "../search/AssignFBSearchResults";
 import { SearchWrapper } from "../search/SearchWrapper";
 
-type ConfirmDialogProps = {
+type ManageApProfilesDialogProps = {
   form: any;
   open: boolean;
   canSave: boolean;
@@ -48,7 +46,7 @@ export function ManageApProfilesDialog({
   handleSubmit,
   handleInputChange,
   isActionDisabled,
-}: ConfirmDialogProps) {
+}: ManageApProfilesDialogProps) {
   const fbAccountsService = new FbAccountsService();
   const profilesService = new ApProfilesService();
   const [searchQuery, setSearchQuery] = useState<SearchQuery>({
@@ -59,6 +57,7 @@ export function ManageApProfilesDialog({
   });
   const [showResults, setShowResults] = useState(false);
   const [isExisting, setIsExisting] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   const handleSearchDebounce = useDebouncedCallback(async (data: string) => {
@@ -72,13 +71,19 @@ export function ManageApProfilesDialog({
   }, 500);
 
   const handleProfileDebounce = useDebouncedCallback(async (data: string) => {
-    if (!data) return setIsExisting(false);
+    if (!data) {
+      setIsExisting(false);
+      setIsSearching(false);
+      return;
+    }
+    setIsSearching(true);
     startTransition(async () => {
       const response = await profilesService.find({
         method: "find-one",
         searchKeyword: data,
       });
       setIsExisting(response.data.length >= 1);
+      setIsSearching(false);
     });
   }, 500);
 
@@ -265,7 +270,9 @@ export function ManageApProfilesDialog({
             <Button
               className="cursor-pointer"
               type="submit"
-              disabled={isActionDisabled || isExisting || !canSave}
+              disabled={
+                isActionDisabled || isExisting || isSearching || !canSave
+              }
             >
               {isActionDisabled ? "Saving..." : "Save"}
             </Button>

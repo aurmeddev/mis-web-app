@@ -129,15 +129,15 @@ export function ManageApProfilesTableContainer({
     const payload: any = {};
 
     if (form.profile_name !== editingData.profile_name) {
-      payload.profile_name = form.profile_name;
+      payload.profile_name = editingData.profile_name;
+      payload.new_profile_name = form.profile_name;
     }
 
-    // if (form.fb_account_id !== editingData.fb_account?.id) {
-    //   payload.fb_account_id = form.fb_account_id
-    // }
-
-    payload.fb_account_id =
-      form.fb_account_id || searchQuery.selectedResult?.fb_account_id;
+    if (form.fb_account_id !== editingData.fb_account?.id) {
+      payload.fb_account_id = editingData.fb_account?.id || 0;
+      payload.new_fb_account_id =
+        form.fb_account_id || searchQuery.selectedResult?.fb_account_id || 0;
+    }
 
     if (form.remarks !== editingData.remarks) {
       payload.remarks = form.remarks;
@@ -150,7 +150,7 @@ export function ManageApProfilesTableContainer({
     ev.preventDefault();
 
     const payload = buildPayload();
-    console.log("");
+    console.log("payload ", payload);
     setIsSubmitInProgress(true);
     const isUpdateMode = Object.keys(editingData).length >= 1;
 
@@ -208,17 +208,20 @@ export function ManageApProfilesTableContainer({
   const handleUpdateEntry = (response: ApiResponseProps, payload: any) => {
     setTableData((prevData: any[]) =>
       prevData.map((item) => {
-        const hasOnlyRemarks =
-          Object.keys(payload).length === 1 && "remarks" in payload;
+        const payloadLength = Object.keys(payload).length;
+        const hasOnlyRemarks = payloadLength === 1 && "remarks" in payload;
+        const hasOnlyProfile =
+          payloadLength <= 2 && payloadLength > 2 && "profile_name" in payload;
 
         const output =
           item.id === editingData.id
             ? {
                 ...item,
                 ...form,
-                fb_account: hasOnlyRemarks
-                  ? item.fb_account
-                  : response.data[0].fb_account,
+                fb_account:
+                  hasOnlyRemarks || hasOnlyProfile
+                    ? item.fb_account
+                    : response.data[0].fb_account,
                 status: response.data[0].status,
               }
             : item;

@@ -86,6 +86,7 @@ export function ManageApProfilesTable({
       colSpan: 1,
     },
   ];
+
   return (
     <Table className="border-t border-r-0 table-auto">
       <Header headers={tableHeaders} />
@@ -103,60 +104,71 @@ export function ManageApProfilesTable({
           </TableRow>
         )}
 
-        {data.map((rowData: any, idx: number) => (
-          <TableRow key={idx}>
-            <TableCell className="border-r font-medium text-sm max-w-[10%]">
-              {rowData.row_id}
-            </TableCell>
-            <TableCell className="border-r text-sm">
-              {rowData.profile_name}
-            </TableCell>
-            <TableCell className="border-r text-sm">
-              <div className="flex flex-col">
-                <div className="flex gap-2 items-center">
-                  <div className="text-muted-foreground text-xs">Owner:</div>
-                  <div className="text-xs">
-                    {rowData.fb_account.fb_owner_name}
-                  </div>
-                </div>
+        {data.map((rowData: any, idx: number) => {
+          const hasFbAccount = Object.keys(rowData.fb_account).length >= 1;
+          return (
+            <TableRow key={idx}>
+              <TableCell className="border-r font-medium text-sm max-w-[10%]">
+                {rowData.row_id}
+              </TableCell>
+              <TableCell className="border-r text-sm">
+                {rowData.profile_name}
+              </TableCell>
+              <TableCell className="border-r text-sm">
+                {hasFbAccount && (
+                  <div className="flex flex-col">
+                    <div className="flex gap-2 items-center">
+                      <div className="text-muted-foreground text-xs">
+                        Owner:
+                      </div>
+                      <div className="text-xs">
+                        {rowData.fb_account.fb_owner_name}
+                      </div>
+                    </div>
 
-                <div className="flex gap-2 items-center">
-                  <div className="text-muted-foreground text-xs">Username:</div>
-                  <div className="text-xs">{rowData.fb_account.username}</div>
+                    <div className="flex gap-2 items-center">
+                      <div className="text-muted-foreground text-xs">
+                        Username:
+                      </div>
+                      <div className="text-xs">
+                        {rowData.fb_account.username}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </TableCell>
+              <TableCell className="border-r text-sm">
+                {rowData.remarks}
+              </TableCell>
+              <TableCell
+                className="border-r font-medium py-0 text-sm"
+                colSpan={2}
+              >
+                <BadgeStatus status={rowData.status} />
+              </TableCell>
+              <TableCell className="border-r text-sm">
+                <div className="text-xs">{rowData.created_by.full_name}</div>
+                <div className="text-xs text-muted-foreground">
+                  {rowData.created_by.team_name}
                 </div>
-              </div>
-            </TableCell>
-            <TableCell className="border-r text-sm">
-              {rowData.remarks}
-            </TableCell>
-            <TableCell
-              className="border-r font-medium py-0 text-sm"
-              colSpan={2}
-            >
-              <BadgeStatus status={rowData.status} />
-            </TableCell>
-            <TableCell className="border-r text-sm">
-              <div className="text-xs">{rowData.created_by.full_name}</div>
-              <div className="text-xs text-muted-foreground">
-                {rowData.created_by.team_name}
-              </div>
-            </TableCell>
-            <TableCell className="border-r text-sm">
-              {rowData.created_at}
-            </TableCell>
-            <TableCell>
-              <div className="flex justify-center gap-2 text-center">
-                <Button
-                  className="cursor-pointer h-7 py-0 px-3"
-                  variant="outline"
-                  onClick={() => handleEditChange(rowData.id)}
-                >
-                  <Pencil style={{ height: "14px", width: "14px" }} /> Edit
-                </Button>
-              </div>
-            </TableCell>
-          </TableRow>
-        ))}
+              </TableCell>
+              <TableCell className="border-r text-sm">
+                {rowData.created_at}
+              </TableCell>
+              <TableCell>
+                <div className="flex justify-center gap-2 text-center">
+                  <Button
+                    className="cursor-pointer h-7 py-0 px-3"
+                    variant="outline"
+                    onClick={() => handleEditChange(rowData.id)}
+                  >
+                    <Pencil style={{ height: "14px", width: "14px" }} /> Edit
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
+          );
+        })}
       </TableBody>
     </Table>
   );

@@ -36,7 +36,7 @@ export function Pagination({
           <SelectGroup>
             {limits.map((limit) => (
               <SelectItem key={limit} value={limit}>
-                {limit}
+                Limit: {limit}
               </SelectItem>
             ))}
           </SelectGroup>

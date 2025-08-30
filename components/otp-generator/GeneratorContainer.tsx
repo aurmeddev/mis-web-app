@@ -1,9 +1,7 @@
 "use client";
-import { Search, SearchIcon } from "lucide-react";
-import { Input } from "../ui/input";
+import { Search } from "lucide-react";
 import { GeneratorCard } from "./GeneratorCard";
 import { ChangeEvent, useEffect, useState, useTransition } from "react";
-import { ReloadIcon } from "@radix-ui/react-icons";
 import { useDebouncedCallback } from "use-debounce";
 import { ApProfilesService } from "@/lib/features/ap-profiles/ApProfilesService";
 import { SearchResult } from "../search/SearchResult";

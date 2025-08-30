@@ -5,6 +5,7 @@ import { FbAccountsServerService } from "@/lib/features/fb-accounts/FbAccountsSe
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { MySqlUtils } from "@/lib/utils/mysql/MySqlUtils";
 import { ObjectUtils } from "@/lib/utils/object/ObjectUtils";
+import { stat } from "fs";
 import { NextResponse, NextRequest } from "next/server";
 export const PUT = async (
   request: NextRequest,
@@ -22,12 +23,12 @@ export const PUT = async (
   //   );
   // }
 
-  const apProfileId = `${(await params).id}`;
+  const profileId = `${(await params).id}`;
   const data: UpdateApProfilesProps = await request.json();
   const { id, ...prop } = data;
   const { isSuccess, message, status } = await validateFbAccountAssignment({
-    fb_account_id: prop.fb_account_id,
-    profile_name: prop.profile_name,
+    new_fb_account_id: prop.new_fb_account_id,
+    new_profile_name: prop.new_profile_name,
   });
 
   if (!isSuccess) {
@@ -40,38 +41,36 @@ export const PUT = async (
     );
   }
 
-  const objUtil = new ObjectUtils();
-  const payload = {
-    ...prop,
-    profile_name: prop.profile_name,
-    fb_account_id: prop.fb_account_id,
-  };
+  let payload: { [key: string]: any } = {};
+  const hasFbAccountRemoved = prop.new_fb_account_id === 0;
+  const hasProfileAssignedNewFbAccount =
+    prop.new_fb_account_id && prop.fb_account_id !== prop.new_fb_account_id;
+  const hasProfileNameChanged = prop.profile_name !== prop.new_profile_name;
 
-  let validationUpdateQueryParams: { [key: string]: any } = {};
-
-  if (payload.fb_account_id === 0) {
+  if (hasFbAccountRemoved) {
     // Remove FB Account from the AP Profile
-    const { fb_account_id, ...rest } = payload;
-    validationUpdateQueryParams = objUtil.removeInvalidKeys(rest);
-    validationUpdateQueryParams.fb_account_id = fb_account_id;
-    validationUpdateQueryParams.is_active = 0; // Set status to available
-    if (payload.remarks !== undefined) {
-      validationUpdateQueryParams.remarks = payload.remarks;
-    }
-  } else {
-    validationUpdateQueryParams = objUtil.removeInvalidKeys(payload);
-    if (payload.remarks !== undefined) {
-      validationUpdateQueryParams.remarks = payload.remarks;
-    }
-    if (payload.fb_account_id && payload.fb_account_id > 0) {
-      validationUpdateQueryParams.is_active = 1; // Set status to active
-    }
+    payload.fb_account_id = 0;
+    payload.is_active = 0; // Set status to available
+  } else if (hasProfileAssignedNewFbAccount) {
+    payload.fb_account_id = prop.new_fb_account_id;
+    payload.is_active = 1; // Set status to active
+  }
+
+  // Update the profile name if it has changed.
+  if (hasProfileNameChanged) {
+    payload.profile_name = prop.new_profile_name;
+  }
+
+  // Update remarks if a value is provided (even an empty string or 0).
+  const hasRemarksChanged = prop.remarks !== undefined;
+  if (hasRemarksChanged) {
+    payload.remarks = prop.remarks;
   }
 
   const mysqlUtils = new MySqlUtils();
   const { columns, values, whereClause } = mysqlUtils.generateUpdateQuery({
-    ...validationUpdateQueryParams,
-    id: apProfileId,
+    ...payload,
+    id: profileId,
   });
   const queryString = `UPDATE Ap_Profiles ${columns} ${whereClause}`;
   console.log(queryString);
@@ -85,36 +84,33 @@ export const PUT = async (
     });
 
     let getFbAccountInfo: any;
-    if (prop.fb_account_id && prop.fb_account_id > 0) {
+    const customSearchParams = new URLSearchParams();
+    if ((prop.new_fb_account_id ?? 0) > 0) {
       const fbs = new FbAccountsServerService();
-      const customSearchParams = new URLSearchParams();
-      customSearchParams.set("method", "find-one");
       const { data } = await fbs.find({
         searchKeyword: "validation",
         requestUrlSearchParams: customSearchParams,
-        payload: { id: prop.fb_account_id },
+        payload: { id: prop.new_fb_account_id },
       });
 
       getFbAccountInfo = data[0];
     }
 
-    const hasReassignedFbAccount =
-      prop.fb_account_id === 0 && validationUpdateQueryParams.is_active === 0;
-    const hasAssignedFbAccount =
-      prop.fb_account_id &&
-      prop.fb_account_id > 0 &&
-      validationUpdateQueryParams.is_active === 1;
-    const hasUpdatedRemarks = validationUpdateQueryParams.remarks !== undefined;
+    const aps = new ApProfilesServerService();
+    customSearchParams.set("method", "find-one");
+    const { data } = await aps.find({
+      searchKeyword: "validation",
+      requestUrlSearchParams: customSearchParams,
+      payload: {
+        id: profileId,
+      },
+    });
 
     const response = [
       {
-        fb_account_id: prop.fb_account_id,
+        fb_account_id: prop.new_fb_account_id ?? prop.fb_account_id,
         fb_account: getFbAccountInfo || {},
-        status: hasReassignedFbAccount
-          ? "available"
-          : hasAssignedFbAccount || hasUpdatedRemarks
-          ? "active"
-          : "inactive",
+        status: data[0].status,
       },
     ];
     return NextResponse.json(
@@ -140,23 +136,23 @@ export const PUT = async (
 
 type ValidateFbAccountAssignmentProps = Omit<
   UpdateApProfilesProps,
-  "id" | "remarks"
+  "id" | "remarks" | "fb_account_id" | "profile_name"
 >;
 // Validate if the fb account does not assign to another profile
 const validateFbAccountAssignment = async (
   params: ValidateFbAccountAssignmentProps
 ) => {
-  const { fb_account_id, profile_name } = params;
+  const { new_fb_account_id, new_profile_name } = params;
   const aps = new ApProfilesServerService();
 
   const customSearchParams = new URLSearchParams();
   customSearchParams.set("method", "find-one");
-  if (fb_account_id) {
+  if (new_fb_account_id) {
     const validationResponse = await aps.find({
       searchKeyword: "validation",
       requestUrlSearchParams: customSearchParams,
       payload: {
-        fb_account_id: fb_account_id,
+        fb_account_id: new_fb_account_id,
       },
     });
 
@@ -178,12 +174,12 @@ const validateFbAccountAssignment = async (
     }
   }
 
-  if (profile_name) {
+  if (new_profile_name) {
     const validationResponse = await aps.find({
       searchKeyword: "validation",
       requestUrlSearchParams: customSearchParams,
       payload: {
-        profile_name: profile_name,
+        profile_name: new_profile_name,
       },
     });
 

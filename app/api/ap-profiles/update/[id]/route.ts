@@ -84,6 +84,7 @@ export const PUT = async (
 
     let getFbAccountInfo: any;
     const customSearchParams = new URLSearchParams();
+    customSearchParams.set("method", "find-one");
     if ((prop.new_fb_account_id ?? 0) > 0) {
       const fbs = new FbAccountsServerService();
       const { data } = await fbs.find({
@@ -96,7 +97,6 @@ export const PUT = async (
     }
 
     const aps = new ApProfilesServerService();
-    customSearchParams.set("method", "find-one");
     const { data } = await aps.find({
       searchKeyword: "validation",
       requestUrlSearchParams: customSearchParams,

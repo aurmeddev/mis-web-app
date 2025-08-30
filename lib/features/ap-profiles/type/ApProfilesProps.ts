@@ -4,7 +4,7 @@ import { BaseSearchKeywordProps } from "../../search-keyword/type/SearchKeywordP
 type BaseApProfilesProps = {
   id: number; // auto-incremented in the database
   profile_name: string;
-  fb_account_id?: number;
+  fb_account_id: number;
   remarks?: string;
   is_active: 0 | 1; // 0: Inactive, 1: Active
   created_by:
@@ -24,7 +24,10 @@ type PostApProfilesProps = Omit<
 type UpdateApProfilesProps = Omit<
   BaseApProfilesProps,
   "is_active" | "created_by" | "created_at"
->;
+> & {
+  new_profile_name?: string;
+  new_fb_account_id?: number;
+};
 
 type ToggleApProfilesStatusProps = Omit<
   BaseApProfilesProps,

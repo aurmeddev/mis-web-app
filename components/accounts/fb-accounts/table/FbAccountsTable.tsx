@@ -55,6 +55,7 @@ export function FbAccountsTable({
   const tableHeaders = [
     { label: "#", className: "border-r text-sm" },
     { label: "FB Account", className: "border-r text-sm w-[15%]", colSpan: 1 },
+    { label: "Profile", className: "border-r text-sm w-[15%]", colSpan: 1 },
     {
       label: "Email",
       className: "border-r text-sm ",
@@ -138,6 +139,9 @@ export function FbAccountsTable({
             </TableCell>
             <TableCell className="border-r text-sm">
               {rowData.fb_owner_name}
+            </TableCell>
+            <TableCell className="border-r text-sm">
+              {rowData.ap_profile.profile_name}
             </TableCell>
             <TableCell className="border-r text-sm">
               {rowData.email_address}

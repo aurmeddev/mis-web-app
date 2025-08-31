@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { FbAccountsTable } from "./FbAccountsTable";
 import { FbAccountsDialog } from "../dialog/FbAccountsDialog";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Pagination } from "@/components/pagination/route-based/Pagination";
 import { SearchQuery } from "@/components/otp-generator/type";
 import { ApiResponseProps } from "@/database/dbConnection";
@@ -15,9 +15,7 @@ import { FbAccountsService } from "@/lib/features/fb-accounts/FbAccountsService"
 import { FBAccount, FBAccountForm } from "../type";
 import { CryptoClientService } from "@/lib/features/security/cryptography/CryptoClientService";
 import { SearchWrapper } from "../../ap-profiles/search/SearchWrapper";
-import { ApProfilesSearchResults } from "../../ap-profiles/search/ApProfilesSearchResults";
 import { FbAccountsSearchResults } from "../search/FbAccountsSearchResults";
-import { SearchParamsManager } from "@/lib/utils/search-params/SearchParamsManager";
 
 type FbAccountsTableContainerProps = {
   response: ApiResponseProps & { pagination?: PaginationProps };
@@ -84,7 +82,9 @@ export function FbAccountsTableContainer({
 
   const handleSearchQueryChange = (ev: ChangeEvent<HTMLInputElement>) => {
     setSearchQuery({ ...searchQuery, query: ev.target.value });
-    handleSearchDebounce(ev.target.value);
+    if (ev.target.value) {
+      handleSearchDebounce(ev.target.value);
+    }
   };
 
   const handleSearchFocus = () => {
@@ -266,7 +266,7 @@ export function FbAccountsTableContainer({
   const limit = response.pagination?.limit || 10;
 
   return (
-    <div className="w-full overflow-auto">
+    <div className="overflow-auto w-full">
       <FbAccountsDialog
         form={form}
         open={open}
@@ -321,6 +321,22 @@ export function FbAccountsTableContainer({
           handlePagination={handlePagination}
         />
       </ScrollArea>
+
+      {/* <ScrollArea className="h-[75dvh] mt-4"> */}
+      {/* <div className="overflow-w-auto">
+        <FbAccountsTable
+          data={memoizedTableData}
+          handleEditChange={handleEditChange}
+        />
+      </div>
+
+      <Pagination
+        currentPage={Number(currentPage)}
+        limit={limit}
+        total_pages={Number(total_pages)}
+        handlePagination={handlePagination}
+      /> */}
+      {/* </ScrollArea> */}
     </div>
   );
 }

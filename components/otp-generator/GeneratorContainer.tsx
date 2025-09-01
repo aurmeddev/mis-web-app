@@ -49,11 +49,19 @@ export function GeneratorContainer() {
 
   const generateOTP = async (calledAgain: boolean) => {
     if (!searchQuery.selectedResult) return;
-    const response = await otpGeneratorService.generate({
-      secret: searchQuery.selectedResult.fb_account.app_2fa_key,
-    });
+    const secretKey = searchQuery.selectedResult.fb_account.app_2fa_key;
+    let response = {
+      data: {
+        otp: "",
+      },
+    };
+    if (secretKey) {
+      response = await otpGeneratorService.generate({
+        secret: secretKey,
+      });
+    }
 
-    const updateOTP = () => setCurrentOTP(response.data.otp);
+    const updateOTP = () => setCurrentOTP(response.data?.otp);
     if (calledAgain) {
       updateOTP();
     } else {
@@ -107,7 +115,7 @@ export function GeneratorContainer() {
         </div>
 
         {isPending && !currentOTP ? <GeneratorCardLoading /> : ""}
-        {searchQuery.selectedResult && currentOTP && (
+        {searchQuery.selectedResult && (
           <GeneratorCard
             selectedResult={searchQuery.selectedResult}
             otp={currentOTP}

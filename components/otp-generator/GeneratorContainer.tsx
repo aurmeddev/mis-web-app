@@ -55,11 +55,14 @@ export function GeneratorContainer() {
         otp: "",
       },
     };
-    if (secretKey) {
-      response = await otpGeneratorService.generate({
-        secret: secretKey,
-      });
+    if (!secretKey) {
+      setCurrentOTP("No secret key was provided");
+      return;
     }
+
+    response = await otpGeneratorService.generate({
+      secret: secretKey,
+    });
 
     const updateOTP = () => setCurrentOTP(response.data?.otp);
     if (calledAgain) {
@@ -114,13 +117,16 @@ export function GeneratorContainer() {
           )}
         </div>
 
-        {isPending && !currentOTP ? <GeneratorCardLoading /> : ""}
-        {searchQuery.selectedResult && (
+        {searchQuery.selectedResult ? (
           <GeneratorCard
             selectedResult={searchQuery.selectedResult}
             otp={currentOTP}
             generateOTP={generateOTP}
           />
+        ) : isPending ? (
+          <GeneratorCardLoading />
+        ) : (
+          ""
         )}
         {!searchQuery.selectedResult && !currentOTP && (
           <div className="absolute gap-4 left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2 flex flex-col justify-center items-center">

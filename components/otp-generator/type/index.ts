@@ -22,4 +22,8 @@ export type GeneratorCardProps = GeneratorBaseProps & {
   selectedResult: Record<string, any>;
 };
 
+export type GeneratorCardIdentifier = {
+  identifier: "otp" | "username" | "password";
+};
+
 export type GeneratorCountdownProps = GeneratorBaseProps;

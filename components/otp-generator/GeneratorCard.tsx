@@ -11,6 +11,8 @@ import { toast } from "sonner";
 import { GeneratorCountdown } from "./GeneratorCountdown";
 import { GeneratorCardProps } from "./type";
 import { GeneratorButtonCopy } from "./GeneratorButtonCopy";
+import { logAction } from "@/lib/features/logger/LogAction";
+import { cn } from "@/lib/utils";
 
 export function GeneratorCard({
   selectedResult,
@@ -18,17 +20,33 @@ export function GeneratorCard({
   generateOTP,
 }: GeneratorCardProps) {
   const clipboardUtils = new ClipboardUtils();
-  const handleCopy = async (identifier: "otp" | "username" | "password") => {
-    let textToCopy = "";
-    if (identifier == "otp") {
-      textToCopy = otp;
-    } else if (identifier == "username") {
-      textToCopy = selectedResult.fb_account.username;
-    } else {
-      textToCopy = selectedResult.fb_account.password;
+  const getCopyData = (
+    identifier: "otp" | "username" | "password",
+    otp: string,
+    selectedResult: Record<string, any>
+  ) => {
+    switch (identifier) {
+      case "otp":
+        return { text: otp, logType: 5 };
+      case "username":
+        return { text: selectedResult.fb_account.username, logType: 7 };
+      case "password":
+        return { text: selectedResult.fb_account.password, logType: 8 };
+      default:
+        throw new Error("Invalid identifier");
     }
-    await clipboardUtils.copyToClipboard(textToCopy);
+  };
+
+  const handleCopy = async (identifier: "otp" | "username" | "password") => {
+    const { text, logType } = getCopyData(identifier, otp, selectedResult);
+
+    await clipboardUtils.copyToClipboard(text);
     toast.success("Copied to clipboard!", { icon: <Clipboard /> });
+
+    await logAction({
+      log_type_id: logType,
+      description: selectedResult.profile_name,
+    });
   };
 
   return (
@@ -41,14 +59,26 @@ export function GeneratorCard({
           </div>
         </CardTitle>
         <CardDescription>
-          <div className="bg-muted font-bold relative rounded py-2 text-center text-2xl">
-            {otp}
-
-            <GeneratorButtonCopy handleCopy={() => handleCopy("otp")} />
+          <div
+            className={cn(
+              !otp ? "text-sm" : "text-2xl",
+              "bg-muted font-bold relative rounded py-2 text-center"
+            )}
+          >
+            {otp || (
+              <div className="text-red-500">No secret key was provided</div>
+            )}
+            {otp && (
+              <GeneratorButtonCopy handleCopy={() => handleCopy("otp")} />
+            )}
           </div>
           <div className="flex gap-1 mt-2 relative">
             This code expires in
-            <GeneratorCountdown otp={otp} generateOTP={generateOTP} />
+            {otp ? (
+              <GeneratorCountdown otp={otp} generateOTP={generateOTP} />
+            ) : (
+              " 0s"
+            )}
           </div>
         </CardDescription>
       </CardHeader>

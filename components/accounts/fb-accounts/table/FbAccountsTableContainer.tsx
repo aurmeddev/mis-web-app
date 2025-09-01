@@ -16,6 +16,7 @@ import { FBAccount, FBAccountForm } from "../type";
 import { CryptoClientService } from "@/lib/features/security/cryptography/CryptoClientService";
 import { SearchWrapper } from "../../ap-profiles/search/SearchWrapper";
 import { FbAccountsSearchResults } from "../search/FbAccountsSearchResults";
+import { SearchParamsManager } from "@/lib/utils/search-params/SearchParamsManager";
 
 type FbAccountsTableContainerProps = {
   response: ApiResponseProps & { pagination?: PaginationProps };
@@ -28,6 +29,7 @@ export function FbAccountsTableContainer({
 }: FbAccountsTableContainerProps) {
   const fbAccountsService = new FbAccountsService();
   const cryptoClientService = new CryptoClientService();
+  const searchParamsManager = new SearchParamsManager();
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -237,15 +239,8 @@ export function FbAccountsTableContainer({
 
     const page = searchParams.get("page") || "";
     const limit = searchParams.get("limit") || "";
-    const triggerCache = Math.random()
-      .toString(36)
-      .substring(2, 5 + 2);
-    const query = new URLSearchParams();
-
-    if (page) query.set("page", page);
-    if (limit) query.set("limit", limit);
-    query.set("trigger", triggerCache);
-    router.push(`?${query.toString()}`);
+    const newRoute = searchParamsManager.refreshWithCacheBuster(page, limit);
+    router.push(`?${newRoute.toString()}`);
   };
 
   const handleNewProfile = () => {

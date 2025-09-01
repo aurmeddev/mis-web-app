@@ -13,6 +13,7 @@ import { GeneratorCardProps } from "./type";
 import { GeneratorButtonCopy } from "./GeneratorButtonCopy";
 import { logAction } from "@/lib/features/logger/LogAction";
 import { cn } from "@/lib/utils";
+import { debounceAsync } from "@/lib/utils/debounce/debounce";
 
 export function GeneratorCard({
   selectedResult,
@@ -37,18 +38,23 @@ export function GeneratorCard({
     }
   };
 
+  const debouncedLogAction = debounceAsync(async (logType: number) => {
+    await logAction({
+      log_type_id: logType,
+      description: selectedResult.profile_name,
+    });
+  }, 500);
+
   const handleCopy = async (identifier: "otp" | "username" | "password") => {
     const { text, logType } = getCopyData(identifier, otp, selectedResult);
 
     await clipboardUtils.copyToClipboard(text);
     toast.success("Copied to clipboard!", { icon: <Clipboard /> });
 
-    await logAction({
-      log_type_id: logType,
-      description: selectedResult.profile_name,
-    });
+    debouncedLogAction(logType);
   };
 
+  const isError = otp.length > 6;
   return (
     <Card className="w-full max-w-sm">
       <CardHeader className="relative">
@@ -61,14 +67,14 @@ export function GeneratorCard({
         <CardDescription>
           <div
             className={cn(
-              !otp ? "text-sm" : "text-2xl",
+              isError ? "text-sm text-red-500" : "text-2xl",
               "bg-muted font-bold relative rounded py-2 text-center"
             )}
           >
             {otp || (
-              <div className="text-red-500">No secret key was provided</div>
+              <div className="animate-pulse bg-gray-300 h-8 mx-auto rounded w-32"></div>
             )}
-            {otp && (
+            {!isError && (
               <GeneratorButtonCopy handleCopy={() => handleCopy("otp")} />
             )}
           </div>

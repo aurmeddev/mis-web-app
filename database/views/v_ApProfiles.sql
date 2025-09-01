@@ -59,9 +59,7 @@ SELECT
   ), JSON_OBJECT()) AS ap_created_by,
   ap.is_active,
   CASE
-    WHEN is_active = 0 AND fb_account_id != 0 THEN 'inactive'
-    WHEN is_active = 1 AND fb_account_id != 0 THEN 'active'
-    WHEN is_active = 0 AND fb_account_id = 0 THEN 'available'
-    ELSE 'unknown'
+    WHEN fb_account_id = 0 THEN 'available'
+    ELSE 'active'
   END AS status
 FROM `Ap_Profiles` AS ap;

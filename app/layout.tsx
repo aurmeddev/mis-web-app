@@ -11,6 +11,7 @@ import {
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import { Toaster } from "@/components/ui/sonner";
 import { UserActivityContextProvider } from "@/components/auth/context/UserActivityContextProvider";
+import { UserAccessController } from "@/components/auth/user-access-controller";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -56,7 +57,11 @@ export default async function RootLayout({
                       <SidebarTrigger className="-ml-1" />
                     </div>
                   </header>
-                  <main className="w-full overflow-hidden">{children}</main>
+                  <main className="w-full overflow-hidden">
+                    <UserAccessController navMain={session.user.navMain}>
+                      {children}
+                    </UserAccessController>
+                  </main>
                 </SidebarInset>
               </SidebarProvider>
             ) : (

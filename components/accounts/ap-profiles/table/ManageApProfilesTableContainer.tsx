@@ -123,20 +123,28 @@ export function ManageApProfilesTableContainer({
     setShowResults(false);
   };
 
-  const buildPayload = () => {
+  const buildPayload = (isUpdateMode: boolean) => {
     if (!editingData) return {};
 
     const payload: any = {};
 
     if (form.profile_name !== editingData.profile_name) {
-      payload.profile_name = editingData.profile_name;
-      payload.new_profile_name = form.profile_name;
+      if (!isUpdateMode) {
+        payload.profile_name = form.profile_name;
+      } else {
+        payload.profile_name = editingData.profile_name;
+        payload.new_profile_name = form.profile_name;
+      }
     }
 
     if (form.fb_account_id !== editingData.fb_account?.id) {
-      payload.fb_account_id = editingData.fb_account?.id || 0;
-      payload.new_fb_account_id =
-        form.fb_account_id || searchQuery.selectedResult?.fb_account_id || 0;
+      if (!isUpdateMode) {
+        payload.fb_account_id = form.fb_account_id;
+      } else {
+        payload.fb_account_id = editingData.fb_account?.id || 0;
+        payload.new_fb_account_id =
+          form.fb_account_id || searchQuery.selectedResult?.fb_account_id || 0;
+      }
     }
 
     if (form.remarks !== editingData.remarks) {
@@ -148,11 +156,10 @@ export function ManageApProfilesTableContainer({
 
   const handleSubmit = async (ev: FormEvent<HTMLFormElement>) => {
     ev.preventDefault();
-
-    const payload = buildPayload();
-    console.log("payload ", payload);
-    setIsSubmitInProgress(true);
     const isUpdateMode = Object.keys(editingData).length >= 1;
+
+    const payload = buildPayload(isUpdateMode);
+    setIsSubmitInProgress(true);
 
     const response = isUpdateMode
       ? await profilesService.update({ id: editingData.id, ...payload })
@@ -181,6 +188,7 @@ export function ManageApProfilesTableContainer({
       profile_name: form.profile_name,
       fb_account: {
         fb_owner_name: data[0].fb_account.fb_owner_name,
+        username: data[0].fb_account.username,
       },
       created_by: {
         full_name: createdBy.full_name,
@@ -211,7 +219,7 @@ export function ManageApProfilesTableContainer({
         const payloadLength = Object.keys(payload).length;
         const hasOnlyRemarks = payloadLength === 1 && "remarks" in payload;
         const hasOnlyProfile =
-          payloadLength <= 2 && payloadLength > 2 && "profile_name" in payload;
+          "new_profile_name" in payload && "profile_name" in payload;
 
         const output =
           item.id === editingData.id

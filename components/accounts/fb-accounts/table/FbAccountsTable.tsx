@@ -141,7 +141,7 @@ export function FbAccountsTable({
               {rowData.fb_owner_name}
             </TableCell>
             <TableCell className="border-r text-sm">
-              {rowData.ap_profile.profile_name}
+              {rowData.ap_profile?.profile_name || ""}
             </TableCell>
             <TableCell className="border-r text-sm">
               {rowData.email_address}
@@ -156,7 +156,9 @@ export function FbAccountsTable({
               {rowData.password}
             </TableCell>
             <TableCell className="border-r text-sm">
-              <div className="font-semibold">********</div>
+              <div className="font-semibold">
+                {rowData.app_2fa_key ? "********" : ""}
+              </div>
             </TableCell>
             <TableCell className="border-r text-sm">
               {rowData.recovery_code}

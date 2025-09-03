@@ -1,7 +1,7 @@
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/search/SearchInput";
-import { SearchResult } from "@/components/search/SearchResult";
+import { SearchResultContainer } from "@/components/search/SearchResultContainer";
 import { Dispatch, SetStateAction } from "react";
 
 type SearchWrapperProps = {
@@ -55,9 +55,9 @@ export function SearchWrapper({
       )}
 
       {showResults && (
-        <SearchResult setShowResults={setShowResults}>
+        <SearchResultContainer setShowResults={setShowResults}>
           {ResultsRenderer}
-        </SearchResult>
+        </SearchResultContainer>
       )}
     </>
   );

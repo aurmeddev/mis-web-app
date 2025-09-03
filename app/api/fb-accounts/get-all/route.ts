@@ -20,7 +20,21 @@ export const GET = async (request: NextRequest) => {
 
   const dbFieldColumns: Omit<GetAllFbAccountsProps, "page" | "limit"> = {};
   if (params.status) {
-    dbFieldColumns.status = params.status;
+    const lowercaseActiveValue = params.status.toLowerCase();
+    if (
+      lowercaseActiveValue !== "active" &&
+      lowercaseActiveValue !== "available"
+    ) {
+      return NextResponse.json(
+        {
+          isSuccess: false,
+          message: "Invalid status value. It must be active or available",
+          data: [],
+        },
+        { status: 400 }
+      );
+    }
+    dbFieldColumns.status = lowercaseActiveValue;
   }
 
   if (params.recruiter) {

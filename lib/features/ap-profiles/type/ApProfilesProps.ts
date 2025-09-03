@@ -37,7 +37,7 @@ type ToggleApProfilesStatusProps = Omit<
 type FindApProfilesProps = BaseSearchKeywordProps;
 
 type GetAllApProfilesProps = Omit<PaginationProps, "total_pages"> & {
-  recruiter?: string;
+  status?: "active" | "available";
 };
 
 export type {

@@ -1,5 +1,5 @@
 import { GetAllManageUsersProps } from "@/lib/features/users/manage/type/ManageUsersProps";
-import { ManageUsersServerService } from "@/lib/features/users/manage/ManageUsersServerService";
+import { UsersManageServerService } from "@/lib/features/users/manage/UsersManageServerService";
 import { SearchParamsManager } from "@/lib/utils/search-params/SearchParamsManager";
 import { NextResponse, NextRequest } from "next/server";
 export const GET = async (request: NextRequest) => {
@@ -7,7 +7,7 @@ export const GET = async (request: NextRequest) => {
     request.nextUrl.searchParams
   );
 
-  const umss = new ManageUsersServerService();
+  const umss = new UsersManageServerService();
   const { isSuccess, data, message, pagination } = await umss.getAllUsers(
     params
   );

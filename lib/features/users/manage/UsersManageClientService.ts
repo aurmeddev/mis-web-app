@@ -4,14 +4,14 @@ import { PaginationProps } from "@/lib/utils/pagination/type/PaginationProps";
 import { appBaseUrl } from "@/lib/base-url/appBaseUrl";
 import { SearchParamsManager } from "@/lib/utils/search-params/SearchParamsManager";
 
-export class ManageUsersClientService {
+export class UsersManageClientService {
   async getAllUsers(
     params: GetAllManageUsersProps
   ): Promise<ApiResponseProps & { pagination?: PaginationProps }> {
     const searchParams = new SearchParamsManager();
     const searchQueryParams = searchParams.append(params);
     const response = await fetch(
-      `${appBaseUrl}/api/users/get-all${searchQueryParams}`,
+      `${appBaseUrl}/api/users/manage/get-all${searchQueryParams}`,
       {
         method: "GET",
         headers: {

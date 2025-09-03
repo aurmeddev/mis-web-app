@@ -4,7 +4,7 @@ import { GeneratorCard } from "./GeneratorCard";
 import { ChangeEvent, useEffect, useState, useTransition } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import { ApProfilesService } from "@/lib/features/ap-profiles/ApProfilesService";
-import { SearchResult } from "../search/SearchResult";
+import { SearchResultContainer } from "../search/SearchResultContainer";
 import { OtpGeneratorService } from "@/lib/features/security/otp-generator/OtpGeneratorService";
 import { GeneratorCardLoading } from "./GeneratorCardLoading";
 import { SearchQuery } from "./type";
@@ -108,12 +108,12 @@ export function GeneratorContainer() {
           />
 
           {showResults && (
-            <SearchResult setShowResults={setShowResults}>
+            <SearchResultContainer setShowResults={setShowResults}>
               <GeneratorSearchResults
                 result={searchQuery.result}
                 handleSelectItem={handleSelectItem}
               />
-            </SearchResult>
+            </SearchResultContainer>
           )}
         </div>
 

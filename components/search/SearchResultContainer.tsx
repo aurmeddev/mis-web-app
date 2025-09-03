@@ -3,15 +3,15 @@ import { X } from "lucide-react";
 import { Dispatch, ReactNode, SetStateAction } from "react";
 import { Button } from "../ui/button";
 
-type SearchResultProps = {
+type SearchResultContainerProps = {
   children: ReactNode;
   setShowResults: Dispatch<SetStateAction<boolean>>;
 };
 
-export const SearchResult = ({
+export const SearchResultContainer = ({
   children,
   setShowResults,
-}: SearchResultProps) => {
+}: SearchResultContainerProps) => {
   return (
     <Card className="absolute gap-0 py-3 rounded-md top-[calc(100%+0.5rem)] w-full max-w-md mx-auto z-40">
       <CardHeader className="px-4 pb-0 pt-0">

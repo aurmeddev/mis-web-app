@@ -18,7 +18,7 @@ export const GET = async (request: NextRequest) => {
     limit: params.limit,
   });
 
-  let dbFieldColumns: Omit<GetAllFbAccountsProps, "page" | "limit"> = {};
+  const dbFieldColumns: Omit<GetAllFbAccountsProps, "page" | "limit"> = {};
   if (params.status) {
     dbFieldColumns.status = params.status;
   }

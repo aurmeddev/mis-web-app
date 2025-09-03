@@ -4,7 +4,7 @@ import { MySqlUtils } from "@/lib/utils/mysql/MySqlUtils";
 import { ObjectUtils } from "@/lib/utils/object/ObjectUtils";
 import { PaginationProps } from "@/lib/utils/pagination/type/PaginationProps";
 
-export class ManageUsersServerService {
+export class UsersManageServerService {
   async getAllUsers(
     params: GetAllManageUsersProps
   ): Promise<ApiResponseProps & { pagination?: PaginationProps }> {

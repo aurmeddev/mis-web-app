@@ -61,8 +61,8 @@ export const GET = async (request: NextRequest) => {
   const queryString = `SELECT * FROM v_FbAccountsV2 ${conditionQuery} LIMIT ? OFFSET ?`;
 
   let queryValues: string[] = paginationQuery.queryValues;
-  const hasStatusFilter = filterQuery?.queryValues?.length > 0;
-  if (hasStatusFilter) {
+  const hasFilter = filterQuery?.queryValues?.length > 0;
+  if (hasFilter) {
     queryValues = [...filterQuery.queryValues, ...paginationQuery.queryValues];
   }
 
@@ -89,7 +89,7 @@ export const GET = async (request: NextRequest) => {
     // Get the total count of rows for pagination
     const rows: any = await query({
       query: `SELECT COUNT(*) AS total_count FROM v_FbAccountsV2 ${conditionQuery}`,
-      values: hasStatusFilter ? filterQuery.queryValues : [],
+      values: hasFilter ? filterQuery.queryValues : [],
     });
     const totalRows: number = rows[0].total_count;
     const totalPages: number = Math.ceil(totalRows / limit);

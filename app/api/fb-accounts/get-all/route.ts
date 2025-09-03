@@ -49,24 +49,21 @@ export const GET = async (request: NextRequest) => {
   const paginationQuery = mysqlUtils.generateSelectQuery({
     data: paginationValues,
   });
-  const whereClauseQuery = mysqlUtils.generateSelectQuery({
+  const filterQuery = mysqlUtils.generateSelectQuery({
     data: dbFieldColumns,
   });
 
   const conditionQuery = `${
     objUtils.isValidObject(dbFieldColumns)
-      ? whereClauseQuery.queryWhereClauseString
+      ? filterQuery.queryWhereClauseString
       : ""
   }`;
   const queryString = `SELECT * FROM v_FbAccountsV2 ${conditionQuery} LIMIT ? OFFSET ?`;
 
   let queryValues: string[] = paginationQuery.queryValues;
-  const hasStatusFilter = whereClauseQuery?.queryValues?.length > 0;
+  const hasStatusFilter = filterQuery?.queryValues?.length > 0;
   if (hasStatusFilter) {
-    queryValues = [
-      ...whereClauseQuery.queryValues,
-      ...paginationQuery.queryValues,
-    ];
+    queryValues = [...filterQuery.queryValues, ...paginationQuery.queryValues];
   }
 
   console.log(queryString);
@@ -92,7 +89,7 @@ export const GET = async (request: NextRequest) => {
     // Get the total count of rows for pagination
     const rows: any = await query({
       query: `SELECT COUNT(*) AS total_count FROM v_FbAccountsV2 ${conditionQuery}`,
-      values: hasStatusFilter ? whereClauseQuery.queryValues : [],
+      values: hasStatusFilter ? filterQuery.queryValues : [],
     });
     const totalRows: number = rows[0].total_count;
     const totalPages: number = Math.ceil(totalRows / limit);

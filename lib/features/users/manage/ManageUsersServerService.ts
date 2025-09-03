@@ -34,18 +34,37 @@ export class ManageUsersServerService {
 
     const mysqlUtils = new MySqlUtils();
     const objUtils = new ObjectUtils();
-    const { page, limit, offset } = mysqlUtils.generatePaginationQuery({
-      page: params.page,
-      limit: params.limit,
-    });
-    const paginationValues = {
-      limit,
-      offset,
+
+    const hasPagination =
+      typeof params.page === "number" &&
+      params.page > 0 &&
+      typeof params.limit === "number" &&
+      params.limit > 0;
+
+    const pagination: {
+      generatedPaginationQueryResult: {
+        page: number;
+        limit: number;
+        offset: number;
+      };
+      queryValues: string[];
+    } = {
+      generatedPaginationQueryResult: { page: 0, limit: 0, offset: 0 },
+      queryValues: [],
     };
 
-    const paginationQuery = mysqlUtils.generateSelectQuery({
-      data: paginationValues,
-    });
+    if (hasPagination) {
+      const { page, limit, offset } = mysqlUtils.generatePaginationQuery({
+        page: params.page,
+        limit: params.limit,
+      });
+      pagination.generatedPaginationQueryResult = { page, limit, offset };
+      const result = mysqlUtils.generateSelectQuery({
+        data: { limit, offset },
+      });
+      pagination.queryValues = result.queryValues;
+    }
+
     const filterQuery = mysqlUtils.generateSelectQuery({
       data: dbFieldColumns,
     });
@@ -56,19 +75,22 @@ export class ManageUsersServerService {
         : ""
     }`;
 
-    const queryString = `SELECT * FROM v_UserAccess ${conditionQuery} LIMIT ? OFFSET ?`;
-    let queryValues: string[] = paginationQuery.queryValues;
+    const paginationQueryString = `${hasPagination ? " LIMIT ? OFFSET ?" : ""}`;
+    const queryString = `SELECT * FROM v_UserAccess ${conditionQuery} ${paginationQueryString}`;
+
+    let queryValues: string[] = [];
     const hasFilter = filterQuery?.queryValues?.length > 0;
     if (hasFilter) {
-      queryValues = [
-        ...filterQuery.queryValues,
-        ...paginationQuery.queryValues,
-      ];
+      queryValues = queryValues.concat([...filterQuery.queryValues]);
+    }
+    if (hasPagination) {
+      queryValues = queryValues.concat([...pagination.queryValues]);
     }
 
     console.log(queryString);
     console.log(queryValues);
-    // Execute the query to get all AP profiles by pagination
+
+    // Execute the query to get all users
     try {
       const response: any = await query({
         query: queryString,
@@ -83,37 +105,46 @@ export class ManageUsersServerService {
         };
       }
 
-      // Get the total count of rows for pagination
-      const rows: any = await query({
-        query: `SELECT COUNT(*) AS total_count FROM v_UserAccess ${conditionQuery}`,
-        values: hasFilter ? filterQuery.queryValues : [],
-      });
-      const totalRows: number = rows[0].total_count;
-      const totalPages: number = Math.ceil(totalRows / limit);
-
-      const rowIds = mysqlUtils.generateRowIds({
-        page: page,
-        limit: limit,
-        size: response.length,
-      });
-
-      const formattedResponse = await Promise.all(
-        response.map(async (item: any, index: number) => {
-          const { ...rest } = item;
-
-          return {
-            ...rest,
-            row_id: rowIds[index],
-          };
-        })
-      );
-
-      return {
+      const page = pagination.generatedPaginationQueryResult.page;
+      const limit = pagination.generatedPaginationQueryResult.limit;
+      let totalPages: number = 0;
+      const result: ApiResponseProps & { pagination?: PaginationProps } = {
         isSuccess: true,
         message: "Data fetched successfully.",
-        pagination: { page, limit, total_pages: totalPages },
-        data: formattedResponse,
+        data: response,
       };
+
+      if (hasPagination) {
+        // Get the total count of rows for pagination
+        const rows: any = await query({
+          query: `SELECT COUNT(*) AS total_count FROM v_UserAccess ${conditionQuery}`,
+          values: hasFilter ? filterQuery.queryValues : [],
+        });
+
+        const totalRows: number = rows[0].total_count;
+        totalPages = Math.ceil(totalRows / limit);
+
+        const rowIds = mysqlUtils.generateRowIds({
+          page: page,
+          limit: limit,
+          size: response.length,
+        });
+
+        result.data = await Promise.all(
+          response.map(async (item: any, index: number) => {
+            const { ...rest } = item;
+
+            return {
+              ...rest,
+              row_id: rowIds[index],
+            };
+          })
+        );
+
+        result.pagination = { page, limit, total_pages: totalPages };
+      }
+
+      return result;
     } catch (error: any) {
       console.error(error);
       return {

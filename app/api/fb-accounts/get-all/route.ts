@@ -20,11 +20,8 @@ export const GET = async (request: NextRequest) => {
 
   const dbFieldColumns: Omit<GetAllFbAccountsProps, "page" | "limit"> = {};
   if (params.status) {
-    const lowercaseActiveValue = params.status.toLowerCase();
-    if (
-      lowercaseActiveValue !== "active" &&
-      lowercaseActiveValue !== "available"
-    ) {
+    const statusValue = params.status.toLowerCase();
+    if (statusValue !== "active" && statusValue !== "available") {
       return NextResponse.json(
         {
           isSuccess: false,
@@ -34,7 +31,7 @@ export const GET = async (request: NextRequest) => {
         { status: 400 }
       );
     }
-    dbFieldColumns.status = lowercaseActiveValue;
+    dbFieldColumns.status = statusValue;
   }
 
   if (params.recruiter) {
@@ -58,6 +55,7 @@ export const GET = async (request: NextRequest) => {
       ? filterQuery.queryWhereClauseString
       : ""
   }`;
+
   const queryString = `SELECT * FROM v_FbAccountsV2 ${conditionQuery} LIMIT ? OFFSET ?`;
 
   let queryValues: string[] = paginationQuery.queryValues;

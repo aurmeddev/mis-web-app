@@ -3,6 +3,7 @@ import { GetAllApProfilesProps } from "@/lib/features/ap-profiles/type/ApProfile
 import { CryptoServerService } from "@/lib/features/security/cryptography/CryptoServerService";
 import { DatetimeUtils } from "@/lib/utils/date/DatetimeUtils";
 import { MySqlUtils } from "@/lib/utils/mysql/MySqlUtils";
+import { ObjectUtils } from "@/lib/utils/object/ObjectUtils";
 import { SearchParamsManager } from "@/lib/utils/search-params/SearchParamsManager";
 import { NextResponse, NextRequest } from "next/server";
 export const GET = async (request: NextRequest) => {
@@ -11,14 +12,53 @@ export const GET = async (request: NextRequest) => {
   );
 
   const mysqlUtils = new MySqlUtils();
+  const objUtils = new ObjectUtils();
   const { page, limit, offset } = mysqlUtils.generatePaginationQuery({
     page: params.page,
     limit: params.limit,
   });
-  const { queryValues } = mysqlUtils.generateSelectQuery({
-    data: { limit, offset },
+  const dbFieldColumns: Omit<GetAllApProfilesProps, "page" | "limit"> = {};
+  if (params.status) {
+    const statusValue = params.status.toLowerCase();
+    if (statusValue !== "active" && statusValue !== "available") {
+      return NextResponse.json(
+        {
+          isSuccess: false,
+          message: "Invalid status value. It must be active or available",
+          data: [],
+        },
+        { status: 400 }
+      );
+    }
+    dbFieldColumns.status = statusValue;
+  }
+
+  const paginationValues = {
+    limit,
+    offset,
+  };
+
+  const paginationQuery = mysqlUtils.generateSelectQuery({
+    data: paginationValues,
   });
-  const queryString = `SELECT * FROM v_ApProfiles LIMIT ? OFFSET ?`;
+  const filterQuery = mysqlUtils.generateSelectQuery({
+    data: dbFieldColumns,
+  });
+
+  const conditionQuery = `${
+    objUtils.isValidObject(dbFieldColumns)
+      ? filterQuery.queryWhereClauseString
+      : ""
+  }`;
+
+  const queryString = `SELECT * FROM v_ApProfiles ${conditionQuery} LIMIT ? OFFSET ?`;
+
+  let queryValues: string[] = paginationQuery.queryValues;
+  const hasFilter = filterQuery?.queryValues?.length > 0;
+  if (hasFilter) {
+    queryValues = [...filterQuery.queryValues, ...paginationQuery.queryValues];
+  }
+
   console.log(queryString);
   console.log(queryValues);
 
@@ -42,8 +82,8 @@ export const GET = async (request: NextRequest) => {
 
     // Get the total count of rows for pagination
     const rows: any = await query({
-      query: "SELECT COUNT(*) AS total_count FROM v_ApProfiles",
-      values: [],
+      query: `SELECT COUNT(*) AS total_count FROM v_ApProfiles ${conditionQuery}`,
+      values: hasFilter ? filterQuery.queryValues : [],
     });
     const totalRows: number = rows[0].total_count;
     const totalPages: number = Math.ceil(totalRows / limit);

@@ -12,17 +12,51 @@ export const GET = async (request: NextRequest) => {
   );
 
   const mysqlUtils = new MySqlUtils();
+  const objUtils = new ObjectUtils();
   const { page, limit, offset } = mysqlUtils.generatePaginationQuery({
     page: params.page,
     limit: params.limit,
   });
-  const { queryValues } = mysqlUtils.generateSelectQuery({
-    data: { limit, offset },
+
+  let dbFieldColumns: Omit<GetAllFbAccountsProps, "page" | "limit"> = {};
+  if (params.status) {
+    dbFieldColumns.status = params.status;
+  }
+
+  if (params.recruiter) {
+    dbFieldColumns.recruiter = params.recruiter;
+  }
+
+  const paginationValues = {
+    limit,
+    offset,
+  };
+
+  const paginationQuery = mysqlUtils.generateSelectQuery({
+    data: paginationValues,
   });
-  const queryString = `SELECT * FROM v_FbAccountsV2 LIMIT ? OFFSET ?`;
+  const whereClauseQuery = mysqlUtils.generateSelectQuery({
+    data: dbFieldColumns,
+  });
+
+  const conditionQuery = `${
+    objUtils.isValidObject(dbFieldColumns)
+      ? whereClauseQuery.queryWhereClauseString
+      : ""
+  }`;
+  const queryString = `SELECT * FROM v_FbAccountsV2 ${conditionQuery} LIMIT ? OFFSET ?`;
+
+  let queryValues: string[] = paginationQuery.queryValues;
+  const hasStatusFilter = whereClauseQuery?.queryValues?.length > 0;
+  if (hasStatusFilter) {
+    queryValues = [
+      ...whereClauseQuery.queryValues,
+      ...paginationQuery.queryValues,
+    ];
+  }
+
   console.log(queryString);
   console.log(queryValues);
-
   // Execute the query to get all AP profiles by pagination
   try {
     const response: any = await query({
@@ -43,15 +77,15 @@ export const GET = async (request: NextRequest) => {
 
     // Get the total count of rows for pagination
     const rows: any = await query({
-      query: "SELECT COUNT(*) AS total_count FROM v_FbAccountsV2",
-      values: [],
+      query: `SELECT COUNT(*) AS total_count FROM v_FbAccountsV2 ${conditionQuery}`,
+      values: hasStatusFilter ? whereClauseQuery.queryValues : [],
     });
     const totalRows: number = rows[0].total_count;
     const totalPages: number = Math.ceil(totalRows / limit);
 
     const cipher = new CryptoServerService();
     const dateUtils = new DatetimeUtils();
-    const objUtils = new ObjectUtils();
+
     const rowIds = mysqlUtils.generateRowIds({
       page: page,
       limit: limit,

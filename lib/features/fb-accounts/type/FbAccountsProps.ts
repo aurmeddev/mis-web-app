@@ -58,6 +58,7 @@ type FindFbAccountsProps = BaseSearchKeywordProps;
 
 type GetAllFbAccountsProps = Omit<PaginationProps, "total_pages"> & {
   recruiter?: string;
+  status?: "active" | "available";
 };
 
 export type {

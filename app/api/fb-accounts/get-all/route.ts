@@ -35,7 +35,7 @@ export const GET = async (request: NextRequest) => {
   }
 
   if (params.recruiter) {
-    dbFieldColumns.recruiter = params.recruiter;
+    dbFieldColumns.recruiter = params.recruiter.toLowerCase();
   }
 
   const paginationValues = {

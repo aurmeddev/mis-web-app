@@ -5,6 +5,7 @@ SELECT
     u.email,
     u.password,
     u.is_active,
+    IF(u.is_active = 1, 'active', 'inactive') AS status,
     u.avatar,
     gt.gender,
     u.user_type_id,

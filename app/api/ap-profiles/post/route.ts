@@ -38,6 +38,8 @@ export const POST = async (request: NextRequest) => {
   }
 
   const USER_ID = decryptedData;
+  const RECRUITER_NAME = session.user.full_name;
+  const TEAM_NAME = session.user.team_name;
 
   const data: PostApProfilesProps = await request.json();
   const objUtil = new ObjectUtils();
@@ -157,8 +159,8 @@ export const POST = async (request: NextRequest) => {
         fb_account: getFbAccountInfo || {},
         status: isFbAccountIdProvided ? "active" : "available",
         created_by: {
-          full_name: "SUPER ADMIN",
-          team_name: "Management Team",
+          full_name: RECRUITER_NAME,
+          team_name: TEAM_NAME,
         },
         created_at: dateUtils.formatDateTime(
           dateUtils.convertToUTC8(await getServerCurrentDatetime())

@@ -39,6 +39,10 @@ export function FbAccountsTableContainer({
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  const searchParamCurrentPage = response.pagination?.page;
+  const searchParamTotalPages = response.pagination?.total_pages;
+  const searchParamLimit = response.pagination?.limit || 10;
+
   // filters
   const recruiter = searchParams.get("recruiter") || "";
   const splittedRecruiter = recruiter !== "" ? recruiter.split(",") : [];
@@ -240,6 +244,10 @@ export function FbAccountsTableContainer({
     urlQuery.set("page", String(page));
     urlQuery.set("limit", String(limit));
 
+    if (searchParamLimit !== limit) {
+      urlQuery.set("page", "1");
+    }
+
     if (recruiter) {
       urlQuery.set("recruiter", recruiter);
     }
@@ -308,10 +316,6 @@ export function FbAccountsTableContainer({
       setEditingData({});
     }
   }, [open]);
-
-  const currentPage = response.pagination?.page;
-  const total_pages = response.pagination?.total_pages;
-  const limit = response.pagination?.limit || 10;
   return (
     <div className="overflow-auto w-full">
       <FbAccountsDialog
@@ -368,9 +372,9 @@ export function FbAccountsTableContainer({
         />
 
         <Pagination
-          currentPage={Number(currentPage)}
-          limit={limit}
-          total_pages={Number(total_pages)}
+          currentPage={Number(searchParamCurrentPage)}
+          limit={searchParamLimit}
+          total_pages={Number(searchParamTotalPages)}
           handlePagination={handlePagination}
         />
       </ScrollArea>

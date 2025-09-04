@@ -38,7 +38,7 @@ export const POST = async (request: NextRequest) => {
   }
 
   const USER_ID = decryptedData;
-  const RECRUITER_NAME = session.user.full_name;
+  const FULL_NAME = session.user.full_name;
   const TEAM_NAME = session.user.team_name;
 
   const data: PostApProfilesProps = await request.json();
@@ -159,7 +159,7 @@ export const POST = async (request: NextRequest) => {
         fb_account: getFbAccountInfo || {},
         status: isFbAccountIdProvided ? "active" : "available",
         created_by: {
-          full_name: RECRUITER_NAME,
+          full_name: FULL_NAME,
           team_name: TEAM_NAME,
         },
         created_at: dateUtils.formatDateTime(

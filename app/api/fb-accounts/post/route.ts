@@ -36,6 +36,8 @@ export const POST = async (request: NextRequest) => {
     );
   }
   const USER_ID = decryptedData;
+  const FULL_NAME = session.user.full_name;
+  const TEAM_NAME = session.user.team_name;
 
   const data: PostFbAccountsProps = await request.json();
   const objUtil = new ObjectUtils();
@@ -103,8 +105,8 @@ export const POST = async (request: NextRequest) => {
         id: insertId,
         status: "available",
         recruited_by: {
-          full_name: session.user.full_name,
-          team_name: session.user.team_name,
+          full_name: FULL_NAME,
+          team_name: TEAM_NAME,
         },
         created_at: dateUtils.formatDateTime(
           dateUtils.convertToUTC8(await getServerCurrentDatetime())

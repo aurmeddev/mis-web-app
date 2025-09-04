@@ -1,54 +1,41 @@
+import { StatusSelectProps } from "@/components/accounts/select/StatusSelect";
 import {
   Select,
-  SelectTrigger,
-  SelectValue,
   SelectContent,
   SelectGroup,
-  SelectLabel,
   SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 
-export type StatusSelectProps = {
-  isDisabled: boolean;
-  onChange: (value: string) => void;
-  value: string;
-};
-
-export function StatusSelect({
-  isDisabled,
+export function StatusSelectFilter({
   onChange,
   value,
+  isDisabled,
 }: StatusSelectProps) {
   return (
     <Select onValueChange={onChange} value={value} disabled={isDisabled}>
-      <SelectTrigger className="h-8">
+      <SelectTrigger className="h-8 w-full">
         <SelectValue placeholder="Select a status" />
       </SelectTrigger>
       <SelectContent>
         <SelectGroup>
           <SelectLabel>Status</SelectLabel>
-          <SelectItem value="2">
-            <div className="flex items-center gap-1">
-              <span className="relative flex h-2 w-2">
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-gray-500"></span>
-              </span>
-              <div className="text-xs">New</div>
-            </div>
-          </SelectItem>
-          <SelectItem value="1">
+          <SelectItem value="active">
             <div className="flex items-center gap-1">
               <span className="relative flex h-2 w-2">
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
               </span>
-              <div className="text-xs">Active</div>
+              <div className="text-sm">Active</div>
             </div>
           </SelectItem>
-          <SelectItem value="0">
+          <SelectItem value="available">
             <div className="flex items-center gap-1">
               <span className="relative flex h-2 w-2">
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-gray-500"></span>
               </span>
-              <div className="text-xs">Inactive</div>
+              <div className="text-sm">Available</div>
             </div>
           </SelectItem>
         </SelectGroup>

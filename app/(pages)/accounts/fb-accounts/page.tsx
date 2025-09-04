@@ -13,10 +13,22 @@ export default async function Page({ searchParams }: any) {
 
   const page = Number(awaitedParams.page) || 1;
   const limit = Number(awaitedParams.limit) || 10;
+  const recruiter = awaitedParams.recruiter || "";
+  const status = awaitedParams.status || "";
   const params = {
     page,
     limit,
+    recruiter,
+    status,
   };
 
-  return <FbAccountsContainer searchParams={params} />;
+  const isSuperOrAdmin =
+    session.user.user_type_id === 1 || session.user.user_type_id === 2;
+
+  return (
+    <FbAccountsContainer
+      searchParams={params}
+      isSuperOrAdmin={isSuperOrAdmin}
+    />
+  );
 }

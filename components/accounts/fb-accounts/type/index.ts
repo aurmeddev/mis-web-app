@@ -1,4 +1,5 @@
 import { GeneratorSearchResultsProps } from "@/components/otp-generator/type";
+import { GetAllFbAccountsProps } from "@/lib/features/fb-accounts/type/FbAccountsProps";
 
 // Subtypes
 type Recruiter = {
@@ -55,5 +56,25 @@ export type FBAccountForm = Pick<
   | "app_2fa_key"
   | "recovery_code"
 >;
+
+export type Option = {
+  id: number;
+  label: string;
+  value: string;
+};
+
+export type ApplyFilter = {
+  selectedRecruiter: string[];
+  selectedStatus: string;
+};
+
+export type FbAccountsFilterProps = {
+  recruiters: Option[];
+  onApplyFilter: ({ selectedRecruiter, selectedStatus }: ApplyFilter) => void;
+  searchParams: Omit<GetAllFbAccountsProps, "recruiter"> & {
+    //override recruiter with type of string to string[]
+    recruiter: string[];
+  };
+};
 
 export type FbAccountsSearchResultsProps = GeneratorSearchResultsProps;

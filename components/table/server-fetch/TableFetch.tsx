@@ -1,18 +1,21 @@
 "use server";
 
-type Fetcher<T> = (params: { page: number; limit: number }) => Promise<T>;
+type Fetcher<T> = (params: Record<string, any>) => Promise<T>;
 
-type Props<T> = {
-  searchParams: { page: number; limit: number };
+// Generic Props: T = response type, CProps = extra props for the container
+type Props<T, CProps = Record<string, unknown>> = {
+  searchParams: Record<string, any>;
   fetchService: Fetcher<T>;
-  Container: React.ComponentType<{ response: T }>;
-};
+  Container: React.ComponentType<{ response: T } & CProps>;
+} & Partial<CProps>; // props optional
 
-export async function TableFetch<T>({
+export async function TableFetch<T, CProps = Record<string, unknown>>({
   searchParams,
   fetchService,
   Container,
-}: Props<T>) {
+  ...props
+}: Props<T, CProps>) {
   const response = await fetchService(searchParams);
-  return <Container response={response} />;
+
+  return <Container response={response} {...(props as CProps)} />;
 }

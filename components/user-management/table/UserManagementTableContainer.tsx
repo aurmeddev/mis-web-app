@@ -173,7 +173,10 @@ export function UserManagementTableContainer({
     setForm(null);
     const page = searchParams.get("page") || "";
     const limit = searchParams.get("limit") || "";
-    const newRoute = searchParamsManager.refreshWithCacheBuster(page, limit);
+    const newRoute = searchParamsManager.refreshWithCacheBuster({
+      page,
+      limit,
+    });
     route.push(`?${newRoute.toString()}`);
   };
 

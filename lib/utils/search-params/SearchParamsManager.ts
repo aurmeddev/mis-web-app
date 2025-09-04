@@ -72,15 +72,26 @@ export class SearchParamsManager {
     return pathname + "?";
   };
 
-  refreshWithCacheBuster(page: string, limit: string) {
-    const triggerCache = Math.random()
-      .toString(36)
-      .substring(2, 5 + 2);
+  refreshWithCacheBuster({
+    page,
+    limit,
+    willCache = true,
+  }: {
+    page: string;
+    limit: string;
+    willCache?: boolean;
+  }) {
     const query = new URLSearchParams();
 
     if (page) query.set("page", page);
     if (limit) query.set("limit", limit);
-    query.set("trigger", triggerCache);
+
+    if (willCache) {
+      const triggerCache = Math.random()
+        .toString(36)
+        .substring(2, 5 + 2);
+      query.set("trigger", triggerCache);
+    }
     return query;
   }
 }

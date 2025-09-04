@@ -15,7 +15,8 @@ export const GET = async (request: NextRequest) => {
   const objUtils = new ObjectUtils();
   const { page, limit, offset } = mysqlUtils.generatePaginationQuery({
     page: params.page,
-    limit: params.limit,
+    limit:
+      typeof params.limit === "number" && params.limit > 50 ? 50 : params.limit,
   });
   const dbFieldColumns: Omit<GetAllApProfilesProps, "page" | "limit"> = {};
   if (params.status) {

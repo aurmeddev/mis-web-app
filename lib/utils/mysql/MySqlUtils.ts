@@ -142,7 +142,7 @@ export class MySqlUtils {
     const isPageParamValid = numberUtil.isNumber(params.page);
     const isLimitParamValid = numberUtil.isNumber(params.limit);
     const page = isPageParamValid ? Number(params.page) : 1;
-    const NoOfDataPerPage = isLimitParamValid ? Number(params.limit) : 25;
+    const NoOfDataPerPage = isLimitParamValid ? Number(params.limit) : 50;
     const offset = (Number(page) - 1) * NoOfDataPerPage;
     const limitOffsetQueryString = `LIMIT ${NoOfDataPerPage} OFFSET ${offset}`;
     return {

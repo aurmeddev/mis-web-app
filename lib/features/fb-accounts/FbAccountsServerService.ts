@@ -3,7 +3,6 @@ import { FindFbAccountsProps } from "./type/FbAccountsProps";
 import { SearchKeywordService } from "../search-keyword/SearchKeywordService";
 import { CryptoServerService } from "../security/cryptography/CryptoServerService";
 import { DatetimeUtils } from "@/lib/utils/date/DatetimeUtils";
-import { ObjectUtils } from "@/lib/utils/object/ObjectUtils";
 
 type FindApProfilesServerServiceProps = Omit<
   FindFbAccountsProps,
@@ -63,7 +62,6 @@ export class FbAccountsServerService {
 
       const cipher = new CryptoServerService();
       const dateUtils = new DatetimeUtils();
-      const objUtils = new ObjectUtils();
       const formattedResponse = await Promise.all(
         response.map(async (item: any) => {
           const {

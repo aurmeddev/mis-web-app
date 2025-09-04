@@ -119,7 +119,7 @@ export function FbAccountsTable({
       <TableBody className="overflow-auto">
         {!data?.length && (
           <TableRow className="bg-muted">
-            <TableCell className="py-0 text-center" colSpan={11}>
+            <TableCell className="py-0 text-center" colSpan={14}>
               <div className="flex flex-col gap-2 items-center py-4">
                 <SearchX className="h-10 w-10 text-muted-foreground" />
                 <div className="text-sm text-muted-foreground">

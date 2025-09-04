@@ -266,7 +266,7 @@ export function FbAccountsTableContainer({
     const page = searchParams.get("page") || "";
     const limit = searchParams.get("limit") || "";
     const recruiter = joinedRecruiter.length ? joinedRecruiter : "";
-    const status = selectedStatus || "";
+    const status = selectedStatus !== "show-all" ? selectedStatus : "";
     const newRouteQuery = searchParamsManager.refreshWithCacheBuster({
       page,
       limit,

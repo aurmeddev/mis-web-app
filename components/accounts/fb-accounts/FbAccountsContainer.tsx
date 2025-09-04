@@ -19,16 +19,19 @@ export async function FbAccountsContainer({
   const fbAccountsService = new FbAccountsService();
   const manageUsersService = new UsersManageClientService();
 
-  const users = await manageUsersService.getAllUsers({
-    user_type: 3,
-    team: 3,
-  });
+  let recruiters: Option[] = [{ id: 0, label: "", value: "" }];
+  if (isSuperOrAdmin) {
+    const users = await manageUsersService.getAllUsers({
+      team: 3,
+    });
 
-  const recruiters: Option[] = users.data.map((u) => ({
-    id: u.id,
-    label: u.display_name,
-    value: u.full_name,
-  }));
+    recruiters = users.data.map((u) => ({
+      id: u.id,
+      label: u.display_name,
+      value: u.full_name,
+    }));
+  }
+
   return (
     <div className="min-h-[calc(100dvh-7rem)] p-6 pr-0">
       <div>

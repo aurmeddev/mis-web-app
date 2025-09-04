@@ -9,17 +9,19 @@ import { MultiSelectComboBox as SelectRecruiter } from "@/components/select/Mult
 import { useEffect, useState } from "react";
 import { StatusSelectFilter } from "./select/StatusSelectFilter";
 import { Button } from "@/components/ui/button";
+import { PopoverClose } from "@radix-ui/react-popover";
 
 export function FbAccountsFilter({
   recruiters,
   onApplyFilter,
   searchParams,
 }: FbAccountsFilterProps) {
+  const [open, setOpen] = useState(false);
   const [selectedRecruiter, setSelectedRecruiter] = useState<string[]>(
     searchParams.recruiter
   );
   const [selectedStatus, setSelectedStatus] = useState<string>(
-    searchParams.status || ""
+    searchParams.status || "show-all"
   );
   const [isActionDisabled, setIsActionDisabled] = useState(true);
 
@@ -30,6 +32,7 @@ export function FbAccountsFilter({
   const handleApplyFilter = () => {
     setIsActionDisabled(true);
     onApplyFilter({ selectedRecruiter, selectedStatus });
+    setOpen(false);
   };
 
   useEffect(() => {
@@ -63,13 +66,15 @@ export function FbAccountsFilter({
           isDisabled={false}
         />
 
-        <Button
-          className="cursor-pointer flex ml-auto"
-          onClick={handleApplyFilter}
-          disabled={isActionDisabled}
-        >
-          Apply
-        </Button>
+        <PopoverClose className="flex" asChild>
+          <Button
+            className="cursor-pointer ml-auto"
+            onClick={handleApplyFilter}
+            disabled={isActionDisabled}
+          >
+            Apply
+          </Button>
+        </PopoverClose>
       </PopoverContent>
     </Popover>
   );

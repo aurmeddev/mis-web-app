@@ -18,7 +18,6 @@ import { SearchWrapper } from "../../ap-profiles/search/SearchWrapper";
 import { FbAccountsSearchResults } from "../search/FbAccountsSearchResults";
 import { SearchParamsManager } from "@/lib/utils/search-params/SearchParamsManager";
 import { FbAccountsFilter } from "../filter/FbAccountsFilter";
-import { cn } from "@/lib/utils";
 
 type FbAccountsTableContainerProps = {
   response: ApiResponseProps & { pagination?: PaginationProps };
@@ -39,6 +38,14 @@ export function FbAccountsTableContainer({
 
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  // filters
+  const recruiter = searchParams.get("recruiter") || "";
+  const splittedRecruiter = recruiter !== "" ? recruiter.split(",") : [];
+  const status = searchParams.get("status") as
+    | "active"
+    | "available"
+    | undefined;
 
   const showToast = (isSuccess: boolean, message: string) => {
     if (isSuccess) {
@@ -229,7 +236,19 @@ export function FbAccountsTableContainer({
   };
 
   const handlePagination = (page: number, limit: number) => {
-    router.push(`?page=${page}&limit=${limit}`);
+    const urlQuery = new URLSearchParams();
+    urlQuery.set("page", String(page));
+    urlQuery.set("limit", String(limit));
+
+    if (recruiter) {
+      urlQuery.set("recruiter", recruiter);
+    }
+
+    if (status) {
+      urlQuery.set("status", status);
+    }
+
+    router.push(`?${urlQuery.toString()}`);
   };
 
   const handleRemoveSelected = async () => {
@@ -263,12 +282,12 @@ export function FbAccountsTableContainer({
     selectedStatus,
   }: ApplyFilter) => {
     const joinedRecruiter = selectedRecruiter.join(",");
-    const page = searchParams.get("page") || "";
+    const page = searchParams.get("page");
     const limit = searchParams.get("limit") || "";
     const recruiter = joinedRecruiter.length ? joinedRecruiter : "";
     const status = selectedStatus !== "show-all" ? selectedStatus : "";
     const newRouteQuery = searchParamsManager.refreshWithCacheBuster({
-      page,
+      page: page ? "1" : "", //if there's a page param then set to 1 else do not include
       limit,
       willCache: false,
     });
@@ -293,14 +312,6 @@ export function FbAccountsTableContainer({
   const currentPage = response.pagination?.page;
   const total_pages = response.pagination?.total_pages;
   const limit = response.pagination?.limit || 10;
-
-  // filters
-  const recruiter = searchParams.get("recruiter") || "";
-  const splittedRecruiter = recruiter !== "" ? recruiter.split(",") : [];
-  const status = searchParams.get("status") as
-    | "active"
-    | "available"
-    | undefined;
   return (
     <div className="overflow-auto w-full">
       <FbAccountsDialog
@@ -343,13 +354,12 @@ export function FbAccountsTableContainer({
             }
           />
         </div>
-        {isSuperOrAdmin && (
-          <FbAccountsFilter
-            recruiters={recruiters}
-            onApplyFilter={handleApplyFilter}
-            searchParams={{ recruiter: splittedRecruiter, status: status }}
-          />
-        )}
+        <FbAccountsFilter
+          recruiters={recruiters}
+          onApplyFilter={handleApplyFilter}
+          searchParams={{ recruiter: splittedRecruiter, status: status }}
+          isSuperOrAdmin={isSuperOrAdmin}
+        />
       </div>
       <ScrollArea className="h-[75dvh] mt-4">
         <FbAccountsTable

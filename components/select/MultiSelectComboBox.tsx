@@ -43,7 +43,6 @@ export function MultiSelectComboBox({
       prev.filter((val: any) => val !== valueToRemove)
     );
   };
-  console.log("selectedOptions ", selectedOptions);
   return (
     <Command className="rounded-lg border">
       {selectedOptions.length > 0 && (

@@ -159,7 +159,7 @@ export function FbAccountsTable({
               </div>
             </TableCell>
             <TableCell className="border-r text-sm">
-              {rowData.recovery_code}
+              {rowData.recovery_code ? "********" : ""}
             </TableCell>
             <TableCell
               className="border-r font-medium py-0 text-sm"

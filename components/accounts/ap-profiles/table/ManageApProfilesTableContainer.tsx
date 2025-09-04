@@ -34,6 +34,11 @@ export function ManageApProfilesTableContainer({
   const profilesService = new ApProfilesService();
 
   const router = useRouter();
+
+  const searchParamCurrentPage = response.pagination?.page;
+  const searchParamTotalPages = response.pagination?.total_pages;
+  const searchParamLimit = response.pagination?.limit || 10;
+
   const showToast = (isSuccess: boolean, message: string) => {
     if (isSuccess) {
       toast.success(message);
@@ -214,7 +219,7 @@ export function ManageApProfilesTableContainer({
   };
 
   const handleUpdateEntry = (response: ApiResponseProps, payload: any) => {
-    setTableData((prevData: any[]) =>
+    setTableData((prevData: Profile[]) =>
       prevData.map((item) => {
         const payloadLength = Object.keys(payload).length;
         const hasOnlyRemarks = payloadLength === 1 && "remarks" in payload;
@@ -251,7 +256,13 @@ export function ManageApProfilesTableContainer({
   };
 
   const handlePagination = (page: number, limit: number) => {
-    router.push(`?page=${page}&limit=${limit}`);
+    const urlQuery = new URLSearchParams();
+    urlQuery.set("page", String(page));
+    urlQuery.set("limit", String(limit));
+    if (searchParamLimit !== limit) {
+      urlQuery.set("page", "1");
+    }
+    router.push(`?${urlQuery.toString()}`);
   };
 
   const handleRemoveSelected = async () => {
@@ -279,10 +290,6 @@ export function ManageApProfilesTableContainer({
       setEditingData({});
     }
   }, [open]);
-
-  const currentPage = response.pagination?.page;
-  const total_pages = response.pagination?.total_pages;
-  const limit = response.pagination?.limit || 10;
 
   return (
     <>
@@ -334,9 +341,9 @@ export function ManageApProfilesTableContainer({
         />
 
         <Pagination
-          currentPage={Number(currentPage)}
-          limit={limit}
-          total_pages={Number(total_pages)}
+          currentPage={Number(searchParamCurrentPage)}
+          limit={searchParamLimit}
+          total_pages={Number(searchParamTotalPages)}
           handlePagination={handlePagination}
         />
       </ScrollArea>

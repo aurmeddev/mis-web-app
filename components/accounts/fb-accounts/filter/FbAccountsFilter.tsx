@@ -15,8 +15,8 @@ export function FbAccountsFilter({
   recruiters,
   onApplyFilter,
   searchParams,
+  isSuperOrAdmin,
 }: FbAccountsFilterProps) {
-  const [open, setOpen] = useState(false);
   const [selectedRecruiter, setSelectedRecruiter] = useState<string[]>(
     searchParams.recruiter
   );
@@ -32,7 +32,6 @@ export function FbAccountsFilter({
   const handleApplyFilter = () => {
     setIsActionDisabled(true);
     onApplyFilter({ selectedRecruiter, selectedStatus });
-    setOpen(false);
   };
 
   useEffect(() => {
@@ -46,36 +45,50 @@ export function FbAccountsFilter({
   }, [selectedStatus, selectedRecruiter, searchParams]);
 
   return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <Button variant={"outline"}>
-          <ListFilter /> Filters
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent align="start" className="space-y-3">
-        <SelectRecruiter
-          selectOptions={recruiters}
-          selectedOptions={selectedRecruiter}
-          setSelectedOptions={setSelectedRecruiter}
-          label="recruiter"
-        />
-
-        <StatusSelectFilter
-          onChange={(value) => handleStatusFilter(value)}
-          value={selectedStatus}
-          isDisabled={false}
-        />
-
-        <PopoverClose className="flex" asChild>
-          <Button
-            className="cursor-pointer ml-auto"
-            onClick={handleApplyFilter}
-            disabled={isActionDisabled}
-          >
-            Apply
+    <>
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button variant={"outline"}>
+            <ListFilter /> Filters
           </Button>
-        </PopoverClose>
-      </PopoverContent>
-    </Popover>
+        </PopoverTrigger>
+        <PopoverContent align="start" className="space-y-3">
+          {isSuperOrAdmin ? (
+            <>
+              <SelectRecruiter
+                selectOptions={recruiters}
+                selectedOptions={selectedRecruiter}
+                setSelectedOptions={setSelectedRecruiter}
+                label="recruiter"
+              />
+
+              <StatusSelectFilter
+                onChange={(value) => handleStatusFilter(value)}
+                value={selectedStatus}
+                isDisabled={false}
+              />
+            </>
+          ) : (
+            <div className="flex flex-col gap-1">
+              <div className="text-sm">Select Status:</div>
+              <StatusSelectFilter
+                onChange={(value) => handleStatusFilter(value)}
+                value={selectedStatus}
+                isDisabled={false}
+              />
+            </div>
+          )}
+          <PopoverClose className="flex" asChild>
+            <Button
+              className="cursor-pointer ml-auto"
+              onClick={handleApplyFilter}
+              disabled={isActionDisabled}
+            >
+              Apply
+            </Button>
+          </PopoverClose>
+        </PopoverContent>
+      </Popover>
+    </>
   );
 }

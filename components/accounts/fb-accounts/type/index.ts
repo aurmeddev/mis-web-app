@@ -75,6 +75,7 @@ export type FbAccountsFilterProps = {
     //override recruiter with type of string to string[]
     recruiter: string[];
   };
+  isSuperOrAdmin: boolean;
 };
 
 export type FbAccountsSearchResultsProps = GeneratorSearchResultsProps;

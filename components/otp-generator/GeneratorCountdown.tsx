@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { GeneratorCountdownProps } from "./type";
+import { cn } from "@/lib/utils";
 
 export function GeneratorCountdown({
   otp,
@@ -25,6 +26,13 @@ export function GeneratorCountdown({
     return () => clearInterval(interval);
   }, [otp]);
   return (
-    <div className="font-bold text-muted-foreground">{secondsRemaining}s.</div>
+    <div
+      className={cn(
+        secondsRemaining <= 5 ? "text-red-500" : "text-muted-foreground",
+        "font-bold"
+      )}
+    >
+      {secondsRemaining}s.
+    </div>
   );
 }

@@ -93,8 +93,8 @@ export function GeneratorCard({
           <div className="grid gap-1">
             <div className="text-muted-foreground">Username</div>
             <div className="relative text-muted-foreground">
-              <div className="bg-muted font-bold relative rounded py-2 text-center">
-                {selectedResult.fb_account.username}
+              <div className="bg-muted font-bold relative rounded py-2 text-center text-2xl">
+                *********
               </div>
               <GeneratorButtonCopy handleCopy={() => handleCopy("username")} />
             </div>

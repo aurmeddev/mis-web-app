@@ -13,8 +13,8 @@ export function ApProfilesSearchResults({
       ) : (
         result.data.map((item: any) => {
           const normalCase =
-            item.status.charAt(0).toUpperCase() +
-            item.status.substr(1, item.status.length);
+            item.description.charAt(0).toUpperCase() +
+            item.description.substr(1, item.description.length);
           return (
             <li
               key={item.id}

@@ -8,7 +8,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 
-type StatusSelectProps = {
+export type StatusSelectProps = {
   isDisabled: boolean;
   onChange: (value: string) => void;
   value: string;

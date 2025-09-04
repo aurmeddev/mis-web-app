@@ -12,20 +12,26 @@ import { ApiResponseProps } from "@/database/dbConnection";
 import { useDebouncedCallback } from "use-debounce";
 import { PaginationProps } from "@/lib/utils/pagination/type/PaginationProps";
 import { FbAccountsService } from "@/lib/features/fb-accounts/FbAccountsService";
-import { FBAccount, FBAccountForm } from "../type";
+import { ApplyFilter, FBAccount, FBAccountForm, Option } from "../type";
 import { CryptoClientService } from "@/lib/features/security/cryptography/CryptoClientService";
 import { SearchWrapper } from "../../ap-profiles/search/SearchWrapper";
 import { FbAccountsSearchResults } from "../search/FbAccountsSearchResults";
 import { SearchParamsManager } from "@/lib/utils/search-params/SearchParamsManager";
+import { FbAccountsFilter } from "../filter/FbAccountsFilter";
+import { cn } from "@/lib/utils";
 
 type FbAccountsTableContainerProps = {
   response: ApiResponseProps & { pagination?: PaginationProps };
+  recruiters: Option[];
+  isSuperOrAdmin: boolean;
 };
 
 type Pagination = { page: number; limit: number };
 
 export function FbAccountsTableContainer({
   response,
+  recruiters,
+  isSuperOrAdmin,
 }: FbAccountsTableContainerProps) {
   const fbAccountsService = new FbAccountsService();
   const cryptoClientService = new CryptoClientService();
@@ -239,14 +245,42 @@ export function FbAccountsTableContainer({
 
     const page = searchParams.get("page") || "";
     const limit = searchParams.get("limit") || "";
-    const newRoute = searchParamsManager.refreshWithCacheBuster(page, limit);
-    router.push(`?${newRoute.toString()}`);
+    const newRouteQuery = searchParamsManager.refreshWithCacheBuster({
+      page,
+      limit,
+    });
+    router.push(`?${newRouteQuery.toString()}`);
   };
 
   const handleNewProfile = () => {
     setEditingData({});
     resetForm();
     setOpen(true);
+  };
+
+  const handleApplyFilter = ({
+    selectedRecruiter,
+    selectedStatus,
+  }: ApplyFilter) => {
+    const joinedRecruiter = selectedRecruiter.join(",");
+    const page = searchParams.get("page") || "";
+    const limit = searchParams.get("limit") || "";
+    const recruiter = joinedRecruiter.length ? joinedRecruiter : "";
+    const status = selectedStatus || "";
+    const newRouteQuery = searchParamsManager.refreshWithCacheBuster({
+      page,
+      limit,
+      willCache: false,
+    });
+
+    if (recruiter) {
+      newRouteQuery.set("recruiter", recruiter);
+    }
+
+    if (status) {
+      newRouteQuery.set("status", status);
+    }
+    router.push(`?${newRouteQuery.toString()}`);
   };
 
   useEffect(() => {
@@ -260,6 +294,13 @@ export function FbAccountsTableContainer({
   const total_pages = response.pagination?.total_pages;
   const limit = response.pagination?.limit || 10;
 
+  // filters
+  const recruiter = searchParams.get("recruiter") || "";
+  const splittedRecruiter = recruiter !== "" ? recruiter.split(",") : [];
+  const status = searchParams.get("status") as
+    | "active"
+    | "available"
+    | undefined;
   return (
     <div className="overflow-auto w-full">
       <FbAccountsDialog
@@ -272,7 +313,7 @@ export function FbAccountsTableContainer({
         handleInputChange={handleInputChange}
         isActionDisabled={isSubmitInProgress}
       />
-      <div className="flex justify-start gap-2 2xl:w-1/3 mt-4 w-[40%]">
+      <div className="flex justify-start gap-2 mt-4 w-[40%]">
         <Button
           className="cursor-pointer h-8 text-white"
           variant="default"
@@ -302,6 +343,13 @@ export function FbAccountsTableContainer({
             }
           />
         </div>
+        {isSuperOrAdmin && (
+          <FbAccountsFilter
+            recruiters={recruiters}
+            onApplyFilter={handleApplyFilter}
+            searchParams={{ recruiter: splittedRecruiter, status: status }}
+          />
+        )}
       </div>
       <ScrollArea className="h-[75dvh] mt-4">
         <FbAccountsTable

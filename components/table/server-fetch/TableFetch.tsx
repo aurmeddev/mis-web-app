@@ -3,13 +3,13 @@
 type Fetcher<T> = (params: Record<string, any>) => Promise<T>;
 
 // Generic Props: T = response type, CProps = extra props for the container
-type Props<T, CProps = {}> = {
+type Props<T, CProps = Record<string, unknown>> = {
   searchParams: Record<string, any>;
   fetchService: Fetcher<T>;
   Container: React.ComponentType<{ response: T } & CProps>;
 } & Partial<CProps>; // props optional
 
-export async function TableFetch<T, CProps = {}>({
+export async function TableFetch<T, CProps = Record<string, unknown>>({
   searchParams,
   fetchService,
   Container,

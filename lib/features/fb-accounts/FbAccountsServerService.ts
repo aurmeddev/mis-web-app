@@ -82,7 +82,7 @@ export class FbAccountsServerService {
             rest.app_2fa_key = isSuccess ? encryptedData : message;
           }
 
-          if (objUtils.isValidObject(rest.ap_profile)) {
+          if (rest.ap_profile?.created_at) {
             rest.ap_profile.created_at = dateUtils.formatDateTime(
               dateUtils.convertToUTC8(rest.ap_profile.created_at)
             );
@@ -90,9 +90,14 @@ export class FbAccountsServerService {
 
           return {
             ...rest,
-            fb_owner_account_created: dateUtils.formatDateOnly(
-              dateUtils.convertToUTC8(fb_owner_account_created)
-            ),
+            description: rest.ap_profile?.profile_name
+              ? `Currently assigned to ${rest.ap_profile.profile_name}`
+              : rest.status,
+            fb_owner_account_created: fb_owner_account_created
+              ? dateUtils.formatDateOnly(
+                  dateUtils.convertToUTC8(fb_owner_account_created)
+                )
+              : null,
             created_at: dateUtils.formatDateTime(
               dateUtils.convertToUTC8(created_at)
             ),

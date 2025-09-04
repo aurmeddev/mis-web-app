@@ -74,6 +74,9 @@ export class ApProfilesServerService {
           }
           return {
             ...rest,
+            description: rest.fb_account?.fb_owner_name
+              ? `Currently assigned to ${rest.fb_account.fb_owner_name}`
+              : rest.status,
             created_by: ap_created_by,
             created_at: dateUtils.formatDateTime(
               dateUtils.convertToUTC8(created_at)

@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ManageApProfilesTable } from "./ManageApProfilesTable";
 import { ManageApProfilesDialog } from "../dialog/ManageApProfilesDialog";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Pagination } from "@/components/pagination/route-based/Pagination";
 import { SearchQuery } from "@/components/otp-generator/type";
 import { ApProfilesService } from "@/lib/features/ap-profiles/ApProfilesService";
@@ -15,6 +15,7 @@ import { ApProfilesSearchResults } from "../search/ApProfilesSearchResults";
 import { SearchWrapper } from "../search/SearchWrapper";
 import { Profile } from "../type";
 import { PaginationProps } from "@/lib/utils/pagination/type/PaginationProps";
+import { SearchParamsManager } from "@/lib/utils/search-params/SearchParamsManager";
 
 type ManageApProfilesTableContainerProps = {
   response: ApiResponseProps & { pagination?: PaginationProps };
@@ -32,7 +33,8 @@ export function ManageApProfilesTableContainer({
   response,
 }: ManageApProfilesTableContainerProps) {
   const profilesService = new ApProfilesService();
-
+  const searchParamsManager = new SearchParamsManager();
+  const searchParams = useSearchParams();
   const router = useRouter();
 
   const searchParamCurrentPage = response.pagination?.page;
@@ -130,7 +132,6 @@ export function ManageApProfilesTableContainer({
 
   const buildPayload = (isUpdateMode: boolean) => {
     if (!editingData) return {};
-
     const payload: any = {};
 
     if (form.profile_name !== editingData.profile_name) {
@@ -148,7 +149,7 @@ export function ManageApProfilesTableContainer({
       } else {
         payload.fb_account_id = editingData.fb_account?.id || 0;
         payload.new_fb_account_id =
-          form.fb_account_id || searchQuery.selectedResult?.fb_account_id || 0;
+          form.fb_account_id !== 0 ? form.fb_account_id : 0;
       }
     }
 
@@ -275,7 +276,13 @@ export function ManageApProfilesTableContainer({
       selectedResult: null,
     }));
     setShowResults(false);
-    setTableData(response.data);
+    const page = searchParams.get("page") || "";
+    const limit = searchParams.get("limit") || "";
+    const newRouteQuery = searchParamsManager.refreshWithCacheBuster({
+      page,
+      limit,
+    });
+    router.push(`?${newRouteQuery.toString()}`);
   };
 
   const handleNewProfile = () => {

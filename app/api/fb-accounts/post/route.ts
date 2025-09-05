@@ -103,24 +103,35 @@ export const POST = async (request: NextRequest) => {
     const dateUtils = new DatetimeUtils();
     const { insertId } = response;
 
-    const result = [
-      {
-        id: insertId,
-        status: "available",
-        recruited_by: {
-          full_name: FULL_NAME,
-          team_name: TEAM_NAME,
-        },
-        created_at: dateUtils.formatDateTime(
-          dateUtils.convertToUTC8(await getServerCurrentDatetime())
-        ),
+    const result: any = {
+      id: insertId,
+      recovery_code: data.recovery_code ? data.recovery_code : "",
+      status: "available",
+      recruited_by: {
+        full_name: FULL_NAME,
+        team_name: TEAM_NAME,
       },
-    ];
+      created_at: dateUtils.formatDateTime(
+        dateUtils.convertToUTC8(await getServerCurrentDatetime())
+      ),
+    };
+
+    // Encrypt the app_2fa_key
+    if (data.app_2fa_key) {
+      const cipher = new CryptoServerService();
+      const { isSuccess, encryptedData, message } = await cipher.encrypt({
+        data: data.app_2fa_key,
+      });
+      result.app_2fa_key = isSuccess ? encryptedData : message;
+    } else {
+      result.app_2fa_key = "";
+    }
+
     return NextResponse.json(
       {
         isSuccess: true,
         message: "Data have been submitted successfully.",
-        data: result,
+        data: [result],
       },
       { status: 201 }
     );

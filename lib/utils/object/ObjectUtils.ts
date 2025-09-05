@@ -20,15 +20,17 @@ export class ObjectUtils {
 
   removeInvalidKeys(params: RemoveInvalidKeysProps) {
     const { data, isStrictMode } = params;
-    if (!isStrictMode) {
-      return data;
-    }
-
     const newObj: any = {};
     for (const key in data) {
       const value = data[key];
-      if (value) {
-        newObj[key] = value;
+      if (!isStrictMode) {
+        if (typeof value !== "undefined") {
+          newObj[key] = value;
+        }
+      } else {
+        if (value) {
+          newObj[key] = value;
+        }
       }
     }
     return newObj;

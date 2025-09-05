@@ -1,3 +1,7 @@
+type RemoveInvalidKeysProps = {
+  data: any;
+  isStrictMode: boolean;
+};
 export class ObjectUtils {
   isValidObject(obj: Record<string, any>): boolean {
     // Check object is not empty
@@ -14,10 +18,15 @@ export class ObjectUtils {
     });
   }
 
-  removeInvalidKeys(obj: any) {
+  removeInvalidKeys(params: RemoveInvalidKeysProps) {
+    const { data, isStrictMode } = params;
+    if (!isStrictMode) {
+      return data;
+    }
+
     const newObj: any = {};
-    for (const key in obj) {
-      const value = obj[key];
+    for (const key in data) {
+      const value = data[key];
       if (value) {
         newObj[key] = value;
       }

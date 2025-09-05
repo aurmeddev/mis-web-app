@@ -46,8 +46,11 @@ export const POST = async (request: NextRequest) => {
   const aps = new ApProfilesServerService();
   const fbs = new FbAccountsService();
   const validationPostQueryParams = objUtil.removeInvalidKeys({
-    profile_name: data.profile_name,
-    fb_account_id: data.fb_account_id,
+    data: {
+      profile_name: data.profile_name,
+      fb_account_id: data.fb_account_id,
+    },
+    isStrictMode: true,
   });
 
   // Validate if the AP Profile already exists
@@ -83,7 +86,7 @@ export const POST = async (request: NextRequest) => {
     );
   }
 
-  let payload = objUtil.removeInvalidKeys(data);
+  let payload = objUtil.removeInvalidKeys({ data, isStrictMode: true });
   const isFbAccountIdProvided =
     payload.fb_account_id && payload.fb_account_id > 0;
 

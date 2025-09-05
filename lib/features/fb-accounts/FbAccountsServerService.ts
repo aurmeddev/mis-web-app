@@ -1,8 +1,13 @@
 import { ApiResponseProps, query } from "@/database/dbConnection";
-import { FindFbAccountsProps } from "./type/FbAccountsProps";
+import {
+  FindFbAccountsProps,
+  UpdateFbAccountsProps,
+} from "./type/FbAccountsProps";
 import { SearchKeywordService } from "../search-keyword/SearchKeywordService";
 import { CryptoServerService } from "../security/cryptography/CryptoServerService";
 import { DatetimeUtils } from "@/lib/utils/date/DatetimeUtils";
+import { ObjectUtils } from "@/lib/utils/object/ObjectUtils";
+import { MySqlUtils } from "@/lib/utils/mysql/MySqlUtils";
 
 type FindApProfilesServerServiceProps = Omit<
   FindFbAccountsProps,
@@ -107,6 +112,103 @@ export class FbAccountsServerService {
         isSuccess: true,
         message: "Data fetched successfully.",
         data: formattedResponse,
+      };
+    } catch (error: any) {
+      console.error(error);
+      return {
+        isSuccess: false,
+        message: "Something went wrong! Please try again.",
+        data: [],
+      };
+    }
+  }
+
+  async update(params: UpdateFbAccountsProps): Promise<ApiResponseProps> {
+    const data = { ...params };
+    if (params.no_of_friends !== undefined) {
+      data.no_of_friends =
+        typeof params.no_of_friends === "number"
+          ? Number(params.no_of_friends)
+          : 0;
+    }
+    const fbAccountId = data.id;
+    const objUtil = new ObjectUtils();
+    const validationPostQueryParams = objUtil.removeInvalidKeys({
+      data: {
+        fb_owner_name: data.fb_owner_name,
+        contact_no: data.contact_no || "",
+        email_address: data.email_address || "",
+        username: data.username,
+      },
+      isStrictMode: true,
+    });
+
+    if (objUtil.isValidObject(validationPostQueryParams)) {
+      // Validate if the fb account already exists
+      const fbs = new FbAccountsServerService();
+      const customSearchParams = new URLSearchParams();
+      customSearchParams.set("method", "find-one");
+      customSearchParams.set("condition", "all");
+      const validationResponse = await fbs.find({
+        searchKeyword: "validation",
+        requestUrlSearchParams: customSearchParams,
+        payload: validationPostQueryParams,
+      });
+
+      if (!validationResponse.isSuccess) {
+        return {
+          isSuccess: false,
+          message: "Validation error occurred.",
+          data: [],
+        };
+      }
+      const doesApProfileExist = validationResponse.data.length > 0;
+      if (doesApProfileExist) {
+        return {
+          isSuccess: false,
+          message:
+            "The FB account information you provided already exists. Please check and try again.",
+          data: [],
+        };
+      }
+    }
+
+    const { id, ...payload } = objUtil.removeInvalidKeys({
+      data: data,
+      isStrictMode: false,
+    });
+    const mysqlUtils = new MySqlUtils();
+    const { columns, values, whereClause } = mysqlUtils.generateUpdateQuery({
+      ...payload,
+      id: fbAccountId,
+    });
+    const queryString = `UPDATE Fb_Accounts ${columns} ${whereClause}`;
+    console.log(queryString);
+    console.log(values);
+
+    // Execute the query to insert data into the database
+    try {
+      await query({
+        query: queryString,
+        values: values,
+      });
+
+      // Encrypt the app_2fa_key
+      const response: any = {};
+      if (data.app_2fa_key) {
+        const cipher = new CryptoServerService();
+        const { isSuccess, encryptedData, message } = await cipher.encrypt({
+          data: data.app_2fa_key,
+        });
+        response.app_2fa_key = isSuccess ? encryptedData : message;
+      } else {
+        response.app_2fa_key = "";
+      }
+
+      return {
+        isSuccess: true,
+        message: "Data have been updated successfully.",
+        data: [response],
       };
     } catch (error: any) {
       console.error(error);

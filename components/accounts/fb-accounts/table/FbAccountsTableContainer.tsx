@@ -136,6 +136,7 @@ export function FbAccountsTableContainer({
       "password",
       "app_2fa_key",
       "recovery_code",
+      "remarks",
     ];
 
     return fields.reduce<any>((acc, key) => {
@@ -163,7 +164,7 @@ export function FbAccountsTableContainer({
     }
 
     if (isUpdateMode) {
-      handleUpdateEntry();
+      handleUpdateEntry(response);
     } else {
       handleNewEntry(response);
     }
@@ -208,14 +209,18 @@ export function FbAccountsTableContainer({
     });
   };
 
-  const handleUpdateEntry = () => {
+  const handleUpdateEntry = (response: ApiResponseProps) => {
     setTableData((prevData: any[]) =>
       prevData.map((item) => {
+        const secretKeyHasChanged = editingData.app_2fa_key != form.app_2fa_key;
         const output =
           item.id === editingData.id
             ? {
                 ...item,
                 ...form,
+                app_2fa_key: secretKeyHasChanged
+                  ? response.data[0].app_2fa_key
+                  : item.app_2fa_key,
               }
             : item;
         return output;
@@ -232,7 +237,11 @@ export function FbAccountsTableContainer({
     const secretKey = await cryptoClientService.decrypt({
       data: selectedAccount.app_2fa_key,
     });
-    setEditingData(selectedAccount);
+
+    setEditingData({
+      ...selectedAccount,
+      app_2fa_key: secretKey.decryptedData,
+    });
     if (selectedAccount) {
       setForm({ ...selectedAccount, app_2fa_key: secretKey.decryptedData });
       setOpen(true);

@@ -21,6 +21,7 @@ type BaseFbAccountsProps = {
   no_of_friends?: number;
   fb_account_quality_type_id?: number;
   created_at: string; // auto-generated in the database
+  remarks?: string;
 };
 
 type PostFbAccountsProps = Omit<
@@ -47,6 +48,7 @@ type ToggleFbAccountQualityStatusProps = Omit<
   | "fb_owner_account_created"
   | "no_of_friends"
   | "created_at"
+  | "remarks"
 >;
 
 type PostRecoveryCodesProps = {

@@ -7,7 +7,10 @@ export class UsersLogsServerService {
   async post(params: PostUsersLogsProps): Promise<ApiResponseProps> {
     const mysqlUtils = new MySqlUtils();
     const objUtil = new ObjectUtils();
-    const payload = objUtil.removeInvalidKeys(params);
+    const payload = objUtil.removeInvalidKeys({
+      data: params,
+      isStrictMode: true,
+    });
     const { columns, values, questionMarksValue } =
       mysqlUtils.generateInsertQuery(payload);
     const queryString = `INSERT INTO User_Logs ${columns} ${questionMarksValue}`;

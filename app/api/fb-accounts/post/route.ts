@@ -43,10 +43,13 @@ export const POST = async (request: NextRequest) => {
   const objUtil = new ObjectUtils();
   const fbs = new FbAccountsServerService();
   const validationPostQueryParams = objUtil.removeInvalidKeys({
-    fb_owner_name: data.fb_owner_name,
-    contact_no: data.contact_no || "",
-    email_address: data.email_address || "",
-    username: data.username,
+    data: {
+      fb_owner_name: data.fb_owner_name,
+      contact_no: data.contact_no || "",
+      email_address: data.email_address || "",
+      username: data.username,
+    },
+    isStrictMode: true,
   });
 
   // Validate if the fb account already exists
@@ -82,7 +85,7 @@ export const POST = async (request: NextRequest) => {
     );
   }
 
-  const payload = objUtil.removeInvalidKeys(data);
+  const payload = objUtil.removeInvalidKeys({ data, isStrictMode: true });
   const mysqlUtils = new MySqlUtils();
   const { columns, values, questionMarksValue } =
     mysqlUtils.generateInsertQuery({ recruited_by: USER_ID, ...payload });

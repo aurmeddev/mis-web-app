@@ -55,6 +55,7 @@ export type FBAccountForm = Pick<
   | "password"
   | "app_2fa_key"
   | "recovery_code"
+  | "remarks"
 >;
 
 export type Option = {

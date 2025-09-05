@@ -7,6 +7,7 @@ import {
   CircleStop,
   KeySquare,
   Lock,
+  MessageSquareText,
   Pencil,
   SearchX,
   ShieldEllipsis,
@@ -95,6 +96,12 @@ export function FbAccountsTable({
       colSpan: 2,
     },
     {
+      label: "Remarks",
+      icon: <MessageSquareText className="h-4 w-4" />,
+      className: "border-r text-sm w-[10%]",
+      colSpan: 1,
+    },
+    {
       label: "Recruited by",
       icon: <User2 className="h-4 w-4" />,
       className: "border-r text-sm ",
@@ -159,13 +166,18 @@ export function FbAccountsTable({
               </div>
             </TableCell>
             <TableCell className="border-r text-sm">
-              {rowData.recovery_code ? "********" : ""}
+              <div className="font-semibold">
+                {rowData.recovery_code ? "********" : ""}
+              </div>
             </TableCell>
             <TableCell
               className="border-r font-medium py-0 text-sm"
               colSpan={2}
             >
               <BadgeStatus status={rowData.status} />
+            </TableCell>
+            <TableCell className="border-r py-0 text-sm" colSpan={1}>
+              {rowData.remarks}
             </TableCell>
             <TableCell className="border-r text-sm">
               <div className="text-xs">{rowData.recruited_by.full_name}</div>

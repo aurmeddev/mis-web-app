@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { FormEvent } from "react";
 import { X } from "lucide-react";
 import { FBAccount } from "../type";
+import { Textarea } from "@/components/ui/textarea";
 
 type ConfirmDialogProps = {
   form: any;
@@ -149,6 +150,15 @@ export function FbAccountsDialog({
                 }
               />
             </div>
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="remarks">Remarks</Label>
+            <Textarea
+              className="border h-8 px-2 py-1 rounded w-full"
+              disabled={isActionDisabled}
+              value={form.remarks || ""}
+              onChange={(e) => handleInputChange("remarks", e.target.value)}
+            />
           </div>
 
           <DialogFooter>

@@ -78,13 +78,37 @@ export class DatetimeUtils {
     return new Date();
   };
 
-  isValidYMDFormat(dateStr: string): boolean {
-    if (!dateStr) {
+  isValidYMDFormat(dateString: string): boolean {
+    if (!dateString) {
       return false;
     }
-    const parsedDate = parse(dateStr, "yyyy-MM-dd", new Date());
+    // Check if the string matches the yyyy-MM-dd format using a regular expression.
+    // The pattern matches four digits, a hyphen, two digits, a hyphen, and two digits.
+    const regex = /^\d{4}-\d{2}-\d{2}$/;
 
-    return isValid(parsedDate) && format(parsedDate, "yyyy-MM-dd") === dateStr;
+    if (!regex.test(dateString)) {
+      return false;
+    }
+
+    // Parse the date string into its components.
+    const parts = dateString.split("-");
+    const year = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1; // Month is 0-indexed in JavaScript's Date object.
+    const day = parseInt(parts[2], 10);
+
+    // Create a new Date object. The Date constructor handles invalid dates gracefully
+    // (e.g., month 13, day 32, etc.) by rolling over.
+    const date = new Date(year, month, day);
+
+    // Check if the date object's values match the original input. This is the key to
+    // validating the date's existence (e.g., prevents "2023-02-30").
+    // The getFullYear() method gets the year from the date object, and we
+    // check if it matches the year we passed in. We do the same for the month and day.
+    return (
+      date.getFullYear() === year &&
+      date.getMonth() === month &&
+      date.getDate() === day
+    );
   }
   formatDatesSmart(data: DateItem[]): FormattedDateItem[] {
     if (!data || data.length === 0) return [];

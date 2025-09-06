@@ -185,6 +185,8 @@ export function FbAccountsTableContainer({
         full_name: recruited_by.full_name,
         team_name: recruited_by.team_name,
       },
+      app_2fa_key: form.app_2fa_key,
+      recovery_code: form.recovery_code,
       created_at: data[0].created_at,
       status: data[0].status,
     };
@@ -240,10 +242,13 @@ export function FbAccountsTableContainer({
 
     setEditingData({
       ...selectedAccount,
-      app_2fa_key: secretKey.decryptedData,
+      app_2fa_key: secretKey.decryptedData || selectedAccount.app_2fa_key,
     });
     if (selectedAccount) {
-      setForm({ ...selectedAccount, app_2fa_key: secretKey.decryptedData });
+      setForm({
+        ...selectedAccount,
+        app_2fa_key: secretKey.decryptedData || selectedAccount.app_2fa_key,
+      });
       setOpen(true);
     }
   };

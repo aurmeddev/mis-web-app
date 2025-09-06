@@ -3,7 +3,7 @@ import { BaseSearchKeywordProps } from "../../search-keyword/type/SearchKeywordP
 
 type BaseFbAccountsProps = {
   id: number; // auto-incremented in the database
-  fb_owner_name: string; // required
+  fb_owner_name?: string; // required
   recruited_by:
     | {
         full_name: string;
@@ -12,8 +12,8 @@ type BaseFbAccountsProps = {
     | number;
   contact_no?: string;
   email_address?: string;
-  username: string; // required
-  password: string; // required
+  username?: string; // required
+  password?: string; // required
   app_2fa_key?: string;
   marketing_api_access_token?: string;
   recovery_code?: string;

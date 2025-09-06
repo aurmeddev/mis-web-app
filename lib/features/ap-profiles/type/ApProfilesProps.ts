@@ -19,7 +19,9 @@ type BaseApProfilesProps = {
 type PostApProfilesProps = Omit<
   BaseApProfilesProps,
   "id" | "is_active" | "created_by" | "created_at"
->;
+> & {
+  marketing_api_access_token?: string;
+};
 
 type UpdateApProfilesProps = Omit<
   BaseApProfilesProps,
@@ -27,6 +29,7 @@ type UpdateApProfilesProps = Omit<
 > & {
   new_profile_name?: string;
   new_fb_account_id?: number;
+  marketing_api_access_token?: string;
 };
 
 type ToggleApProfilesStatusProps = Omit<

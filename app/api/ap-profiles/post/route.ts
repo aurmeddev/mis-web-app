@@ -5,9 +5,9 @@ import { ObjectUtils } from "@/lib/utils/object/ObjectUtils";
 import { CryptoServerService } from "@/lib/features/security/cryptography/CryptoServerService";
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { NextResponse, NextRequest } from "next/server";
-import { FbAccountsService } from "@/lib/features/fb-accounts/FbAccountsService";
 import { DatetimeUtils } from "@/lib/utils/date/DatetimeUtils";
 import { ApProfilesServerService } from "@/lib/features/ap-profiles/ApProfilesServerService";
+import { FbAccountsServerService } from "@/lib/features/fb-accounts/FbAccountsServerService";
 export const POST = async (request: NextRequest) => {
   // Check if the user session is valid before processing the request
   const session = await getSession();
@@ -21,7 +21,7 @@ export const POST = async (request: NextRequest) => {
     );
   }
 
-  // Decrypt the user ID from the session
+  // // Decrypt the user ID from the session
   const decipher = new CryptoServerService();
   const { isSuccess, decryptedData } = await decipher.decrypt({
     data: session.user.id,
@@ -41,10 +41,11 @@ export const POST = async (request: NextRequest) => {
   const FULL_NAME = session.user.full_name;
   const TEAM_NAME = session.user.team_name;
 
-  const data: PostApProfilesProps = await request.json();
+  const { marketing_api_access_token, ...data }: PostApProfilesProps =
+    await request.json();
   const objUtil = new ObjectUtils();
   const aps = new ApProfilesServerService();
-  const fbs = new FbAccountsService();
+  const fbs = new FbAccountsServerService();
   const validationPostQueryParams = objUtil.removeInvalidKeys({
     data: {
       profile_name: data.profile_name,
@@ -94,10 +95,12 @@ export const POST = async (request: NextRequest) => {
     payload = { ...payload, is_active: 1 }; // Set the status to active if fb_account_id is provided
 
     // Validate if the assigned fb_account_id exists in FB Accounts db table
+    const customSearchParams = new URLSearchParams();
+    customSearchParams.set("method", "find-one");
     const validationResponse = await fbs.find({
       searchKeyword: "validation",
-      method: "find-one",
-      dynamicSearchPayload: { id: payload.fb_account_id },
+      requestUrlSearchParams: customSearchParams,
+      payload: { id: payload.fb_account_id },
     });
 
     if (!validationResponse.isSuccess) {
@@ -144,13 +147,37 @@ export const POST = async (request: NextRequest) => {
 
     let getFbAccountInfo: any;
     if (data.fb_account_id && data.fb_account_id > 0) {
+      const customSearchParams = new URLSearchParams();
+      customSearchParams.set("method", "find-one");
       const { data } = await fbs.find({
         searchKeyword: "validation",
-        method: "find-one",
-        dynamicSearchPayload: { id: payload.fb_account_id },
+        requestUrlSearchParams: customSearchParams,
+        payload: { id: payload.fb_account_id },
       });
 
       getFbAccountInfo = data[0];
+
+      if (marketing_api_access_token) {
+        // Add marketing api acccess token in Fb Account
+        const addAccessToken = await fbs.update({
+          id: payload.fb_account_id,
+          marketing_api_access_token: marketing_api_access_token,
+        });
+
+        if (!addAccessToken.isSuccess) {
+          NextResponse.json(
+            {
+              isSuccess: addAccessToken.isSuccess,
+              message: addAccessToken.message,
+              data: [],
+            },
+            { status: 400 }
+          );
+        }
+
+        getFbAccountInfo.marketing_api_access_token =
+          marketing_api_access_token;
+      }
     }
 
     const result = [

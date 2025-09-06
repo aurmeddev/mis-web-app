@@ -175,6 +175,7 @@ export function FbAccountsTableContainer({
   const handleNewEntry = (response: ApiResponseProps) => {
     const { data } = response;
     const recruited_by = data[0].recruited_by;
+    const response2faKey = response.data[0]?.app_2fa_key;
     const updatedForm = {
       id: data[0].id,
       row_id: 1,
@@ -185,7 +186,7 @@ export function FbAccountsTableContainer({
         full_name: recruited_by.full_name,
         team_name: recruited_by.team_name,
       },
-      app_2fa_key: form.app_2fa_key,
+      app_2fa_key: response2faKey,
       recovery_code: form.recovery_code,
       created_at: data[0].created_at,
       status: data[0].status,
@@ -242,12 +243,12 @@ export function FbAccountsTableContainer({
 
     setEditingData({
       ...selectedAccount,
-      app_2fa_key: secretKey.decryptedData || selectedAccount.app_2fa_key,
+      app_2fa_key: secretKey.decryptedData,
     });
     if (selectedAccount) {
       setForm({
         ...selectedAccount,
-        app_2fa_key: secretKey.decryptedData || selectedAccount.app_2fa_key,
+        app_2fa_key: secretKey.decryptedData,
       });
       setOpen(true);
     }

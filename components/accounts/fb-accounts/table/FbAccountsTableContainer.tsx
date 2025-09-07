@@ -2,7 +2,7 @@
 import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { FbAccountsTable } from "./FbAccountsTable";
 import { FbAccountsDialog } from "../dialog/FbAccountsDialog";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -392,6 +392,8 @@ export function FbAccountsTableContainer({
           total_pages={Number(searchParamTotalPages)}
           handlePagination={handlePagination}
         />
+
+        <ScrollBar orientation="horizontal" />
       </ScrollArea>
 
       {/* <ScrollArea className="h-[75dvh] mt-4"> */}

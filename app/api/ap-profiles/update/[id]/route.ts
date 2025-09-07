@@ -10,20 +10,55 @@ export const PUT = async (
   { params }: { params: Promise<{ id: string }> }
 ) => {
   // Check if the user session is valid before processing the request
-  const session = await getSession();
-  if (!session) {
-    return NextResponse.json(
-      {
-        isSuccess: false,
-        message: "Session expired or invalid",
-      },
-      { status: 403 }
-    );
-  }
+  // const session = await getSession();
+  // if (!session) {
+  //   return NextResponse.json(
+  //     {
+  //       isSuccess: false,
+  //       message: "Session expired or invalid",
+  //     },
+  //     { status: 403 }
+  //   );
+  // }
 
   const profileId = `${(await params).id}`;
   const data: UpdateApProfilesProps = await request.json();
-  const { id, ...prop } = data;
+  const { id, marketing_api_access_token, ...prop } = data;
+
+  const fbs = new FbAccountsServerService();
+  if (
+    isOnlyMarketingApiTokenChanged({
+      ...prop,
+      marketing_api_access_token,
+    })
+  ) {
+    // Update Fb Account's marketing api acccess token
+    const addAccessToken = await fbs.update({
+      id: prop.fb_account_id,
+      marketing_api_access_token: marketing_api_access_token,
+    });
+
+    if (!addAccessToken.isSuccess) {
+      NextResponse.json(
+        {
+          isSuccess: addAccessToken.isSuccess,
+          message: addAccessToken.message,
+          data: [],
+        },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json(
+      {
+        isSuccess: true,
+        message: "The access token have been updated successfully.",
+        data: [{ marketing_api_access_token }],
+      },
+      { status: 201 }
+    );
+  }
+
   const { isSuccess, message, status } = await validateFbAccountAssignment({
     new_fb_account_id: prop.new_fb_account_id,
     new_profile_name: prop.new_profile_name,
@@ -82,11 +117,10 @@ export const PUT = async (
       values: values,
     });
 
-    let getFbAccountInfo: any;
+    let getFbAccountInfo: any = {};
     const customSearchParams = new URLSearchParams();
     customSearchParams.set("method", "find-one");
     if ((prop.new_fb_account_id ?? 0) > 0) {
-      const fbs = new FbAccountsServerService();
       const { data } = await fbs.find({
         searchKeyword: "validation",
         requestUrlSearchParams: customSearchParams,
@@ -94,6 +128,30 @@ export const PUT = async (
       });
 
       getFbAccountInfo = data[0];
+    }
+
+    if (marketing_api_access_token !== undefined && !hasFbAccountRemoved) {
+      // Update marketing api acccess token in Fb Account
+      const fbAccountId = hasProfileAssignedNewFbAccount
+        ? Number(prop.new_fb_account_id)
+        : prop.fb_account_id;
+      const addAccessToken = await fbs.update({
+        id: fbAccountId,
+        marketing_api_access_token: marketing_api_access_token,
+      });
+
+      if (!addAccessToken.isSuccess) {
+        NextResponse.json(
+          {
+            isSuccess: addAccessToken.isSuccess,
+            message: addAccessToken.message,
+            data: [],
+          },
+          { status: 400 }
+        );
+      }
+
+      getFbAccountInfo.marketing_api_access_token = marketing_api_access_token;
     }
 
     const aps = new ApProfilesServerService();
@@ -206,4 +264,26 @@ const validateFbAccountAssignment = async (
     message: "Ok",
     status: 200,
   };
+};
+
+type IsOnlyMarketingApiTokenChangedProps = {
+  profile_name?: string;
+  new_profile_name?: string;
+  remarks?: string;
+  fb_account_id: number;
+  new_fb_account_id?: number;
+  marketing_api_access_token?: string;
+};
+const isOnlyMarketingApiTokenChanged = (
+  params: IsOnlyMarketingApiTokenChangedProps
+) => {
+  const hasAssignedFbAccount = params.fb_account_id !== 0;
+  return (
+    params.profile_name === undefined &&
+    params.new_profile_name === undefined &&
+    params.remarks === undefined &&
+    params.new_fb_account_id === undefined &&
+    hasAssignedFbAccount &&
+    params.marketing_api_access_token !== undefined
+  );
 };

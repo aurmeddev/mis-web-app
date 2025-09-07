@@ -3,7 +3,7 @@ import { BaseSearchKeywordProps } from "../../search-keyword/type/SearchKeywordP
 
 type BaseApProfilesProps = {
   id: number; // auto-incremented in the database
-  profile_name: string;
+  profile_name?: string;
   fb_account_id: number;
   remarks?: string;
   is_active: 0 | 1; // 0: Inactive, 1: Active

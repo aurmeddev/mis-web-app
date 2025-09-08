@@ -94,4 +94,14 @@ export class SearchParamsManager {
     }
     return query;
   }
+
+  getDomainNameFromUrl(urlString: string) {
+    try {
+      const url = new URL(urlString);
+      return url.hostname;
+    } catch (error) {
+      console.error("Invalid URL:", error);
+      return null;
+    }
+  }
 }

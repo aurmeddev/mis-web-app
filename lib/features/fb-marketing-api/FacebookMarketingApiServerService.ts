@@ -5,6 +5,7 @@ import {
   MarketingApiAccessTokenConfigProps,
 } from "./type/FacebookMarketingApiProps";
 import { ApiResponseProps } from "@/database/dbConnection";
+import { InternetBsApiClientService } from "../domain-checker/internetbs-api/InternetBsApiClientService";
 
 type ResultProps = {
   data: any[];
@@ -174,48 +175,60 @@ export class FacebookMarketingApiServerService {
     }
 
     const result: ResultProps = await response.json();
-    const formattedResult = result.data.map((prop) => {
-      const { id, insights, adsets, ...restOfProps } = prop;
-      const hasAdsets = adsets?.data.length > 0;
-      if (hasAdsets) {
-        restOfProps.adsets = adsets.data.map((adset: any) => {
-          const { adcreatives, ...restOfAdsets } = adset;
-          const hasAdcreatives = adcreatives?.data.length > 0;
-          if (hasAdcreatives) {
-            restOfAdsets.adcreatives = adcreatives.data.map(
-              (adcreative: any) => {
-                const { id, object_story_spec } = adcreative;
-                const video_data = object_story_spec?.video_data;
-                const hasLink = video_data?.call_to_action?.value?.link;
-                if (hasLink) {
-                  const link: string = video_data?.call_to_action?.value?.link;
-                  restOfProps.domain_name =
-                    new SearchParamsManager().getDomainNameFromUrl(link);
-                }
-                return video_data;
+    const formattedResult = await Promise.all(
+      result.data.map(async (prop) => {
+        const { id, insights, adsets, ...restOfProps } = prop;
+        const hasAdsets = adsets?.data.length > 0;
+        if (hasAdsets) {
+          restOfProps.adsets = await Promise.all(
+            adsets.data.map(async (adset: any) => {
+              const { adcreatives, ...restOfAdsets } = adset;
+              const hasAdcreatives = adcreatives?.data.length > 0;
+              if (hasAdcreatives) {
+                restOfAdsets.adcreatives = await Promise.all(
+                  adcreatives.data.map(async (adcreative: any) => {
+                    const { id, object_story_spec } = adcreative;
+                    const video_data = object_story_spec?.video_data;
+                    const hasLink = video_data?.call_to_action?.value?.link;
+                    if (hasLink) {
+                      const link: string =
+                        video_data?.call_to_action?.value?.link;
+                      const domainName =
+                        new SearchParamsManager().getDomainNameFromUrl(link);
+                      restOfProps.domain_name = domainName;
+                      const internetbs = new InternetBsApiClientService();
+                      const { isSuccess, data, message } =
+                        await internetbs.getDomainInfo({
+                          domain: `${domainName}`,
+                        });
+                      restOfProps.status = isSuccess ? data[0].status : message;
+                    }
+                    return video_data;
+                  })
+                );
+              } else {
+                restOfAdsets.adcreatives = [];
               }
-            );
-          } else {
-            restOfAdsets.adcreatives = [];
-          }
-          const convertedToUsd = restOfAdsets.daily_budget / 100;
-          return {
-            ...restOfAdsets,
-            daily_budget: `${
-              convertedToUsd
-                ? `${convertedToUsd.toFixed(2)}`
-                : `daily budget error`
-            }`,
-          };
-        });
-      } else {
-        restOfProps.adsets = [];
-      }
-      return {
-        ...restOfProps,
-        spend: insights?.data.length > 0 ? Number(insights.data[0].spend) : 0,
-      };
-    });
+              const convertedToUsd = restOfAdsets.daily_budget / 100;
+              return {
+                ...restOfAdsets,
+                daily_budget: `${
+                  convertedToUsd
+                    ? `${convertedToUsd.toFixed(2)}`
+                    : `daily budget error`
+                }`,
+              };
+            })
+          );
+        } else {
+          restOfProps.adsets = [];
+        }
+        return {
+          ...restOfProps,
+          spend: insights?.data.length > 0 ? Number(insights.data[0].spend) : 0,
+        };
+      })
+    );
     return {
       isSuccess: true,
       message:

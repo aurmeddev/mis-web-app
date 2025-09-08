@@ -1,7 +1,7 @@
 import { SearchParamsManager } from "@/lib/utils/search-params/SearchParamsManager";
 import { GraphFacebookApiConfig } from "./config/GraphFacebookApiConfig";
 import {
-  BaseFacebookMarketingApiProps,
+  BaseFacebookAdsManagerServiceProps,
   MarketingApiAccessTokenConfigProps,
 } from "./type/FacebookMarketingApiProps";
 import { ApiResponseProps } from "@/database/dbConnection";
@@ -10,7 +10,7 @@ import { InternetBsApiClientService } from "../domain-checker/internetbs-api/Int
 type ResultProps = {
   data: any[];
 };
-export class FacebookMarketingApiServerService {
+export class FacebookAdsManagerServerService {
   private graphFbApiConfig = new GraphFacebookApiConfig();
   private requestOptions: RequestInit = {
     method: "GET",
@@ -70,7 +70,7 @@ export class FacebookMarketingApiServerService {
 
   async getAdInsights(
     params: Omit<
-      BaseFacebookMarketingApiProps,
+      BaseFacebookAdsManagerServiceProps,
       "access_token" | "use_account_attribution_setting"
     > & {
       id: string;
@@ -136,7 +136,7 @@ export class FacebookMarketingApiServerService {
 
   async getAdCreatives(
     params: Omit<
-      BaseFacebookMarketingApiProps,
+      BaseFacebookAdsManagerServiceProps,
       | "access_token"
       | "use_account_attribution_setting"
       | "time_ranges"
@@ -146,7 +146,7 @@ export class FacebookMarketingApiServerService {
     }
   ) {
     const { id, ...restOfParams } = params;
-    const defaultFields = `name,insights{spend},adsets{name,daily_budget,adcreatives{object_story_spec{video_data}}}`;
+    const defaultFields = `adsets{name,daily_budget,insights{spend},adcreatives{object_story_spec{video_data}}}`;
 
     const searchParams: any = {
       ...this.config,
@@ -177,12 +177,12 @@ export class FacebookMarketingApiServerService {
     const result: ResultProps = await response.json();
     const formattedResult = await Promise.all(
       result.data.map(async (prop) => {
-        const { id, insights, adsets, ...restOfProps } = prop;
+        const { id, adsets, ...restOfProps } = prop;
         const hasAdsets = adsets?.data.length > 0;
         if (hasAdsets) {
           restOfProps.adsets = await Promise.all(
             adsets.data.map(async (adset: any) => {
-              const { adcreatives, ...restOfAdsets } = adset;
+              const { adcreatives, insights, ...restOfAdsets } = adset;
               const hasAdcreatives = adcreatives?.data.length > 0;
               if (hasAdcreatives) {
                 restOfAdsets.adcreatives = await Promise.all(
@@ -195,13 +195,15 @@ export class FacebookMarketingApiServerService {
                         video_data?.call_to_action?.value?.link;
                       const domainName =
                         new SearchParamsManager().getDomainNameFromUrl(link);
-                      restOfProps.domain_name = domainName;
+                      restOfAdsets.domain_name = domainName;
                       const internetbs = new InternetBsApiClientService();
-                      const { isSuccess, data, message } =
+                      const { isSuccess, data } =
                         await internetbs.getDomainInfo({
                           domain: `${domainName}`,
                         });
-                      restOfProps.status = isSuccess ? data[0].status : message;
+                      restOfAdsets.status = isSuccess
+                        ? data[0].status
+                        : "Error has occured in internetbs api.";
                     }
                     return video_data;
                   })
@@ -212,6 +214,10 @@ export class FacebookMarketingApiServerService {
               const convertedToUsd = restOfAdsets.daily_budget / 100;
               return {
                 ...restOfAdsets,
+                spend:
+                  insights?.data.length > 0
+                    ? Number(insights.data[0].spend)
+                    : 0,
                 daily_budget: `${
                   convertedToUsd
                     ? `${convertedToUsd.toFixed(2)}`
@@ -225,7 +231,6 @@ export class FacebookMarketingApiServerService {
         }
         return {
           ...restOfProps,
-          spend: insights?.data.length > 0 ? Number(insights.data[0].spend) : 0,
         };
       })
     );

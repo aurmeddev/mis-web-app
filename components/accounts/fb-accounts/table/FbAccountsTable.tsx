@@ -116,7 +116,7 @@ export function FbAccountsTable({
     {
       label: "Actions",
       icon: <CircleStop className="h-4 w-4" />,
-      className: "text-sm",
+      className: "bg-muted sticky right-0 text-sm",
       colSpan: 1,
     },
   ];
@@ -188,7 +188,7 @@ export function FbAccountsTable({
             <TableCell className="border-r text-sm">
               {rowData.created_at}
             </TableCell>
-            <TableCell>
+            <TableCell className="bg-white border-l border-black dark:bg-background sticky right-0">
               <div className="flex justify-center gap-2 text-center">
                 <Button
                   className="cursor-pointer h-7 py-0 px-3"

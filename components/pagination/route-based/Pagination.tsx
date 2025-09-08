@@ -7,12 +7,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 
 type Props = {
   currentPage: number;
   limit: number;
   total_pages: number;
   handlePagination: (page: number, limit: number) => void;
+  className?: string;
 };
 
 export function Pagination({
@@ -20,10 +22,11 @@ export function Pagination({
   limit,
   total_pages,
   handlePagination,
+  className,
 }: Props) {
   const limits = ["10", "20", "30", "40", "50"];
   return (
-    <div className="flex justify-end gap-2 mt-2 mr-2">
+    <div className={cn(className, "flex justify-end gap-2 mt-2 mr-2")}>
       <Select
         disabled={!currentPage}
         value={String(limit)}

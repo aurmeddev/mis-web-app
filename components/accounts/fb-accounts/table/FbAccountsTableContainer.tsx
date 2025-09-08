@@ -380,7 +380,7 @@ export function FbAccountsTableContainer({
           isSuperOrAdmin={isSuperOrAdmin}
         />
       </div>
-      <ScrollArea className="h-[75dvh] mt-4">
+      <ScrollArea className="h-[75dvh] mt-4 relative">
         <FbAccountsTable
           data={memoizedTableData}
           handleEditChange={handleEditChange}
@@ -391,26 +391,11 @@ export function FbAccountsTableContainer({
           limit={searchParamLimit}
           total_pages={Number(searchParamTotalPages)}
           handlePagination={handlePagination}
+          className="fixed right-0 w-full"
         />
 
         <ScrollBar orientation="horizontal" />
       </ScrollArea>
-
-      {/* <ScrollArea className="h-[75dvh] mt-4"> */}
-      {/* <div className="overflow-w-auto">
-        <FbAccountsTable
-          data={memoizedTableData}
-          handleEditChange={handleEditChange}
-        />
-      </div>
-
-      <Pagination
-        currentPage={Number(currentPage)}
-        limit={limit}
-        total_pages={Number(total_pages)}
-        handlePagination={handlePagination}
-      /> */}
-      {/* </ScrollArea> */}
     </div>
   );
 }

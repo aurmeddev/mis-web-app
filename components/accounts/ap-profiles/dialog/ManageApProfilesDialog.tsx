@@ -105,6 +105,10 @@ export function ManageApProfilesDialog({
       query: "",
       selectedResult: item,
     }));
+    handleInputChange(
+      "marketing_api_access_token",
+      item.marketing_api_access_token
+    );
     handleInputChange("fb_account_id", item.id);
     setShowResults(false);
   };
@@ -247,6 +251,23 @@ export function ManageApProfilesDialog({
               />
             </div>
           </div>
+
+          {searchQuery.selectedResult && (
+            <div className="grid gap-2">
+              <Label htmlFor="access-token">Extended Access Token</Label>
+              <Textarea
+                className="border h-8 px-2 py-1 rounded w-full"
+                disabled={isActionDisabled}
+                value={form.marketing_api_access_token || ""}
+                onChange={(e) =>
+                  handleInputChange(
+                    "marketing_api_access_token",
+                    e.target.value
+                  )
+                }
+              />
+            </div>
+          )}
 
           <div className="grid gap-2">
             <Label htmlFor="remarks">Remarks</Label>

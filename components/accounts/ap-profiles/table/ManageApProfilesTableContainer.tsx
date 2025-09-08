@@ -26,6 +26,7 @@ type Pagination = { page: number; limit: number };
 type ProfileForm = {
   profile_name: string;
   fb_account_id?: number;
+  marketing_api_access_token: string;
   remarks?: "";
 };
 
@@ -53,13 +54,13 @@ export function ManageApProfilesTableContainer({
   const [form, setForm] = useState<ProfileForm>({
     profile_name: "",
     fb_account_id: undefined,
+    marketing_api_access_token: "",
     remarks: "",
   });
   const [tableData, setTableData] = useState<Profile[]>(response.data);
   const [open, setOpen] = useState(false);
   const [canSave, setCanSave] = useState(false);
   const [isSubmitInProgress, setIsSubmitInProgress] = useState(false);
-  const [hasStatusChanged, setHasStatusChanged] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [searchQuery, setSearchQuery] = useState<SearchQuery>({
     query: "",
@@ -80,19 +81,6 @@ export function ManageApProfilesTableContainer({
       ...prevState,
       [name]: value,
     }));
-  };
-
-  const handleStatusChange = (value: string) => {
-    // const selectedRecord = tableData.find(
-    //   (record: any) => record.id === editingRow
-    // );
-    // const originalValue = String(selectedRecord?.is_active);
-    // setForm((prevState: any) => ({
-    //   ...prevState,
-    //   is_active: value,
-    // }));
-    // // Detect if the value is actually different from original
-    // setHasStatusChanged(value !== originalValue);
   };
 
   const handleSearchDebounce = useDebouncedCallback(async (data: string) => {
@@ -126,7 +114,12 @@ export function ManageApProfilesTableContainer({
       selectedResult: item,
     }));
 
-    setTableData([item]);
+    setTableData([
+      {
+        row_id: 1,
+        ...item,
+      },
+    ]);
     setShowResults(false);
   };
 
@@ -143,7 +136,21 @@ export function ManageApProfilesTableContainer({
       }
     }
 
-    if (form.fb_account_id !== editingData.fb_account?.id) {
+    if (
+      form.marketing_api_access_token !== editingData.marketing_api_access_token
+    ) {
+      if (!isUpdateMode) {
+        payload.fb_account_id = form.fb_account_id;
+      } else {
+        payload.fb_account_id = editingData.fb_account?.id;
+      }
+      payload.marketing_api_access_token = form.marketing_api_access_token;
+    }
+
+    if (
+      form.fb_account_id !== editingData.fb_account?.id &&
+      typeof form.fb_account_id !== "undefined"
+    ) {
       if (!isUpdateMode) {
         payload.fb_account_id = form.fb_account_id;
       } else {
@@ -193,8 +200,11 @@ export function ManageApProfilesTableContainer({
       row_id: 1,
       profile_name: form.profile_name,
       fb_account: {
+        id: data[0].fb_account.id,
         fb_owner_name: data[0].fb_account.fb_owner_name,
         username: data[0].fb_account.username,
+        marketing_api_access_token:
+          data[0].fb_account.marketing_api_access_token,
       },
       created_by: {
         full_name: createdBy.full_name,
@@ -216,7 +226,7 @@ export function ManageApProfilesTableContainer({
         row_id: row.row_id + 1, // increment each old row_id by 1
       })),
     ]);
-    setForm({ profile_name: "", fb_account_id: undefined, remarks: "" });
+    resetForm();
   };
 
   const handleUpdateEntry = (response: ApiResponseProps, payload: any) => {
@@ -224,34 +234,59 @@ export function ManageApProfilesTableContainer({
       prevData.map((item) => {
         const payloadLength = Object.keys(payload).length;
         const hasOnlyRemarks = payloadLength === 1 && "remarks" in payload;
-        const hasOnlyProfile =
-          "new_profile_name" in payload && "profile_name" in payload;
+        const hasSetNewFbAccount =
+          "new_fb_account_id" in payload && payload.new_fb_account_id !== 0;
+        const hasRemovedFbAccount =
+          "new_fb_account_id" in payload && payload.new_fb_account_id === 0;
+        const hasMarketingApiAccessToken =
+          "marketing_api_access_token" in payload;
 
+        // if has set new fb account in payload use response to propagate
+        // if has marketing api access token in payload destructure and modify the marketing_api_access_token
         const output =
           item.id === editingData.id
             ? {
                 ...item,
                 ...form,
-                fb_account:
-                  hasOnlyRemarks || hasOnlyProfile
-                    ? item.fb_account
-                    : response.data[0].fb_account,
-                status: response.data[0].status,
+                fb_account: hasSetNewFbAccount
+                  ? response.data[0].fb_account
+                  : hasMarketingApiAccessToken
+                  ? {
+                      ...item.fb_account,
+                      marketing_api_access_token:
+                        form.marketing_api_access_token,
+                    }
+                  : !hasRemovedFbAccount || hasOnlyRemarks
+                  ? item.fb_account
+                  : {},
+                status:
+                  hasSetNewFbAccount || hasRemovedFbAccount
+                    ? response.data[0].status
+                    : item.status,
               }
             : item;
+
         return output;
       })
     );
-    setForm({ profile_name: "", fb_account_id: undefined, remarks: "" });
+    resetForm();
   };
 
   const handleEditChange = (id: number | null) => {
     const selectedProfile = tableData.find(
       (data: { id: number }) => data.id === id
     ) as any;
-    setEditingData(selectedProfile);
+    setEditingData({
+      ...selectedProfile,
+      marketing_api_access_token:
+        selectedProfile.fb_account.marketing_api_access_token,
+    });
     if (selectedProfile) {
-      setForm(selectedProfile);
+      setForm({
+        ...selectedProfile,
+        marketing_api_access_token:
+          selectedProfile.fb_account.marketing_api_access_token,
+      });
       setOpen(true);
     }
   };
@@ -287,8 +322,17 @@ export function ManageApProfilesTableContainer({
 
   const handleNewProfile = () => {
     setEditingData({});
-    setForm({ profile_name: "", fb_account_id: undefined, remarks: "" });
+    resetForm();
     setOpen(true);
+  };
+
+  const resetForm = () => {
+    setForm({
+      profile_name: "",
+      fb_account_id: undefined,
+      marketing_api_access_token: "",
+      remarks: "",
+    });
   };
 
   useEffect(() => {

@@ -29,11 +29,13 @@ export type FbAccount = {
 };
 
 export type Profile = {
+  row_id?: number;
   id: number;
   fb_account_id: number;
   profile_name: string;
   remarks: string | null;
   fb_account: FbAccount;
+  marketing_api_access_token: string;
   status: string;
   created_by: CreatedBy;
   created_at: string;

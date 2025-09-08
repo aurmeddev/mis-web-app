@@ -1,0 +1,274 @@
+import { SearchParamsManager } from "@/lib/utils/search-params/SearchParamsManager";
+import { GraphFacebookApiConfig } from "./config/GraphFacebookApiConfig";
+import {
+  BaseFacebookMarketingApiProps,
+  MarketingApiAccessTokenConfigProps,
+} from "./type/FacebookMarketingApiProps";
+import { ApiResponseProps } from "@/database/dbConnection";
+
+type ResultProps = {
+  data: any[];
+};
+export class FacebookMarketingApiServerService {
+  private graphFbApiConfig = new GraphFacebookApiConfig();
+  private requestOptions: RequestInit = {
+    method: "GET",
+    headers: {
+      "Content-type": "application/json",
+    },
+    cache: "no-store",
+  };
+  constructor(private config: MarketingApiAccessTokenConfigProps) {
+    this.config = config;
+  }
+  async getAdAccounts(params: { fields?: string }): Promise<ApiResponseProps> {
+    const defaultFields = `id,name,account_status,disable_reason`;
+    const searchParams: any = {
+      ...this.config,
+      use_account_attribution_setting: true,
+    };
+
+    if (!params.fields) {
+      searchParams.fields = defaultFields;
+    }
+    const searchQueryParams = new SearchParamsManager().append(searchParams);
+    const response = await fetch(
+      `${this.graphFbApiConfig.baseUrl}/${this.graphFbApiConfig.version}/me/adaccounts${searchQueryParams}`,
+      this.requestOptions
+    );
+
+    if (!response.ok) {
+      const { error } = await response.json();
+      console.error(error);
+      return {
+        isSuccess: false,
+        message: error.message,
+        data: [],
+      };
+    }
+
+    const result: ResultProps = await response.json();
+    const formattedResult = result.data.map((prop) => {
+      return {
+        ...prop,
+        account_status: getAdAccountStatus[prop.account_status] || "UNKNOWN",
+        disable_reason:
+          getAdAccountDisableReason[prop.disable_reason] || "UNKNOWN",
+      };
+    });
+
+    return {
+      isSuccess: true,
+      message:
+        result.data.length > 0
+          ? "Data fetched successfully."
+          : "No data found.",
+      data: formattedResult || [],
+    };
+  }
+
+  async getAdInsights(
+    params: Omit<
+      BaseFacebookMarketingApiProps,
+      "access_token" | "use_account_attribution_setting"
+    > & {
+      id: string;
+    }
+  ): Promise<ApiResponseProps> {
+    const { id, ...restOfParams } = params;
+    if (typeof restOfParams.time_ranges !== "string") {
+      return {
+        isSuccess: false,
+        message: "Invalid time_ranges format. It must be a string.",
+        data: [],
+      };
+    }
+
+    let fields = [];
+    if (restOfParams.level === "campaign") {
+      const campaignFields = ["campaign_id", "campaign_name"];
+      fields = [...campaignFields, ...baseFieldsInsights];
+    } else if (restOfParams.level === "adset") {
+      const adsetFields = ["adset_id", "adset_name", "campaign_id"];
+      fields = [...adsetFields, ...baseFieldsInsights];
+    } else {
+      const adFields = ["ad_id", "ad_name", "adset_id"];
+      fields = [...adFields, ...baseFieldsInsights];
+    }
+
+    const searchParams: any = {
+      ...this.config,
+      ...restOfParams,
+      use_account_attribution_setting: true,
+    };
+
+    if (!restOfParams.fields) {
+      searchParams.fields = fields.join(); // Convert array to string
+    }
+
+    const searchQueryParams = new SearchParamsManager().append(searchParams);
+    const response = await fetch(
+      `${this.graphFbApiConfig.baseUrl}/${this.graphFbApiConfig.version}/${id}/insights${searchQueryParams}`,
+      this.requestOptions
+    );
+
+    if (!response.ok) {
+      const { error } = await response.json();
+      console.error(error);
+      return {
+        isSuccess: false,
+        message: error.message,
+        data: [],
+      };
+    }
+
+    const result: ResultProps = await response.json();
+    return {
+      isSuccess: true,
+      message:
+        result.data.length > 0
+          ? "Data fetched successfully."
+          : "No data found.",
+      data: result.data || [],
+    };
+  }
+
+  async getAdCreatives(
+    params: Omit<
+      BaseFacebookMarketingApiProps,
+      | "access_token"
+      | "use_account_attribution_setting"
+      | "time_ranges"
+      | "level"
+    > & {
+      id: string;
+    }
+  ) {
+    const { id, ...restOfParams } = params;
+    const defaultFields = `name,insights{spend},adsets{name,daily_budget,adcreatives{object_story_spec{video_data}}}`;
+
+    const searchParams: any = {
+      ...this.config,
+      ...restOfParams,
+      use_account_attribution_setting: true,
+    };
+
+    if (!restOfParams.fields) {
+      searchParams.fields = defaultFields;
+    }
+
+    const searchQueryParams = new SearchParamsManager().append(searchParams);
+    const response = await fetch(
+      `${this.graphFbApiConfig.baseUrl}/${this.graphFbApiConfig.version}/${id}/campaigns${searchQueryParams}`,
+      this.requestOptions
+    );
+
+    if (!response.ok) {
+      const { error } = await response.json();
+      console.error(error);
+      return {
+        isSuccess: false,
+        message: error.message,
+        data: [],
+      };
+    }
+
+    const result: ResultProps = await response.json();
+    const formattedResult = result.data.map((prop) => {
+      const { id, insights, adsets, ...restOfProps } = prop;
+      const hasAdsets = adsets?.data.length > 0;
+      if (hasAdsets) {
+        restOfProps.adsets = adsets.data.map((adset: any) => {
+          const { adcreatives, ...restOfAdsets } = adset;
+          const hasAdcreatives = adcreatives?.data.length > 0;
+          if (hasAdcreatives) {
+            restOfAdsets.adcreatives = adcreatives.data.map(
+              (adcreative: any) => {
+                const { id, object_story_spec } = adcreative;
+                const video_data = object_story_spec?.video_data;
+                const hasLink = video_data?.call_to_action?.value?.link;
+                if (hasLink) {
+                  const link: string = video_data?.call_to_action?.value?.link;
+                  restOfProps.domain_name =
+                    new SearchParamsManager().getDomainNameFromUrl(link);
+                }
+                return video_data;
+              }
+            );
+          } else {
+            restOfAdsets.adcreatives = [];
+          }
+          const convertedToUsd = restOfAdsets.daily_budget / 100;
+          return {
+            ...restOfAdsets,
+            daily_budget: `${
+              convertedToUsd
+                ? `${convertedToUsd.toFixed(2)}`
+                : `daily budget error`
+            }`,
+          };
+        });
+      } else {
+        restOfProps.adsets = [];
+      }
+      return {
+        ...restOfProps,
+        spend: insights?.data.length > 0 ? Number(insights.data[0].spend) : 0,
+      };
+    });
+    return {
+      isSuccess: true,
+      message:
+        result.data.length > 0
+          ? "Data fetched successfully."
+          : "No data found.",
+      data: formattedResult || [],
+    };
+  }
+}
+
+const baseFieldsInsights = [
+  "account_currency",
+  "reach",
+  "impressions",
+  "cpm",
+  "spend",
+  "frequency",
+  "actions",
+  "cost_per_inline_link_click",
+  "cpc",
+  "ctr",
+  "inline_link_click_ctr",
+];
+
+const getAdAccountStatus: Record<number, string> = {
+  1: "ACTIVE",
+  2: "DISABLED",
+  3: "UNSETTLED",
+  7: "PENDING_RISK_REVIEW",
+  8: "PENDING_SETTLEMENT",
+  9: "IN_GRACE_PERIOD",
+  100: "PENDING_CLOSURE",
+  101: "CLOSED",
+  201: "ANY_ACTIVE",
+  202: "ANY_CLOSED",
+};
+
+const getAdAccountDisableReason: Record<number, string> = {
+  0: "NONE",
+  1: "ADS_INTEGRITY_POLICY",
+  2: "ADS_IP_REVIEW",
+  3: "RISK_PAYMENT",
+  4: "GRAY_ACCOUNT_SHUT_DOWN",
+  5: "ADS_AFC_REVIEW",
+  6: "BUSINESS_INTEGRITY_RAR",
+  7: "PERMANENT_CLOSE",
+  8: "UNUSED_RESELLER_ACCOUNT",
+  9: "UNUSED_ACCOUNT",
+  10: "UMBRELLA_AD_ACCOUNT",
+  11: "BUSINESS_MANAGER_INTEGRITY_POLICY",
+  12: "MISREPRESENTED_AD_ACCOUNT",
+  13: "AOAB_DESHARE_LEGAL_ENTITY",
+  14: "CTX_THREAD_REVIEW",
+  15: "COMPROMISED_AD_ACCOUNT",
+};

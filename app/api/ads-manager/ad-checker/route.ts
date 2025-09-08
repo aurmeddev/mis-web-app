@@ -1,4 +1,4 @@
-import { FacebookMarketingApiServerService } from "@/lib/features/fb-marketing-api/FacebookMarketingApiServerService";
+import { FacebookAdsManagerServerService } from "@/lib/features/ads-manager/FacebookAdsManagerServerService";
 import { SearchParamsManager } from "@/lib/utils/search-params/SearchParamsManager";
 import { NextResponse, NextRequest } from "next/server";
 export const GET = async (request: NextRequest) => {
@@ -8,7 +8,7 @@ export const GET = async (request: NextRequest) => {
     access_token: string;
   } = new SearchParamsManager().toObject(request.nextUrl.searchParams);
 
-  const graphApi = new FacebookMarketingApiServerService({
+  const graphApi = new FacebookAdsManagerServerService({
     access_token: access_token,
   });
   const adAccountResult = await graphApi.getAdAccounts({});
@@ -44,7 +44,7 @@ export const GET = async (request: NextRequest) => {
 //   time_ranges: string;
 // }) => {
 //   const { access_token, time_ranges } = params;
-//   const graphApi = new FacebookMarketingApiServerService({
+//   const graphApi = new FacebookAdsManagerServerService({
 //     access_token: access_token,
 //   });
 //   const adAccountResult = await graphApi.getAdAccounts({});

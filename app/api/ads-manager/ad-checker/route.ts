@@ -1,12 +1,22 @@
 import { FacebookAdsManagerServerService } from "@/lib/features/ads-manager/FacebookAdsManagerServerService";
 import { SearchParamsManager } from "@/lib/utils/search-params/SearchParamsManager";
+import { addDays, format } from "date-fns";
 import { NextResponse, NextRequest } from "next/server";
 export const GET = async (request: NextRequest) => {
   const {
     access_token,
+    date_from,
+    date_to,
   }: {
     access_token: string;
+    date_from?: string;
+    date_to?: string;
   } = new SearchParamsManager().toObject(request.nextUrl.searchParams);
+
+  const yesterdayAndToday = {
+    from: date_from || format(addDays(new Date(), -1), "yyyy-MM-dd"),
+    to: date_to || format(addDays(new Date(), 0), "yyyy-MM-dd"),
+  };
 
   const graphApi = new FacebookAdsManagerServerService({
     access_token: access_token,
@@ -16,6 +26,7 @@ export const GET = async (request: NextRequest) => {
   for (const ada of AdAccounts) {
     const { data } = await graphApi.getAdCreatives({
       id: ada.id,
+      time_ranges: `[{"since":"${yesterdayAndToday.from}","until":"${yesterdayAndToday.to}"}]`,
     });
     ada.campaigns = data;
   }

@@ -7,10 +7,12 @@ export const GET = async (request: NextRequest) => {
     access_token,
     date_from,
     date_to,
+    app_secret_key,
   }: {
     access_token: string;
     date_from?: string;
     date_to?: string;
+    app_secret_key?: string;
   } = new SearchParamsManager().toObject(request.nextUrl.searchParams);
 
   const yesterdayAndToday = {

@@ -4,6 +4,7 @@ type BaseFacebookAdsManagerServiceProps = {
   use_account_attribution_setting: true;
   level: "campaign" | "adset" | "ad";
   time_ranges: string;
+  app_secret_key?: string;
 };
 
 type MarketingApiAccessTokenConfigProps = Omit<

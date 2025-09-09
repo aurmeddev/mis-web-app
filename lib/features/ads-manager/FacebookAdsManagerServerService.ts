@@ -25,7 +25,7 @@ export class FacebookAdsManagerServerService {
   async getAdAccounts(params: { fields?: string }): Promise<ApiResponseProps> {
     const defaultFields = `id,name,account_status,disable_reason`;
     const searchParams: any = {
-      ...this.config,
+      access_token: this.config.access_token,
       use_account_attribution_setting: true,
     };
 
@@ -147,7 +147,7 @@ export class FacebookAdsManagerServerService {
     const defaultFields = `adsets{name,daily_budget,targeting{geo_locations{countries}},insights.time_ranges(${time_ranges}){spend},adcreatives{object_story_spec{video_data}}}`;
 
     const searchParams: any = {
-      ...this.config,
+      access_token: this.config.access_token,
       ...restOfParams,
       use_account_attribution_setting: true,
     };
@@ -294,24 +294,24 @@ const getAdAccountDisableReason: Record<number, string> = {
   15: "COMPROMISED_AD_ACCOUNT",
 };
 
-import { createHmac } from "crypto";
-type GenerateAppSecretProofProps = {
-  access_token: string;
-  app_secret_key: string;
-};
-export function generateAppSecretProof({
-  access_token,
-  app_secret_key,
-}: GenerateAppSecretProofProps) {
-  // Validate input to ensure they are strings.
-  if (typeof access_token !== "string" || typeof app_secret_key !== "string") {
-    console.error("Error: Both accessToken and appSecret must be strings.");
-    return "";
-  }
-  // Create an HMAC instance using the 'sha256' algorithm and the app secret as the key.
-  const hmac = createHmac("sha256", app_secret_key);
-  // Update the HMAC with the access token data.
-  hmac.update(access_token);
-  // Get the final HMAC hash and return it in hexadecimal format.
-  return hmac.digest("hex");
-}
+// import { createHmac } from "crypto";
+// type GenerateAppSecretProofProps = {
+//   access_token: string;
+//   app_secret_key: string;
+// };
+// export function generateAppSecretProof({
+//   access_token,
+//   app_secret_key,
+// }: GenerateAppSecretProofProps) {
+//   // Validate input to ensure they are strings.
+//   if (typeof access_token !== "string" || typeof app_secret_key !== "string") {
+//     console.error("Error: Both accessToken and appSecret must be strings.");
+//     return "";
+//   }
+//   // Create an HMAC instance using the 'sha256' algorithm and the app secret as the key.
+//   const hmac = createHmac("sha256", app_secret_key);
+//   // Update the HMAC with the access token data.
+//   hmac.update(access_token);
+//   // Get the final HMAC hash and return it in hexadecimal format.
+//   return hmac.digest("hex");
+// }

@@ -19,13 +19,14 @@ export class FacebookAdsManagerServerService {
     },
     cache: "no-store",
   };
+  private maximumDailyBudget = 500;
   constructor(private config: MarketingApiAccessTokenConfigProps) {
     this.config = config;
   }
   async getAdAccounts(params: { fields?: string }): Promise<ApiResponseProps> {
     const defaultFields = `id,name,account_status,disable_reason`;
     const searchParams: any = {
-      ...this.config,
+      access_token: this.config.access_token,
       use_account_attribution_setting: true,
     };
 
@@ -77,13 +78,6 @@ export class FacebookAdsManagerServerService {
     }
   ): Promise<ApiResponseProps> {
     const { id, ...restOfParams } = params;
-    if (typeof restOfParams.time_ranges !== "string") {
-      return {
-        isSuccess: false,
-        message: "Invalid time_ranges format. It must be a string.",
-        data: [],
-      };
-    }
 
     let fields = [];
     if (restOfParams.level === "campaign") {
@@ -98,7 +92,7 @@ export class FacebookAdsManagerServerService {
     }
 
     const searchParams: any = {
-      ...this.config,
+      access_token: this.config.access_token,
       ...restOfParams,
       use_account_attribution_setting: true,
     };
@@ -134,7 +128,7 @@ export class FacebookAdsManagerServerService {
     };
   }
 
-  async getAdCreatives(
+  async adChecker(
     params: Omit<
       BaseFacebookAdsManagerServiceProps,
       "access_token" | "use_account_attribution_setting" | "level"
@@ -147,7 +141,7 @@ export class FacebookAdsManagerServerService {
     const defaultFields = `adsets{name,daily_budget,targeting{geo_locations{countries}},insights.time_ranges(${time_ranges}){spend},adcreatives{object_story_spec{video_data}}}`;
 
     const searchParams: any = {
-      ...this.config,
+      access_token: this.config.access_token,
       ...restOfParams,
       use_account_attribution_setting: true,
     };
@@ -200,9 +194,21 @@ export class FacebookAdsManagerServerService {
                         await internetbs.getDomainInfo({
                           domain: `${domainName}`,
                         });
-                      restOfAdsets.status = isSuccess
-                        ? data[0].status
-                        : "Error has occured in internetbs api.";
+
+                      const remarks =
+                        data[0].status === "SUCCESS"
+                          ? "OK"
+                          : data[0].status === "FAILURE" &&
+                            data[0]?.message.includes("limit exceeded")
+                          ? data[0]?.message
+                          : "The system detected that the domain was not found in the Internet.bs account.";
+
+                      restOfAdsets.ad_checker_status_result = {
+                        ...restOfAdsets.ad_checker_status_result,
+                        domain_status: isSuccess
+                          ? remarks
+                          : "Error has occured in Internet.bs api.",
+                      };
                     }
                     return video_data;
                   })
@@ -213,10 +219,39 @@ export class FacebookAdsManagerServerService {
               } else {
                 restOfAdsets.adcreatives = [];
               }
+
               const convertedToUsd = restOfAdsets.daily_budget / 100;
+              const targeting_countries = targeting?.geo_locations?.countries;
+              const remarks = targeting?.geo_locations?.countries.includes("US")
+                ? "The system detected suspicious geo-location targeting."
+                : "OK";
+
+              const statuses: Record<string, any> = {
+                targeting_countries_status: remarks,
+              };
+
+              statuses.daily_budget_status =
+                convertedToUsd > this.maximumDailyBudget
+                  ? `The system detected an exceeded ($${this.maximumDailyBudget}) daily budget amount.`
+                  : "OK";
+
+              restOfAdsets.ad_checker_status_result = {
+                ...restOfAdsets.ad_checker_status_result,
+                ...statuses,
+              };
+
+              const flag_message = Object.values(
+                restOfAdsets.ad_checker_status_result
+              ).filter((value) => value !== "OK");
+
+              const ad_status = Object.values(
+                restOfAdsets.ad_checker_status_result
+              ).every((value) => value === "OK")
+                ? { code: 200, message: ["Everything is OK!"] } // Everything is OK!
+                : { code: 500, message: flag_message }; // Flag suspicious
               return {
                 ...restOfAdsets,
-                targeting_countries: targeting?.geo_locations?.countries,
+                targeting_countries: targeting_countries,
                 spend:
                   insights?.data.length > 0
                     ? Number(insights.data[0].spend)
@@ -226,12 +261,14 @@ export class FacebookAdsManagerServerService {
                     ? `${convertedToUsd.toFixed(2)}`
                     : `daily budget error`
                 }`,
+                ad_status: ad_status,
               };
             })
           );
         } else {
           restOfProps.adsets = [];
         }
+
         return {
           ...restOfProps,
         };
@@ -294,24 +331,24 @@ const getAdAccountDisableReason: Record<number, string> = {
   15: "COMPROMISED_AD_ACCOUNT",
 };
 
-import { createHmac } from "crypto";
-type GenerateAppSecretProofProps = {
-  access_token: string;
-  app_secret_key: string;
-};
-export function generateAppSecretProof({
-  access_token,
-  app_secret_key,
-}: GenerateAppSecretProofProps) {
-  // Validate input to ensure they are strings.
-  if (typeof access_token !== "string" || typeof app_secret_key !== "string") {
-    console.error("Error: Both accessToken and appSecret must be strings.");
-    return "";
-  }
-  // Create an HMAC instance using the 'sha256' algorithm and the app secret as the key.
-  const hmac = createHmac("sha256", app_secret_key);
-  // Update the HMAC with the access token data.
-  hmac.update(access_token);
-  // Get the final HMAC hash and return it in hexadecimal format.
-  return hmac.digest("hex");
-}
+// import { createHmac } from "crypto";
+// type GenerateAppSecretProofProps = {
+//   access_token: string;
+//   app_secret_key: string;
+// };
+// export function generateAppSecretProof({
+//   access_token,
+//   app_secret_key,
+// }: GenerateAppSecretProofProps) {
+//   // Validate input to ensure they are strings.
+//   if (typeof access_token !== "string" || typeof app_secret_key !== "string") {
+//     console.error("Error: Both accessToken and appSecret must be strings.");
+//     return "";
+//   }
+//   // Create an HMAC instance using the 'sha256' algorithm and the app secret as the key.
+//   const hmac = createHmac("sha256", app_secret_key);
+//   // Update the HMAC with the access token data.
+//   hmac.update(access_token);
+//   // Get the final HMAC hash and return it in hexadecimal format.
+//   return hmac.digest("hex");
+// }

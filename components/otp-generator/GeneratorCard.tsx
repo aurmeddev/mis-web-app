@@ -68,7 +68,7 @@ export function GeneratorCard({
           <div
             className={cn(
               isError ? "text-sm text-red-500" : "text-2xl",
-              "bg-muted font-bold relative rounded py-2 text-center"
+              "bg-muted select-none font-bold relative rounded py-2 text-center"
             )}
           >
             {otp || (

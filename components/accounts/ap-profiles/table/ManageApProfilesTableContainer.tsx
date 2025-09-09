@@ -30,7 +30,8 @@ type ProfileForm = {
   profile_name: string;
   fb_account_id?: number;
   marketing_api_access_token: string;
-  remarks?: "";
+  app_secret_key: string;
+  remarks?: string;
 };
 
 export function ManageApProfilesTableContainer({
@@ -59,6 +60,7 @@ export function ManageApProfilesTableContainer({
     profile_name: "",
     fb_account_id: undefined,
     marketing_api_access_token: "",
+    app_secret_key: "",
     remarks: "",
   });
   const [tableData, setTableData] = useState<Profile[]>(response.data);
@@ -151,6 +153,15 @@ export function ManageApProfilesTableContainer({
       payload.marketing_api_access_token = form.marketing_api_access_token;
     }
 
+    if (form.app_secret_key !== editingData.app_secret_key) {
+      if (!isUpdateMode) {
+        payload.fb_account_id = form.fb_account_id;
+      } else {
+        payload.fb_account_id = editingData.fb_account?.id;
+      }
+      payload.app_secret_key = form.app_secret_key;
+    }
+
     if (
       form.fb_account_id !== editingData.fb_account?.id &&
       typeof form.fb_account_id !== "undefined"
@@ -209,6 +220,7 @@ export function ManageApProfilesTableContainer({
         username: data[0].fb_account.username,
         marketing_api_access_token:
           data[0].fb_account.marketing_api_access_token,
+        app_secret_key: data[0].fb_account.app_secret_key,
       },
       created_by: {
         full_name: createdBy.full_name,
@@ -244,6 +256,7 @@ export function ManageApProfilesTableContainer({
           "new_fb_account_id" in payload && payload.new_fb_account_id === 0;
         const hasMarketingApiAccessToken =
           "marketing_api_access_token" in payload;
+        const hasAppSecretKey = "app_secret_key" in payload;
 
         // if has set new fb account in payload use response to propagate
         // if has marketing api access token in payload destructure and modify the marketing_api_access_token
@@ -254,11 +267,12 @@ export function ManageApProfilesTableContainer({
                 ...form,
                 fb_account: hasSetNewFbAccount
                   ? response.data[0].fb_account
-                  : hasMarketingApiAccessToken
+                  : hasMarketingApiAccessToken || hasAppSecretKey
                   ? {
                       ...item.fb_account,
                       marketing_api_access_token:
                         form.marketing_api_access_token,
+                      app_secret_key: form.app_secret_key,
                     }
                   : !hasRemovedFbAccount || hasOnlyRemarks
                   ? item.fb_account
@@ -284,12 +298,14 @@ export function ManageApProfilesTableContainer({
       ...selectedProfile,
       marketing_api_access_token:
         selectedProfile.fb_account.marketing_api_access_token,
+      app_secret_key: selectedProfile.fb_account.app_secret_key,
     });
     if (selectedProfile) {
       setForm({
         ...selectedProfile,
         marketing_api_access_token:
           selectedProfile.fb_account.marketing_api_access_token,
+        app_secret_key: selectedProfile.fb_account.app_secret_key,
       });
       setOpen(true);
     }
@@ -335,6 +351,7 @@ export function ManageApProfilesTableContainer({
       profile_name: "",
       fb_account_id: undefined,
       marketing_api_access_token: "",
+      app_secret_key: "",
       remarks: "",
     });
   };

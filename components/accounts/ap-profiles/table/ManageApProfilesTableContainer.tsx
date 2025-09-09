@@ -1,5 +1,11 @@
 "use client";
-import { ChangeEvent, FormEvent, useEffect, useState } from "react";
+import {
+  ChangeEvent,
+  FormEvent,
+  startTransition,
+  useEffect,
+  useState,
+} from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -359,7 +365,9 @@ export function ManageApProfilesTableContainer({
   useEffect(() => {
     if (!open) {
       setCanSave(false);
-      setEditingData({});
+      startTransition(() => {
+        setEditingData({});
+      });
     }
   }, [open]);
 

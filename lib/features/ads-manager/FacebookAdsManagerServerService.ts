@@ -77,13 +77,6 @@ export class FacebookAdsManagerServerService {
     }
   ): Promise<ApiResponseProps> {
     const { id, ...restOfParams } = params;
-    if (typeof restOfParams.time_ranges !== "string") {
-      return {
-        isSuccess: false,
-        message: "Invalid time_ranges format. It must be a string.",
-        data: [],
-      };
-    }
 
     let fields = [];
     if (restOfParams.level === "campaign") {
@@ -98,7 +91,7 @@ export class FacebookAdsManagerServerService {
     }
 
     const searchParams: any = {
-      ...this.config,
+      access_token: this.config.access_token,
       ...restOfParams,
       use_account_attribution_setting: true,
     };

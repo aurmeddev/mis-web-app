@@ -17,7 +17,7 @@ export const GET = async (request: NextRequest) => {
     from: date_from || format(addDays(new Date(), -1), "yyyy-MM-dd"),
     to: date_to || format(addDays(new Date(), 0), "yyyy-MM-dd"),
   };
-
+  console.log(yesterdayAndToday);
   const graphApi = new FacebookAdsManagerServerService({
     access_token: access_token,
   });

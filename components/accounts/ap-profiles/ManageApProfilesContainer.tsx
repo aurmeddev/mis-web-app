@@ -6,9 +6,13 @@ import { ManageApProfilesTableContainer } from "./table/ManageApProfilesTableCon
 
 type Props = {
   searchParams: { page: number; limit: number };
+  hasAccessToMarketingApiAccessToken: boolean;
 };
 
-export async function ManageApProfilesContainer({ searchParams }: Props) {
+export async function ManageApProfilesContainer({
+  searchParams,
+  hasAccessToMarketingApiAccessToken,
+}: Props) {
   const profilesService = new ApProfilesService();
 
   return (
@@ -22,6 +26,9 @@ export async function ManageApProfilesContainer({ searchParams }: Props) {
           searchParams={searchParams}
           fetchService={(params) => profilesService.getAll(params)}
           Container={ManageApProfilesTableContainer}
+          hasAccessToMarketingApiAccessToken={
+            hasAccessToMarketingApiAccessToken
+          }
         />
       </Suspense>
     </div>

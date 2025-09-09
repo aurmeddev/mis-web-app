@@ -18,7 +18,10 @@ import { PaginationProps } from "@/lib/utils/pagination/type/PaginationProps";
 import { SearchParamsManager } from "@/lib/utils/search-params/SearchParamsManager";
 
 type ManageApProfilesTableContainerProps = {
-  response: ApiResponseProps & { pagination?: PaginationProps };
+  response: ApiResponseProps & {
+    pagination?: PaginationProps;
+  };
+  hasAccessToMarketingApiAccessToken: boolean;
 };
 
 type Pagination = { page: number; limit: number };
@@ -32,6 +35,7 @@ type ProfileForm = {
 
 export function ManageApProfilesTableContainer({
   response,
+  hasAccessToMarketingApiAccessToken,
 }: ManageApProfilesTableContainerProps) {
   const profilesService = new ApProfilesService();
   const searchParamsManager = new SearchParamsManager();
@@ -353,6 +357,7 @@ export function ManageApProfilesTableContainer({
         handleSubmit={handleSubmit}
         handleInputChange={handleInputChange}
         isActionDisabled={isSubmitInProgress}
+        hasAccessToMarketingApiAccessToken={hasAccessToMarketingApiAccessToken}
       />
       <div className="flex justify-start gap-2 2xl:w-1/3 mt-4 w-[40%]">
         <Button

@@ -35,6 +35,7 @@ type ManageApProfilesDialogProps = {
   handleSubmit: (ev: FormEvent<HTMLFormElement>) => void;
   handleInputChange: (name: string, value: string | number) => void;
   isActionDisabled: boolean;
+  hasAccessToMarketingApiAccessToken: boolean;
 };
 
 export function ManageApProfilesDialog({
@@ -46,6 +47,7 @@ export function ManageApProfilesDialog({
   handleSubmit,
   handleInputChange,
   isActionDisabled,
+  hasAccessToMarketingApiAccessToken,
 }: ManageApProfilesDialogProps) {
   const fbAccountsService = new FbAccountsService();
   const profilesService = new ApProfilesService();
@@ -252,7 +254,7 @@ export function ManageApProfilesDialog({
             </div>
           </div>
 
-          {searchQuery.selectedResult && (
+          {hasAccessToMarketingApiAccessToken && searchQuery.selectedResult && (
             <div className="grid gap-2">
               <Label htmlFor="access-token">Extended Access Token</Label>
               <Textarea

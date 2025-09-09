@@ -30,6 +30,7 @@ export const GET = async (request: NextRequest) => {
     });
     ada.campaigns = data;
   }
+
   if (!adAccountResult.isSuccess) {
     return NextResponse.json(
       {
@@ -44,7 +45,7 @@ export const GET = async (request: NextRequest) => {
     {
       isSuccess: true,
       message: "Success",
-      data: adAccountResult.data,
+      data: AdAccounts,
     },
     { status: 200 }
   );

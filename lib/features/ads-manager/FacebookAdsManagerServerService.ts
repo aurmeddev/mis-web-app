@@ -19,6 +19,7 @@ export class FacebookAdsManagerServerService {
     },
     cache: "no-store",
   };
+  private maximumDailyBudget = 500;
   constructor(private config: MarketingApiAccessTokenConfigProps) {
     this.config = config;
   }
@@ -127,7 +128,7 @@ export class FacebookAdsManagerServerService {
     };
   }
 
-  async getAdCreatives(
+  async adChecker(
     params: Omit<
       BaseFacebookAdsManagerServiceProps,
       "access_token" | "use_account_attribution_setting" | "level"
@@ -193,9 +194,21 @@ export class FacebookAdsManagerServerService {
                         await internetbs.getDomainInfo({
                           domain: `${domainName}`,
                         });
-                      restOfAdsets.status = isSuccess
-                        ? data[0].status
-                        : "Error has occured in internetbs api.";
+
+                      const remarks =
+                        data[0].status === "SUCCESS"
+                          ? "OK"
+                          : data[0].status === "FAILURE" &&
+                            data[0]?.message.includes("limit exceeded")
+                          ? data[0]?.message
+                          : "The system detected that the domain was not found in the Internet.bs account.";
+
+                      restOfAdsets.ad_checker_status_result = {
+                        ...restOfAdsets.ad_checker_status_result,
+                        domain_status: isSuccess
+                          ? remarks
+                          : "Error has occured in Internet.bs api.",
+                      };
                     }
                     return video_data;
                   })
@@ -206,10 +219,39 @@ export class FacebookAdsManagerServerService {
               } else {
                 restOfAdsets.adcreatives = [];
               }
+
               const convertedToUsd = restOfAdsets.daily_budget / 100;
+              const targeting_countries = targeting?.geo_locations?.countries;
+              const remarks = targeting?.geo_locations?.countries.includes("US")
+                ? "The system detected suspicious geo-location targeting."
+                : "OK";
+
+              const statuses: Record<string, any> = {
+                targeting_countries_status: remarks,
+              };
+
+              statuses.daily_budget_status =
+                convertedToUsd > this.maximumDailyBudget
+                  ? `The system detected an exceeded ($${this.maximumDailyBudget}) daily budget amount.`
+                  : "OK";
+
+              restOfAdsets.ad_checker_status_result = {
+                ...restOfAdsets.ad_checker_status_result,
+                ...statuses,
+              };
+
+              const flag_message = Object.values(
+                restOfAdsets.ad_checker_status_result
+              ).filter((value) => value !== "OK");
+
+              const ad_status = Object.values(
+                restOfAdsets.ad_checker_status_result
+              ).every((value) => value === "OK")
+                ? { code: 200, message: ["Everything is OK!"] } // Everything is OK!
+                : { code: 500, message: flag_message }; // Flag suspicious
               return {
                 ...restOfAdsets,
-                targeting_countries: targeting?.geo_locations?.countries,
+                targeting_countries: targeting_countries,
                 spend:
                   insights?.data.length > 0
                     ? Number(insights.data[0].spend)
@@ -219,12 +261,14 @@ export class FacebookAdsManagerServerService {
                     ? `${convertedToUsd.toFixed(2)}`
                     : `daily budget error`
                 }`,
+                ad_status: ad_status,
               };
             })
           );
         } else {
           restOfProps.adsets = [];
         }
+
         return {
           ...restOfProps,
         };

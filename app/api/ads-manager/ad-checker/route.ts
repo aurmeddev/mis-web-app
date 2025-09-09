@@ -7,12 +7,12 @@ export const GET = async (request: NextRequest) => {
     access_token,
     date_from,
     date_to,
-    app_secret_key,
-  }: {
+  }: // app_secret_key, NOTE: Develop an additional layer of security by requiring app secret
+  {
     access_token: string;
     date_from?: string;
     date_to?: string;
-    app_secret_key?: string;
+    // app_secret_key?: string;
   } = new SearchParamsManager().toObject(request.nextUrl.searchParams);
 
   const yesterdayAndToday = {
@@ -26,7 +26,7 @@ export const GET = async (request: NextRequest) => {
   const adAccountResult = await graphApi.getAdAccounts({});
   const AdAccounts = [...adAccountResult.data];
   for (const ada of AdAccounts) {
-    const { data } = await graphApi.getAdCreatives({
+    const { data } = await graphApi.adChecker({
       id: ada.id,
       time_ranges: `[{"since":"${yesterdayAndToday.from}","until":"${yesterdayAndToday.to}"}]`,
     });

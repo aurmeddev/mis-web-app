@@ -1,5 +1,12 @@
 "use client";
-import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
+import {
+  ChangeEvent,
+  FormEvent,
+  startTransition,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
@@ -328,7 +335,9 @@ export function FbAccountsTableContainer({
   useEffect(() => {
     if (!open) {
       setCanSave(false);
-      setEditingData({});
+      startTransition(() => {
+        setEditingData({});
+      });
     }
   }, [open]);
   return (

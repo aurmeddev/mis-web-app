@@ -36,6 +36,7 @@ export type Profile = {
   remarks: string | null;
   fb_account: FbAccount;
   marketing_api_access_token: string;
+  app_secret_key: string;
   status: string;
   created_by: CreatedBy;
   created_at: string;

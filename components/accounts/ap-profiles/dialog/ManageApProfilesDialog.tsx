@@ -255,20 +255,33 @@ export function ManageApProfilesDialog({
           </div>
 
           {hasAccessToMarketingApiAccessToken && searchQuery.selectedResult && (
-            <div className="grid gap-2">
-              <Label htmlFor="access-token">Extended Access Token</Label>
-              <Textarea
-                className="border h-8 px-2 py-1 rounded w-full"
-                disabled={isActionDisabled}
-                value={form.marketing_api_access_token || ""}
-                onChange={(e) =>
-                  handleInputChange(
-                    "marketing_api_access_token",
-                    e.target.value
-                  )
-                }
-              />
-            </div>
+            <>
+              <div className="grid gap-2">
+                <Label htmlFor="remarks">App Secret Key</Label>
+                <Input
+                  className="border h-8 px-2 py-1 rounded w-full"
+                  disabled={isActionDisabled}
+                  value={form.app_secret_key || ""}
+                  onChange={(e) =>
+                    handleInputChange("app_secret_key", e.target.value)
+                  }
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="access-token">Extended Access Token</Label>
+                <Textarea
+                  className="border h-8 px-2 py-1 rounded w-full"
+                  disabled={isActionDisabled}
+                  value={form.marketing_api_access_token || ""}
+                  onChange={(e) =>
+                    handleInputChange(
+                      "marketing_api_access_token",
+                      e.target.value
+                    )
+                  }
+                />
+              </div>
+            </>
           )}
 
           <div className="grid gap-2">

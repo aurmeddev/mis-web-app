@@ -144,7 +144,7 @@ export class FacebookAdsManagerServerService {
   ) {
     const { id, time_ranges, ...restOfParams } = params;
 
-    const defaultFields = `adsets{name,daily_budget,insights.time_ranges(${time_ranges}){spend},adcreatives{object_story_spec{video_data}}}`;
+    const defaultFields = `adsets{name,daily_budget,targeting{geo_locations{countries}},insights.time_ranges(${time_ranges}){spend},adcreatives{object_story_spec{video_data}}}`;
 
     const searchParams: any = {
       ...this.config,

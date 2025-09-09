@@ -180,7 +180,8 @@ export class FacebookAdsManagerServerService {
         if (hasAdsets) {
           restOfProps.adsets = await Promise.all(
             adsets.data.map(async (adset: any) => {
-              const { adcreatives, insights, ...restOfAdsets } = adset;
+              const { adcreatives, insights, targeting, ...restOfAdsets } =
+                adset;
               const hasAdcreatives = adcreatives?.data.length > 0;
               if (hasAdcreatives) {
                 restOfAdsets.adcreatives = await Promise.all(
@@ -212,6 +213,7 @@ export class FacebookAdsManagerServerService {
               const convertedToUsd = restOfAdsets.daily_budget / 100;
               return {
                 ...restOfAdsets,
+                targeting_countries: targeting?.geo_locations?.countries,
                 spend:
                   insights?.data.length > 0
                     ? Number(insights.data[0].spend)

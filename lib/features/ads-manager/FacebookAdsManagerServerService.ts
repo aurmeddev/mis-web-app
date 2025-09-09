@@ -303,6 +303,11 @@ export function generateAppSecretProof({
   access_token,
   app_secret_key,
 }: GenerateAppSecretProofProps) {
+  // Validate input to ensure they are strings.
+  if (typeof access_token !== "string" || typeof app_secret_key !== "string") {
+    console.error("Error: Both accessToken and appSecret must be strings.");
+    return "";
+  }
   // Create an HMAC instance using the 'sha256' algorithm and the app secret as the key.
   const hmac = createHmac("sha256", app_secret_key);
   // Update the HMAC with the access token data.

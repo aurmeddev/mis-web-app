@@ -293,3 +293,20 @@ const getAdAccountDisableReason: Record<number, string> = {
   14: "CTX_THREAD_REVIEW",
   15: "COMPROMISED_AD_ACCOUNT",
 };
+
+import { createHmac } from "crypto";
+type GenerateAppSecretProofProps = {
+  access_token: string;
+  app_secret_key: string;
+};
+export function generateAppSecretProof({
+  access_token,
+  app_secret_key,
+}: GenerateAppSecretProofProps) {
+  // Create an HMAC instance using the 'sha256' algorithm and the app secret as the key.
+  const hmac = createHmac("sha256", app_secret_key);
+  // Update the HMAC with the access token data.
+  hmac.update(access_token);
+  // Get the final HMAC hash and return it in hexadecimal format.
+  return hmac.digest("hex");
+}

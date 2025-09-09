@@ -23,19 +23,27 @@ export const PUT = async (
 
   const profileId = `${(await params).id}`;
   const data: UpdateApProfilesProps = await request.json();
-  const { id, marketing_api_access_token, ...prop } = data;
+  const { id, marketing_api_access_token, app_secret_key, ...prop } = data;
 
   const fbs = new FbAccountsServerService();
   if (
-    isOnlyMarketingApiTokenChanged({
+    hasTokenAndSecretChanged({
       ...prop,
       marketing_api_access_token,
+      app_secret_key,
     })
   ) {
+    const token: Record<string, any> = {};
+    if (marketing_api_access_token) {
+      token.marketing_api_access_token = marketing_api_access_token;
+    }
+    if (app_secret_key) {
+      token.app_secret_key = app_secret_key;
+    }
     // Update Fb Account's marketing api acccess token
     const addAccessToken = await fbs.update({
       id: prop.fb_account_id,
-      marketing_api_access_token: marketing_api_access_token,
+      ...token,
     });
 
     if (!addAccessToken.isSuccess) {
@@ -53,7 +61,7 @@ export const PUT = async (
       {
         isSuccess: true,
         message: "The access token have been updated successfully.",
-        data: [{ marketing_api_access_token }],
+        data: [{ ...token }],
       },
       { status: 201 }
     );
@@ -73,6 +81,8 @@ export const PUT = async (
       { status: status }
     );
   }
+
+  // Check if there's any changes on the ap profile info
 
   const payload: { [key: string]: any } = {};
   const hasFbAccountRemoved = prop.new_fb_account_id === 0;
@@ -130,14 +140,24 @@ export const PUT = async (
       getFbAccountInfo = data[0];
     }
 
-    if (marketing_api_access_token !== undefined && !hasFbAccountRemoved) {
+    if (
+      marketing_api_access_token !== undefined ||
+      (app_secret_key !== undefined && !hasFbAccountRemoved)
+    ) {
+      const token: Record<string, any> = {};
+      if (marketing_api_access_token) {
+        token.marketing_api_access_token = marketing_api_access_token;
+      }
+      if (app_secret_key) {
+        token.app_secret_key = app_secret_key;
+      }
       // Update marketing api acccess token in Fb Account
       const fbAccountId = hasProfileAssignedNewFbAccount
         ? Number(prop.new_fb_account_id)
         : prop.fb_account_id;
       const addAccessToken = await fbs.update({
         id: fbAccountId,
-        marketing_api_access_token: marketing_api_access_token,
+        ...token,
       });
 
       if (!addAccessToken.isSuccess) {
@@ -151,7 +171,7 @@ export const PUT = async (
         );
       }
 
-      getFbAccountInfo.marketing_api_access_token = marketing_api_access_token;
+      getFbAccountInfo = { ...getFbAccountInfo, ...token };
     }
 
     const aps = new ApProfilesServerService();
@@ -273,17 +293,23 @@ type IsOnlyMarketingApiTokenChangedProps = {
   fb_account_id: number;
   new_fb_account_id?: number;
   marketing_api_access_token?: string;
+  app_secret_key?: string;
 };
-const isOnlyMarketingApiTokenChanged = (
+const hasTokenAndSecretChanged = (
   params: IsOnlyMarketingApiTokenChangedProps
 ) => {
   const hasAssignedFbAccount = params.fb_account_id !== 0;
+  if (!hasAssignedFbAccount) {
+    return false;
+  }
+
   return (
     params.profile_name === undefined &&
     params.new_profile_name === undefined &&
     params.remarks === undefined &&
     params.new_fb_account_id === undefined &&
     hasAssignedFbAccount &&
-    params.marketing_api_access_token !== undefined
+    (params.marketing_api_access_token !== undefined ||
+      params.app_secret_key !== undefined)
   );
 };

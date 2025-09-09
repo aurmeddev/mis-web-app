@@ -13,6 +13,7 @@ SELECT
       'password',fb.password,
       'app_2fa_key',fb.app_2fa_key,
       'marketing_api_access_token',fb.marketing_api_access_token,
+      'app_secret_key',fb.app_secret_key,
       'fb_owner_account_created',fb.fb_owner_account_created,
       'age_of_fb',
       (CASE

@@ -7,6 +7,7 @@ SELECT
   fb.`password`,
   fb.app_2fa_key,
   fb.marketing_api_access_token,
+  fb.app_secret_key,
   fb.recovery_code,
   fb.fb_owner_account_created,
   CASE

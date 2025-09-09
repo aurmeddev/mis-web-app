@@ -137,16 +137,14 @@ export class FacebookAdsManagerServerService {
   async getAdCreatives(
     params: Omit<
       BaseFacebookAdsManagerServiceProps,
-      | "access_token"
-      | "use_account_attribution_setting"
-      | "time_ranges"
-      | "level"
+      "access_token" | "use_account_attribution_setting" | "level"
     > & {
       id: string;
     }
   ) {
-    const { id, ...restOfParams } = params;
-    const defaultFields = `adsets{name,daily_budget,insights{spend},adcreatives{object_story_spec{video_data}}}`;
+    const { id, time_ranges, ...restOfParams } = params;
+
+    const defaultFields = `adsets{name,daily_budget,insights.time_ranges(${time_ranges}){spend},adcreatives{object_story_spec{video_data}}}`;
 
     const searchParams: any = {
       ...this.config,

@@ -41,8 +41,11 @@ export const POST = async (request: NextRequest) => {
   const FULL_NAME = session.user.full_name;
   const TEAM_NAME = session.user.team_name;
 
-  const { marketing_api_access_token, ...data }: PostApProfilesProps =
-    await request.json();
+  const {
+    marketing_api_access_token,
+    app_secret_key,
+    ...data
+  }: PostApProfilesProps = await request.json();
   const objUtil = new ObjectUtils();
   const aps = new ApProfilesServerService();
   const fbs = new FbAccountsServerService();
@@ -157,11 +160,18 @@ export const POST = async (request: NextRequest) => {
 
       getFbAccountInfo = data[0];
 
-      if (marketing_api_access_token) {
+      if (marketing_api_access_token || app_secret_key) {
+        const token: Record<string, any> = {};
+        if (marketing_api_access_token) {
+          token.marketing_api_access_token = marketing_api_access_token;
+        }
+        if (app_secret_key) {
+          token.app_secret_key = app_secret_key;
+        }
         // Add marketing api acccess token in Fb Account
         const addAccessToken = await fbs.update({
           id: payload.fb_account_id,
-          marketing_api_access_token: marketing_api_access_token,
+          ...token,
         });
 
         if (!addAccessToken.isSuccess) {
@@ -175,8 +185,7 @@ export const POST = async (request: NextRequest) => {
           );
         }
 
-        getFbAccountInfo.marketing_api_access_token =
-          marketing_api_access_token;
+        getFbAccountInfo = { ...getFbAccountInfo, ...token };
       }
     }
 

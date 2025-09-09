@@ -184,7 +184,7 @@ export class FacebookAdsManagerServerService {
                 adset;
               const hasAdcreatives = adcreatives?.data.length > 0;
               if (hasAdcreatives) {
-                restOfAdsets.adcreatives = await Promise.all(
+                const adcreativesResult = await Promise.all(
                   adcreatives.data.map(async (adcreative: any) => {
                     const { id, object_story_spec } = adcreative;
                     const video_data = object_story_spec?.video_data;
@@ -206,6 +206,9 @@ export class FacebookAdsManagerServerService {
                     }
                     return video_data;
                   })
+                );
+                restOfAdsets.adcreatives = adcreativesResult.filter(
+                  (creative) => creative !== undefined
                 );
               } else {
                 restOfAdsets.adcreatives = [];

@@ -5,7 +5,7 @@ import {
   MarketingApiAccessTokenConfigProps,
 } from "./type/FacebookMarketingApiProps";
 import { ApiResponseProps } from "@/database/dbConnection";
-import { InternetBsApiClientService } from "../domains/domain-checker/internetbs-api/InternetBsApiClientService";
+import { DomainManagerServerService } from "../domains/DomainManagerServerService";
 
 type ResultProps = {
   data: any[];
@@ -331,11 +331,15 @@ const getAdAccountDisableReason: Record<number, string> = {
 };
 
 const validateDomain = async ({ domain }: { domain: string[] }) => {
-  const internetbs = new InternetBsApiClientService();
+  const api = new DomainManagerServerService();
+  const customSearchParams = new URLSearchParams();
+  customSearchParams.set("method", "find-one");
   const result = await Promise.all(
     domain.map(async (value) => {
-      const { isSuccess, data, message } = await internetbs.getDomainInfo({
-        domain: value,
+      const { isSuccess, data, message } = await api.find({
+        searchKeyword: "validation",
+        requestUrlSearchParams: customSearchParams,
+        payload: { domain_name: value },
       });
 
       if (!isSuccess) {
@@ -346,17 +350,9 @@ const validateDomain = async ({ domain }: { domain: string[] }) => {
         };
       }
 
-      let status = "";
-      if (data[0].status === "SUCCESS") {
-        status = "OK";
-      } else {
-        console.log(data[0].message);
-        status = "Not found";
-      }
-
       return {
         name: value,
-        status: status,
+        status: data.length > 0 ? "OK" : "Not found",
       };
     })
   );

@@ -94,7 +94,7 @@ export class DomainManagerServerService {
       searchKeyword,
       requestUrlSearchParams: requestUrlSearchParams,
       dynamicSearchPayload: validPayload,
-      databaseTableName: "Domains",
+      databaseTableName: "v_Domains",
       staticSearchField: "domain_name",
     });
 

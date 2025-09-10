@@ -5,7 +5,7 @@ import {
   MarketingApiAccessTokenConfigProps,
 } from "./type/FacebookMarketingApiProps";
 import { ApiResponseProps } from "@/database/dbConnection";
-import { InternetBsApiClientService } from "../domain-checker/internetbs-api/InternetBsApiClientService";
+import { InternetBsApiClientService } from "../domains/domain-checker/internetbs-api/InternetBsApiClientService";
 
 type ResultProps = {
   data: any[];
@@ -178,7 +178,7 @@ export class FacebookAdsManagerServerService {
                 adset;
               const hasAdcreatives = adcreatives?.data.length > 0;
               if (hasAdcreatives) {
-                let domains: string[] = [];
+                const domains: string[] = [];
                 const adcreativesResult = await Promise.all(
                   adcreatives.data.map(async (adcreative: any) => {
                     const { id, object_story_spec } = adcreative;

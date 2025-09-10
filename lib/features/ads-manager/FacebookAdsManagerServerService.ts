@@ -138,7 +138,7 @@ export class FacebookAdsManagerServerService {
   ) {
     const { id, time_ranges, ...restOfParams } = params;
 
-    const defaultFields = `adsets{name,daily_budget,targeting{geo_locations{countries}},insights.time_ranges(${time_ranges}){spend},adcreatives{object_story_spec{video_data}}}`;
+    const defaultFields = `name,adsets{name,daily_budget,targeting{geo_locations{countries}},insights.time_ranges(${time_ranges}){spend},adcreatives{object_story_spec{video_data}}}`;
 
     const searchParams: any = {
       access_token: this.config.access_token,
@@ -169,7 +169,7 @@ export class FacebookAdsManagerServerService {
     const result: ResultProps = await response.json();
     const formattedResult = await Promise.all(
       result.data.map(async (prop) => {
-        const { id, adsets, ...restOfProps } = prop;
+        const { id, adsets, name, ...restOfProps } = prop;
         const hasAdsets = adsets?.data.length > 0;
         if (hasAdsets) {
           restOfProps.adsets = await Promise.all(
@@ -267,7 +267,7 @@ export class FacebookAdsManagerServerService {
             })
           );
         } else {
-          restOfProps.adsets = [];
+          restOfProps.adsets = [{ name }]; // Assign the campaign name, if adsets is empty
         }
 
         return {

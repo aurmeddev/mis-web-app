@@ -15,6 +15,17 @@ export const GET = async (request: NextRequest) => {
     // app_secret_key?: string;
   } = new SearchParamsManager().toObject(request.nextUrl.searchParams);
 
+  if (!access_token) {
+    return NextResponse.json(
+      {
+        isSuccess: false,
+        message: "Marketing API access token is missing.",
+        data: [],
+      },
+      { status: 400 }
+    );
+  }
+
   const yesterdayAndToday = {
     from: date_from || format(addDays(new Date(), -1), "yyyy-MM-dd"),
     to: date_to || format(addDays(new Date(), 0), "yyyy-MM-dd"),

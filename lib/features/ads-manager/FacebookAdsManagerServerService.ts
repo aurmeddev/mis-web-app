@@ -201,7 +201,7 @@ export class FacebookAdsManagerServerService {
                       //     : data[0].status === "FAILURE" &&
                       //       data[0]?.message.includes("limit exceeded")
                       //     ? data[0]?.message
-                      //     : "The system detected that the domain was not found in the Internet.bs account.";
+                      //     : "The domain was not found in the Internet.bs account.";
 
                       const remarks = "Daily limit exceeded for command";
                       restOfAdsets.ad_checker_status_result = {
@@ -224,7 +224,7 @@ export class FacebookAdsManagerServerService {
               const convertedToUsd = restOfAdsets.daily_budget / 100;
               const targeting_countries = targeting?.geo_locations?.countries;
               const remarks = targeting?.geo_locations?.countries.includes("US")
-                ? "The system detected suspicious geo-location targeting."
+                ? "Suspicious geo-location targeting."
                 : "OK";
 
               const statuses: Record<string, any> = {
@@ -233,7 +233,7 @@ export class FacebookAdsManagerServerService {
 
               statuses.daily_budget_status =
                 convertedToUsd > this.maximumDailyBudget
-                  ? `The system detected an exceeded ($${this.maximumDailyBudget}) daily budget amount.`
+                  ? `Exceeded ($${this.maximumDailyBudget}) daily budget amount.`
                   : "OK";
 
               restOfAdsets.ad_checker_status_result = {
@@ -267,7 +267,15 @@ export class FacebookAdsManagerServerService {
             })
           );
         } else {
-          restOfProps.adsets = [{ name }]; // Assign the campaign name, if adsets is empty
+          restOfProps.adsets = [
+            {
+              name,
+              ad_status: {
+                code: 404,
+                message: ["No adsets found."],
+              },
+            },
+          ]; // Assign the campaign name, if adsets is empty
         }
 
         return {

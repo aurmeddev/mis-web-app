@@ -40,6 +40,37 @@ export const POST = async (request: NextRequest) => {
 
   const { domain_name }: PostDomainManagerServiceProps = await request.json();
   const domain = new DomainManagerServerService();
+
+  // Validate if the domain_name already exists
+  const customSearchParams = new URLSearchParams();
+  customSearchParams.set("method", "find-one");
+  const validationResponse = await domain.find({
+    searchKeyword: "validation",
+    requestUrlSearchParams: customSearchParams,
+    payload: { domain_name },
+  });
+
+  if (!validationResponse.isSuccess) {
+    return NextResponse.json(
+      {
+        isSuccess: false,
+        message: "Validation error occurred.",
+        data: [],
+      },
+      { status: 400 }
+    );
+  }
+  const doesApProfileExist = validationResponse.data.length > 0;
+  if (doesApProfileExist) {
+    return NextResponse.json(
+      {
+        isSuccess: false,
+        message: `The ${domain_name} already exists. Please check the domain name and try again.`,
+        data: [],
+      },
+      { status: 409 }
+    );
+  }
   const response = await domain.post({ domain_name, user });
 
   if (!response.isSuccess) {

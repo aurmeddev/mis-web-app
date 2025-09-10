@@ -1,17 +1,24 @@
 import { appBaseUrl } from "@/lib/base-url/appBaseUrl";
-import { PostDomainManagerServiceProps } from "./type/DomainManagerServiceProps";
+import {
+  PostDomainManagerServiceProps,
+  FindDomainManagerServiceProps,
+} from "./type/DomainManagerServiceProps";
 import { ApiResponseProps } from "@/database/dbConnection";
+import { SearchParamsManager } from "@/lib/utils/search-params/SearchParamsManager";
 
 export class DomainManagerClientService {
   async post(params: PostDomainManagerServiceProps): Promise<ApiResponseProps> {
     try {
-      const response = await fetch(`${appBaseUrl}/api/domains/post`, {
-        method: "POST",
-        headers: {
-          "Content-type": "application/json",
-        },
-        body: JSON.stringify(params),
-      });
+      const response = await fetch(
+        `${appBaseUrl}/api/ads-managerdomains/post`,
+        {
+          method: "POST",
+          headers: {
+            "Content-type": "application/json",
+          },
+          body: JSON.stringify(params),
+        }
+      );
       if (!response.ok) {
         throw new Error(await response.text());
       }
@@ -26,5 +33,24 @@ export class DomainManagerClientService {
         data: [],
       };
     }
+  }
+
+  async find(params: FindDomainManagerServiceProps): Promise<ApiResponseProps> {
+    const { searchKeyword, dynamicSearchPayload, ...searchParamsUtils } =
+      params;
+    const searchParams = new SearchParamsManager();
+    const searchQueryParams = searchParams.append(searchParamsUtils);
+    const response = await fetch(
+      `${appBaseUrl}/api/ads-manager/domains/find/${searchKeyword}${searchQueryParams}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify(dynamicSearchPayload || {}),
+      }
+    );
+
+    return await response.json();
   }
 }

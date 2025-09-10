@@ -2,6 +2,7 @@ import { appBaseUrl } from "@/lib/base-url/appBaseUrl";
 import {
   PostDomainManagerServiceProps,
   FindDomainManagerServiceProps,
+  UpdateDomainManagerServiceProps,
 } from "./type/DomainManagerServiceProps";
 import { ApiResponseProps } from "@/database/dbConnection";
 import { SearchParamsManager } from "@/lib/utils/search-params/SearchParamsManager";
@@ -50,6 +51,21 @@ export class DomainManagerClientService {
         body: JSON.stringify(dynamicSearchPayload || {}),
       }
     );
+
+    return await response.json();
+  }
+
+  async update(
+    params: UpdateDomainManagerServiceProps
+  ): Promise<ApiResponseProps> {
+    const { id, ...payload } = params;
+    const response = await fetch(`${appBaseUrl}/api/fb-accounts/update/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
 
     return await response.json();
   }

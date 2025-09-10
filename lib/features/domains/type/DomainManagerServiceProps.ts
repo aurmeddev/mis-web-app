@@ -10,9 +10,12 @@ type UpdateDomainManagerServiceProps = BaseDomainManagerServiceProps & {
 };
 type FindDomainManagerServiceProps = BaseSearchKeywordProps;
 
+type ToggleDomainManagerServiceStatusProps = { id: number; is_active: 0 | 1 };
+
 export type {
   PostDomainManagerServiceProps,
   BaseDomainManagerServiceProps,
   UpdateDomainManagerServiceProps,
   FindDomainManagerServiceProps,
+  ToggleDomainManagerServiceStatusProps,
 };

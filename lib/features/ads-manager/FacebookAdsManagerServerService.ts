@@ -178,6 +178,7 @@ export class FacebookAdsManagerServerService {
                 adset;
               const hasAdcreatives = adcreatives?.data.length > 0;
               if (hasAdcreatives) {
+                let domains: string[] = [];
                 const adcreativesResult = await Promise.all(
                   adcreatives.data.map(async (adcreative: any) => {
                     const { id, object_story_spec } = adcreative;
@@ -188,32 +189,21 @@ export class FacebookAdsManagerServerService {
                         video_data?.call_to_action?.value?.link;
                       const domainName =
                         new SearchParamsManager().getDomainNameFromUrl(link);
-                      restOfAdsets.domain_name = domainName;
-                      // const internetbs = new InternetBsApiClientService();
-                      // const { isSuccess, data } =
-                      //   await internetbs.getDomainInfo({
-                      //     domain: `${domainName}`,
-                      //   });
-
-                      // const remarks =
-                      //   data[0].status === "SUCCESS"
-                      //     ? "OK"
-                      //     : data[0].status === "FAILURE" &&
-                      //       data[0]?.message.includes("limit exceeded")
-                      //     ? data[0]?.message
-                      //     : "The domain was not found in the Internet.bs account.";
-
-                      const remarks = "Daily limit exceeded for command";
-                      restOfAdsets.ad_checker_status_result = {
-                        ...restOfAdsets.ad_checker_status_result,
-                        domain_status: true // isSuccess
-                          ? remarks
-                          : "Error has occured in Internet.bs api.",
-                      };
+                      domains.push(String(domainName));
                     }
                     return video_data;
                   })
                 );
+
+                const newSetOfDomains = [...new Set(domains)]; // Removes duplicate values
+                const domainValidationResult = await validateDomain({
+                  domain: newSetOfDomains,
+                });
+                restOfAdsets.domain = domainValidationResult.domain;
+                restOfAdsets.ad_checker_status_result = {
+                  ...restOfAdsets.ad_checker_status_result,
+                  domain_status: domainValidationResult.message,
+                };
                 restOfAdsets.adcreatives = adcreativesResult.filter(
                   (creative) => creative !== undefined
                 );
@@ -339,6 +329,60 @@ const getAdAccountDisableReason: Record<number, string> = {
   14: "CTX_THREAD_REVIEW",
   15: "COMPROMISED_AD_ACCOUNT",
 };
+
+const validateDomain = async ({ domain }: { domain: string[] }) => {
+  const internetbs = new InternetBsApiClientService();
+  const result = await Promise.all(
+    domain.map(async (value) => {
+      const { isSuccess, data, message } = await internetbs.getDomainInfo({
+        domain: value,
+      });
+
+      if (!isSuccess) {
+        console.log(message);
+        return {
+          name: value,
+          status: "Server error occured.",
+        };
+      }
+
+      let status = "";
+      if (data[0].status === "SUCCESS") {
+        status = "OK";
+      } else {
+        console.log(data[0].message);
+        status = "Not found";
+      }
+
+      return {
+        name: value,
+        status: status,
+      };
+    })
+  );
+
+  const domain_status_result = Object.values(result)
+    .filter((prop) => prop.status !== "OK")
+    .map((prop) => prop.name);
+
+  const message =
+    domain_status_result.length > 0
+      ? formatDomainsForSentence(domain_status_result.join(","))
+      : "OK";
+
+  return { domain: result, message: message };
+};
+
+function formatDomainsForSentence(domainsString: string) {
+  const domains = domainsString.split(",");
+  if (domains.length === 1) {
+    return `The ${domains[0]} was not found in the interbetbs account.`;
+  }
+  const allButLast = domains.slice(0, -1); // Get all domains except the last one.
+  const lastDomain = domains[domains.length - 1]; // Get the very last domain.
+  const formattedList = allButLast.join(", ");
+  return `The ${formattedList} and ${lastDomain} were not found in the interbetbs account.`;
+}
 
 // import { createHmac } from "crypto";
 // type GenerateAppSecretProofProps = {

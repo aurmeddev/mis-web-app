@@ -43,15 +43,44 @@ export const GET = async (request: NextRequest) => {
       { status: 500 }
     );
   }
+  // console.log(formatCampaigns(AdAccounts));
   return NextResponse.json(
     {
       isSuccess: true,
       message: "Success",
-      data: AdAccounts,
+      data: formatCampaigns(AdAccounts),
     },
     { status: 200 }
   );
 };
+
+function formatCampaigns(data: any) {
+  return data.map((item: any) => {
+    const { campaigns, ...rest } = item;
+    const hasCampaigns = campaigns?.length > 0;
+    if (hasCampaigns) {
+      const formattedCampaign = campaigns
+        .map((campaign: any) => {
+          const { adsets } = campaign;
+          const hasAdsets = adsets?.length > 0;
+          if (hasAdsets) {
+            return {
+              ...adsets,
+            };
+          }
+        })
+        .filter(Boolean); // Exclude null or undefined values
+      // Use flatMap to iterate and flatten the nested objects.
+      const flattenedCampaigns = formattedCampaign.flatMap((item: any) => {
+        return Object.values(item);
+      });
+      rest.campaigns = flattenedCampaigns;
+    } else {
+      rest.campaigns = [];
+    }
+    return { ...rest };
+  });
+}
 
 // const getInsights = async (params: {
 //   access_token: string;

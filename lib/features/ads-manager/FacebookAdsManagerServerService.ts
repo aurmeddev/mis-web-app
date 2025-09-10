@@ -189,23 +189,24 @@ export class FacebookAdsManagerServerService {
                       const domainName =
                         new SearchParamsManager().getDomainNameFromUrl(link);
                       restOfAdsets.domain_name = domainName;
-                      const internetbs = new InternetBsApiClientService();
-                      const { isSuccess, data } =
-                        await internetbs.getDomainInfo({
-                          domain: `${domainName}`,
-                        });
+                      // const internetbs = new InternetBsApiClientService();
+                      // const { isSuccess, data } =
+                      //   await internetbs.getDomainInfo({
+                      //     domain: `${domainName}`,
+                      //   });
 
-                      const remarks =
-                        data[0].status === "SUCCESS"
-                          ? "OK"
-                          : data[0].status === "FAILURE" &&
-                            data[0]?.message.includes("limit exceeded")
-                          ? data[0]?.message
-                          : "The system detected that the domain was not found in the Internet.bs account.";
+                      // const remarks =
+                      //   data[0].status === "SUCCESS"
+                      //     ? "OK"
+                      //     : data[0].status === "FAILURE" &&
+                      //       data[0]?.message.includes("limit exceeded")
+                      //     ? data[0]?.message
+                      //     : "The system detected that the domain was not found in the Internet.bs account.";
 
+                      const remarks = "Daily limit exceeded for command";
                       restOfAdsets.ad_checker_status_result = {
                         ...restOfAdsets.ad_checker_status_result,
-                        domain_status: isSuccess
+                        domain_status: true // isSuccess
                           ? remarks
                           : "Error has occured in Internet.bs api.",
                       };

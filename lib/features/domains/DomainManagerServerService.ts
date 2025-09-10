@@ -1,9 +1,20 @@
-import { PostDomainManagerServiceProps } from "./type/DomainManagerServiceProps";
+import {
+  FindDomainManagerServiceProps,
+  PostDomainManagerServiceProps,
+} from "./type/DomainManagerServiceProps";
 import { ApiResponseProps, query } from "@/database/dbConnection";
 import { MySqlUtils } from "@/lib/utils/mysql/MySqlUtils";
 import { DatetimeUtils } from "@/lib/utils/date/DatetimeUtils";
 import { getServerCurrentDatetime } from "@/app/api/ap-profiles/post/route";
+import { SearchKeywordService } from "../search-keyword/SearchKeywordService";
 
+type FindDomainManagerServerServiceProps = Omit<
+  FindDomainManagerServiceProps,
+  "method" | "condition" | "dynamicSearchPayload"
+> & {
+  payload: object;
+  requestUrlSearchParams: any;
+};
 export class DomainManagerServerService {
   async post(
     params: PostDomainManagerServiceProps & {
@@ -54,6 +65,65 @@ export class DomainManagerServerService {
         isSuccess: true,
         message: "Domain have been saved successfully.",
         data: [result],
+      };
+    } catch (error: any) {
+      console.error(error);
+      return {
+        isSuccess: false,
+        message: "Something went wrong! Please try again.",
+        data: [],
+      };
+    }
+  }
+
+  async find(params: FindDomainManagerServerServiceProps) {
+    const { searchKeyword, payload, requestUrlSearchParams } = params;
+    let validPayload: object = {};
+    try {
+      validPayload = payload;
+    } catch (error) {
+      return {
+        isSuccess: false,
+        message: "Invalid JSON payload.",
+        data: [],
+      };
+    }
+
+    const searchApi = new SearchKeywordService();
+    const { queryString, values, isSuccess, message } = searchApi.search({
+      searchKeyword,
+      requestUrlSearchParams: requestUrlSearchParams,
+      dynamicSearchPayload: validPayload,
+      databaseTableName: "v_Domains",
+      staticSearchField: "domain_name",
+    });
+
+    if (!isSuccess) {
+      return {
+        isSuccess,
+        message,
+        data: [],
+      };
+    }
+    // Execute the query to find data in the database
+    try {
+      const response: any = await query({
+        query: queryString,
+        values: values,
+      });
+
+      if (response.length === 0) {
+        return {
+          isSuccess: true,
+          message: "No data found.",
+          data: [],
+        };
+      }
+
+      return {
+        isSuccess: true,
+        message: "Data fetched successfully.",
+        data: response,
       };
     } catch (error: any) {
       console.error(error);

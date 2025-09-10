@@ -34,10 +34,10 @@ export const PUT = async (
     })
   ) {
     const token: Record<string, any> = {};
-    if (marketing_api_access_token) {
+    if (marketing_api_access_token !== undefined) {
       token.marketing_api_access_token = marketing_api_access_token;
     }
-    if (app_secret_key) {
+    if (app_secret_key !== undefined) {
       token.app_secret_key = app_secret_key;
     }
     // Update Fb Account's marketing api acccess token
@@ -145,10 +145,10 @@ export const PUT = async (
       (app_secret_key !== undefined && !hasFbAccountRemoved)
     ) {
       const token: Record<string, any> = {};
-      if (marketing_api_access_token) {
+      if (marketing_api_access_token !== undefined) {
         token.marketing_api_access_token = marketing_api_access_token;
       }
-      if (app_secret_key) {
+      if (app_secret_key !== undefined) {
         token.app_secret_key = app_secret_key;
       }
       // Update marketing api acccess token in Fb Account

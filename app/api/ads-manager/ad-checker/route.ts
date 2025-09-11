@@ -54,7 +54,7 @@ export const GET = async (request: NextRequest) => {
       { status: 500 }
     );
   }
-  // console.log(formatCampaigns(AdAccounts));
+
   return NextResponse.json(
     {
       isSuccess: true,
@@ -96,23 +96,21 @@ function formatCampaigns(data: any) {
   const shallowCopyForSpreadingAdAccount = [...result];
   const adAccountHasNoAdsets: any = [];
   const spreadAdAccount: any = [];
-  shallowCopyForSpreadingAdAccount
-    .map((adAccount: any) => {
-      const { campaigns, id, name, account_status, disable_reason } = adAccount;
-      const hasCampaigns = campaigns?.length > 0;
-      if (hasCampaigns) {
-        const newCampaign = campaigns.map((camp: any) => {
-          return {
-            ...camp,
-            ad_account_id: id,
-            ad_account_name: name,
-            account_status,
-            disable_reason,
-          };
-        });
-        spreadAdAccount.push(...newCampaign);
-        return newCampaign;
-      }
+  shallowCopyForSpreadingAdAccount.forEach((adAccount: any) => {
+    const { campaigns, id, name, account_status, disable_reason } = adAccount;
+    const hasCampaigns = campaigns?.length > 0;
+    if (hasCampaigns) {
+      const newCampaign = campaigns.map((camp: any) => {
+        return {
+          ...camp,
+          ad_account_id: id,
+          ad_account_name: name,
+          account_status,
+          disable_reason,
+        };
+      });
+      spreadAdAccount.push(...newCampaign);
+    } else {
       adAccountHasNoAdsets.push({
         ad_account_id: id,
         ad_account_name: name,
@@ -123,9 +121,8 @@ function formatCampaigns(data: any) {
           message: ["No adsets found."],
         },
       });
-      return null;
-    })
-    .filter(Boolean);
+    }
+  });
 
   return [...spreadAdAccount, ...adAccountHasNoAdsets];
 }

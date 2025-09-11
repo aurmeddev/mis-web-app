@@ -66,8 +66,8 @@ export const GET = async (request: NextRequest) => {
 };
 
 function formatCampaigns(data: any) {
-  return data.map((item: any) => {
-    const { campaigns, ...rest } = item;
+  const result = data.map((adAccount: any) => {
+    const { campaigns, ...rest } = adAccount;
     const hasCampaigns = campaigns?.length > 0;
     if (hasCampaigns) {
       const formattedCampaign = campaigns
@@ -91,6 +91,43 @@ function formatCampaigns(data: any) {
     }
     return { ...rest };
   });
+
+  // Spread Ad account
+  const shallowCopyForSpreadingAdAccount = [...result];
+  const adAccountHasNoAdsets: any = [];
+  const spreadAdAccount: any = [];
+  shallowCopyForSpreadingAdAccount
+    .map((adAccount: any) => {
+      const { campaigns, id, name, account_status, disable_reason } = adAccount;
+      const hasCampaigns = campaigns?.length > 0;
+      if (hasCampaigns) {
+        const newCampaign = campaigns.map((camp: any) => {
+          return {
+            ...camp,
+            ad_account_id: id,
+            ad_account_name: name,
+            account_status,
+            disable_reason,
+          };
+        });
+        spreadAdAccount.push(...newCampaign);
+        return newCampaign;
+      }
+      adAccountHasNoAdsets.push({
+        ad_account_id: id,
+        ad_account_name: name,
+        account_status,
+        disable_reason,
+        ad_status: {
+          code: 404,
+          message: ["No adsets found."],
+        },
+      });
+      return null;
+    })
+    .filter(Boolean);
+
+  return [...spreadAdAccount, ...adAccountHasNoAdsets];
 }
 
 // const getInsights = async (params: {

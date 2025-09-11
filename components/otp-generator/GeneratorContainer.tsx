@@ -30,6 +30,10 @@ export function GeneratorContainer() {
   };
 
   const handleDebounce = useDebouncedCallback(async (data: string) => {
+    if (/^\s+$/.test(data) || !data) {
+      setShowResults(false);
+      return;
+    }
     setSearchQuery({ ...searchQuery, isSearching: true });
     const response = await profilesService.find({
       method: "find-one",

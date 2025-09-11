@@ -129,8 +129,8 @@ export function ManageApProfilesDialog({
   };
 
   const handleProfileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    handleInputChange("profile_name", e.target.value);
-    handleProfileDebounce(e.target.value);
+    handleInputChange("profile_name", e.target.value.trim());
+    handleProfileDebounce(e.target.value.trim());
   };
 
   const handleClose = () => {
@@ -142,12 +142,15 @@ export function ManageApProfilesDialog({
       },
       selectedResult: null,
     }));
-    setShowResults(false);
+    startTransition(() => {
+      setShowResults(false);
+      setIsExisting(false);
+    });
   };
 
   useEffect(() => {
     if (searchQuery.query) {
-      handleSearchDebounce(searchQuery.query);
+      handleSearchDebounce(searchQuery.query.trim());
     }
   }, [searchQuery.query]);
 

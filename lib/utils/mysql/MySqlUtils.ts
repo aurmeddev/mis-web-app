@@ -19,7 +19,9 @@ export class MySqlUtils {
     const keys = Object.keys(params);
     const newKeys = validateMySQLSpecialColumnSyntax(keys);
     const columns = newKeys.join(",");
-    const stringArrayValue = Object.values(params).map(String);
+    const stringArrayValue = Object.values(params).map((value) =>
+      String(value).trim()
+    );
     const result = {
       columns: `(${columns})`,
       values: stringArrayValue,
@@ -40,7 +42,9 @@ export class MySqlUtils {
       appendQuestionMarks.length > 1
         ? appendQuestionMarks.join(",")
         : appendQuestionMarks;
-    const stringArrayValue = Object.values(rest).map(String);
+    const stringArrayValue = Object.values(rest).map((value) =>
+      String(value).trim()
+    );
     stringArrayValue.push(primaryKey);
     const result = {
       columns: `SET ${columns}`,
@@ -99,7 +103,7 @@ export class MySqlUtils {
     }`;
     return {
       queryWhereClauseString,
-      queryValues: queryValues.map((value) => String(value)), // Convert all values to string
+      queryValues: queryValues.map((value) => String(value).trim()), // Convert all values to string
     };
   };
 
@@ -123,11 +127,13 @@ export class MySqlUtils {
           ? appendQuestionMarks.join(" AND ")
           : appendQuestionMarks.join(" OR ")
         : appendQuestionMarks;
-    const arrayValues = Object.values(column);
-    const stringArray = arrayValues.map((prop: any) => {
+    const arrayValues = Object.values(column).map((value) =>
+      String(value).trim()
+    );
+    const stringArray = arrayValues.map((value: any) => {
       return operator && String(operator).toUpperCase() === "LIKE"
-        ? `%${String(prop)}%`
-        : String(prop);
+        ? `%${String(value)}%`
+        : String(value);
     });
 
     const result = {

@@ -2,12 +2,12 @@
 
 import * as React from "react";
 import {
-  CircleDollarSign,
   Command,
   LayoutDashboardIcon,
   Users,
   Layers,
   ShieldCheck,
+  Compass,
 } from "lucide-react";
 
 import { NavMain, NavMainItem } from "@/components/sidebar/nav-main";
@@ -75,9 +75,8 @@ export function AppSidebar({ session, ...props }: AppSidebarProps) {
 }
 
 const addIconPerMenu = (array: any[]) => {
-  const icon = [Layers, Users, ShieldCheck];
-  return array.map((item) => {
-    const index = item.id - 1;
+  const icon = [Layers, Users, ShieldCheck, Compass];
+  return array.map((item, index) => {
     return {
       ...item,
       icon: icon[index] ?? LayoutDashboardIcon, // fallback to a default icon if not enough icons

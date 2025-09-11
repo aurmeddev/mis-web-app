@@ -28,6 +28,7 @@ export class FacebookAdsManagerServerService {
     const searchParams: any = {
       access_token: this.config.access_token,
       use_account_attribution_setting: true,
+      // filtering: `[{field: "name",operator:"CONTAIN", value: "WZYC-FT-June 23-3"}]`,
     };
 
     if (!params.fields) {

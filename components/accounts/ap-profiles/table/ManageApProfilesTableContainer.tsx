@@ -96,6 +96,10 @@ export function ManageApProfilesTableContainer({
   };
 
   const handleSearchDebounce = useDebouncedCallback(async (data: string) => {
+    if (/^\s+$/.test(data) || !data) {
+      setShowResults(false);
+      return;
+    }
     setSearchQuery({ ...searchQuery, isSearching: true });
     const response = await profilesService.find({
       method: "find-one",

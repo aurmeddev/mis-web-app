@@ -63,6 +63,10 @@ export function ManageApProfilesDialog({
   const [isPending, startTransition] = useTransition();
 
   const handleSearchDebounce = useDebouncedCallback(async (data: string) => {
+    if (/^\s+$/.test(data) || !data) {
+      setShowResults(false);
+      return;
+    }
     setSearchQuery({ ...searchQuery, isSearching: true });
     const response = await fbAccountsService.find({
       method: "find-any",
@@ -73,7 +77,7 @@ export function ManageApProfilesDialog({
   }, 500);
 
   const handleProfileDebounce = useDebouncedCallback(async (data: string) => {
-    if (!data) {
+    if (/^\s+$/.test(data) || !data) {
       setIsExisting(false);
       setIsSearching(false);
       return;
@@ -82,7 +86,7 @@ export function ManageApProfilesDialog({
     startTransition(async () => {
       const response = await profilesService.find({
         method: "find-one",
-        searchKeyword: data,
+        searchKeyword: data.trim(),
       });
       setIsExisting(response.data.length >= 1);
       setIsSearching(false);
@@ -129,8 +133,8 @@ export function ManageApProfilesDialog({
   };
 
   const handleProfileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    handleInputChange("profile_name", e.target.value.trim());
-    handleProfileDebounce(e.target.value.trim());
+    handleInputChange("profile_name", e.target.value);
+    handleProfileDebounce(e.target.value);
   };
 
   const handleClose = () => {
@@ -150,7 +154,7 @@ export function ManageApProfilesDialog({
 
   useEffect(() => {
     if (searchQuery.query) {
-      handleSearchDebounce(searchQuery.query.trim());
+      handleSearchDebounce(searchQuery.query);
     }
   }, [searchQuery.query]);
 

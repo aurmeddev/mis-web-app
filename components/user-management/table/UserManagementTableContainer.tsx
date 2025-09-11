@@ -220,20 +220,18 @@ export function UserManagementTableContainer({
   };
 
   const handleSearch = async (value: string) => {
-    setIsSearching(true);
-    if (!value) {
+    if (/^\s+$/.test(value) || !value) {
       setTableData(whiteListData);
       setIsSearching(false);
       return;
     }
 
+    setIsSearching(true);
     try {
       const { data } = await ipWhitelistService.find({ searchKey: value });
-      if (data?.length) {
-        setTableData(data);
-      }
+      setTableData(data);
     } finally {
-      setIsSearching(false); // ✅ Always reset after request completes
+      setIsSearching(false);
     }
   };
 

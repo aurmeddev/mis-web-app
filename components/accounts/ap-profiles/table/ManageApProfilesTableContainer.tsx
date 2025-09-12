@@ -22,6 +22,7 @@ import { SearchWrapper } from "../search/SearchWrapper";
 import { Profile } from "../type";
 import { PaginationProps } from "@/lib/utils/pagination/type/PaginationProps";
 import { SearchParamsManager } from "@/lib/utils/search-params/SearchParamsManager";
+import { CryptoClientService } from "@/lib/features/security/cryptography/CryptoClientService";
 
 type ManageApProfilesTableContainerProps = {
   response: ApiResponseProps & {
@@ -46,6 +47,8 @@ export function ManageApProfilesTableContainer({
 }: ManageApProfilesTableContainerProps) {
   const profilesService = new ApProfilesService();
   const searchParamsManager = new SearchParamsManager();
+  const decipher = new CryptoClientService();
+
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -152,25 +155,28 @@ export function ManageApProfilesTableContainer({
       }
     }
 
-    if (
-      form.marketing_api_access_token !== editingData.marketing_api_access_token
-    ) {
-      if (!isUpdateMode) {
-        payload.fb_account_id = form.fb_account_id;
-      } else {
-        payload.fb_account_id = editingData.fb_account?.id;
-      }
-      payload.marketing_api_access_token = form.marketing_api_access_token;
-    }
+    // if (
+    //   form.marketing_api_access_token !== editingData.marketing_api_access_token
+    // ) {
+    //   if (!isUpdateMode) {
+    //     payload.fb_account_id = form.fb_account_id;
+    //   } else {
+    //     payload.fb_account_id = editingData.fb_account?.id;
+    //   }
+    //   payload.marketing_api_access_token = form.marketing_api_access_token;
+    // }
 
-    if (form.app_secret_key !== editingData.app_secret_key) {
-      if (!isUpdateMode) {
-        payload.fb_account_id = form.fb_account_id;
-      } else {
-        payload.fb_account_id = editingData.fb_account?.id;
-      }
-      payload.app_secret_key = form.app_secret_key;
-    }
+    // if (form.app_secret_key !== editingData.app_secret_key) {
+    //   if (!isUpdateMode) {
+    //     payload.fb_account_id = form.fb_account_id;
+    //   } else {
+    //     payload.fb_account_id = editingData.fb_account?.id;
+    //   }
+    //   payload.app_secret_key = form.app_secret_key;
+    // }
+
+    payload.marketing_api_access_token = form.marketing_api_access_token;
+    payload.app_secret_key = form.app_secret_key;
 
     if (
       form.fb_account_id !== editingData.fb_account?.id &&
@@ -187,6 +193,12 @@ export function ManageApProfilesTableContainer({
 
     if (form.remarks !== editingData.remarks) {
       payload.remarks = form.remarks;
+    }
+
+    if (!isUpdateMode) {
+      payload.fb_account_id = form.fb_account_id;
+    } else {
+      payload.fb_account_id = editingData.fb_account?.id;
     }
 
     return payload;
@@ -217,7 +229,7 @@ export function ManageApProfilesTableContainer({
     setOpen(false);
   };
 
-  const handleNewEntry = (response: ApiResponseProps) => {
+  const handleNewEntry = async (response: ApiResponseProps) => {
     const { data } = response;
     const createdBy = data[0].created_by;
     const updatedForm = {
@@ -255,7 +267,46 @@ export function ManageApProfilesTableContainer({
     resetForm();
   };
 
-  const handleUpdateEntry = (response: ApiResponseProps, payload: any) => {
+  const getTokens = async (params: {
+    app_secret_key?: string;
+    marketing_api_access_token?: string;
+  }) => {
+    const tokens: any = {};
+    const { app_secret_key, marketing_api_access_token } = params;
+    const sensitiveData: any = {
+      app_secret_key,
+      marketing_api_access_token,
+    };
+
+    for (const prop of Object.keys(sensitiveData)) {
+      const value = sensitiveData[prop];
+      if (value) {
+        const { isSuccess, encryptedData, message } = await decipher.encrypt({
+          data: value, // Decrypt
+        });
+        tokens[prop] = isSuccess ? encryptedData : message;
+      }
+    }
+
+    return tokens;
+  };
+
+  const handleUpdateEntry = async (
+    response: ApiResponseProps,
+    payload: any
+  ) => {
+    const tokens = await getTokens({
+      app_secret_key: payload.app_secret_key,
+      marketing_api_access_token: payload.marketing_api_access_token,
+    });
+
+    const marketingApiAccessToken = tokens["marketing_api_access_token"]
+      ? tokens["marketing_api_access_token"]
+      : form.marketing_api_access_token;
+    const appSecretKey = tokens["app_secret_key"]
+      ? tokens["app_secret_key"]
+      : form.app_secret_key;
+
     setTableData((prevData: Profile[]) =>
       prevData.map((item) => {
         const payloadLength = Object.keys(payload).length;
@@ -280,9 +331,8 @@ export function ManageApProfilesTableContainer({
                   : hasMarketingApiAccessToken || hasAppSecretKey
                   ? {
                       ...item.fb_account,
-                      marketing_api_access_token:
-                        form.marketing_api_access_token,
-                      app_secret_key: form.app_secret_key,
+                      marketing_api_access_token: marketingApiAccessToken,
+                      app_secret_key: appSecretKey,
                     }
                   : !hasRemovedFbAccount || hasOnlyRemarks
                   ? item.fb_account
@@ -300,22 +350,40 @@ export function ManageApProfilesTableContainer({
     resetForm();
   };
 
-  const handleEditChange = (id: number | null) => {
+  const handleEditChange = async (id: number | null) => {
+    const tokens: any = {};
     const selectedProfile = tableData.find(
       (data: { id: number }) => data.id === id
     ) as any;
+
+    if (selectedProfile.fb_account) {
+      const { app_secret_key, marketing_api_access_token } =
+        selectedProfile.fb_account;
+      const sensitiveData: any = {
+        app_secret_key,
+        marketing_api_access_token,
+      };
+
+      for (const prop of Object.keys(sensitiveData)) {
+        const value = sensitiveData[prop];
+        if (value) {
+          const { isSuccess, decryptedData, message } = await decipher.decrypt({
+            data: value, // Decrypt
+          });
+          tokens[prop] = isSuccess ? decryptedData : message;
+        }
+      }
+    }
+
     setEditingData({
       ...selectedProfile,
-      marketing_api_access_token:
-        selectedProfile.fb_account.marketing_api_access_token,
-      app_secret_key: selectedProfile.fb_account.app_secret_key,
+      ...tokens,
     });
+
     if (selectedProfile) {
       setForm({
         ...selectedProfile,
-        marketing_api_access_token:
-          selectedProfile.fb_account.marketing_api_access_token,
-        app_secret_key: selectedProfile.fb_account.app_secret_key,
+        ...tokens,
       });
       setOpen(true);
     }

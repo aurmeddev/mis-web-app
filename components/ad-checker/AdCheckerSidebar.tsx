@@ -69,7 +69,7 @@ export function AdCheckerSidebar({
     for (const profile of profiles) {
       setProgress((prev) => {
         const currentProgress = (prev += Number(divisor));
-        return currentProgress == 99 ? 100 : currentProgress;
+        return currentProgress >= 99 ? 100 : currentProgress;
       });
       const { isSuccess, data } = await profilesService.find({
         method: "find-one",

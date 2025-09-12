@@ -17,7 +17,7 @@ export class UsersAccessServerService {
   async post(params: PostUsersAccessProps): Promise<ApiResponseProps> {
     const { user_id, ...rest } = params;
     const { main_menu } = rest;
-    let result: any[] = [];
+    const result: any[] = [];
     const customSearchParams = new URLSearchParams();
     customSearchParams.set("method", "find-one");
     customSearchParams.set("condition", "all");

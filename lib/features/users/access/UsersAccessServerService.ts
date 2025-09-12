@@ -16,87 +16,99 @@ type FindUsersAccessServerServiceProps = Omit<
 export class UsersAccessServerService {
   async post(params: PostUsersAccessProps): Promise<ApiResponseProps> {
     const { user_id, ...rest } = params;
+    if (!Array.isArray(user_id)) {
+      return {
+        isSuccess: false,
+        message: "The user_id value is invalid. It must be an array.",
+        data: [],
+      };
+    }
     const { main_menu } = rest;
     const result: any[] = [];
     const customSearchParams = new URLSearchParams();
     customSearchParams.set("method", "find-one");
     customSearchParams.set("condition", "all");
-    for (const main of main_menu) {
-      const mainMenuPayload = { user_id, main_menu_id: main.main_menu_id };
-      const validationResponse = await this.find({
-        searchKeyword: "validation",
-        requestUrlSearchParams: customSearchParams,
-        payload: mainMenuPayload,
-      });
-      const userHasAccessAlready = validationResponse.data.length > 0;
-      if (!userHasAccessAlready) {
-        const mainMenuAccessResponse = await PostDataUserAccess({
-          dbTableName: "User_Access_Main_Menus",
+
+    for (const id of user_id) {
+      for (const main of main_menu) {
+        const mainMenuPayload = {
+          user_id: id,
+          main_menu_id: main.main_menu_id,
+        };
+        const validationResponse = await this.find({
+          searchKeyword: "validation",
+          requestUrlSearchParams: customSearchParams,
           payload: mainMenuPayload,
         });
+        const userHasAccessAlready = validationResponse.data.length > 0;
+        if (userHasAccessAlready) {
+          result.push({
+            ...mainMenuPayload,
+            status:
+              "Unable to proceed. The user already has access to the main menu.",
+          });
+        } else {
+          const mainMenuAccessResponse = await PostDataUserAccess({
+            dbTableName: "User_Access_Main_Menus",
+            payload: mainMenuPayload,
+          });
 
-        if (!mainMenuAccessResponse.isSuccess) {
-          return {
-            isSuccess: false,
-            message: mainMenuAccessResponse.message,
-            data: [],
-          };
+          if (!mainMenuAccessResponse.isSuccess) {
+            return {
+              isSuccess: false,
+              message: mainMenuAccessResponse.message,
+              data: [],
+            };
+          }
+
+          result.push({
+            ...mainMenuPayload,
+            status: "Success!",
+          });
         }
 
-        result.push({
-          ...mainMenuPayload,
-          status: "Success!",
-        });
-      } else {
-        result.push({
-          ...mainMenuPayload,
-          status:
-            "Unable to proceed. The user already has access to the main menu.",
-        });
-      }
-
-      if (main.sub_menu.length > 0) {
-        for (const sub of main.sub_menu) {
-          const subMenuPayload = {
-            user_id,
-            main_menu_id: main.main_menu_id,
-            sub_menu_id: sub.sub_menu_id,
-          };
-          const validationResponse = await this.find({
-            searchKeyword: "validation",
-            requestUrlSearchParams: customSearchParams,
-            payload: subMenuPayload,
-          });
-          const userHasAccessAlready = validationResponse.data.length > 0;
-          if (!userHasAccessAlready) {
-            const subMenuAccessResponse = await PostDataUserAccess({
-              dbTableName: "User_Access_Sub_Menus",
+        if (main.sub_menu.length > 0) {
+          for (const sub of main.sub_menu) {
+            const subMenuPayload = {
+              user_id: id,
+              main_menu_id: main.main_menu_id,
+              sub_menu_id: sub.sub_menu_id,
+            };
+            const validationResponse = await this.find({
+              searchKeyword: "validation",
+              requestUrlSearchParams: customSearchParams,
               payload: subMenuPayload,
             });
+            const userHasAccessAlready = validationResponse.data.length > 0;
+            if (userHasAccessAlready) {
+              result.push({
+                ...subMenuPayload,
+                status:
+                  "Unable to proceed. The user already has access to the sub menu.",
+              });
+            } else {
+              const subMenuAccessResponse = await PostDataUserAccess({
+                dbTableName: "User_Access_Sub_Menus",
+                payload: subMenuPayload,
+              });
 
-            if (!subMenuAccessResponse.isSuccess) {
-              return {
-                isSuccess: false,
-                message: subMenuAccessResponse.message,
-                data: [],
-              };
+              if (!subMenuAccessResponse.isSuccess) {
+                return {
+                  isSuccess: false,
+                  message: subMenuAccessResponse.message,
+                  data: [],
+                };
+              }
+
+              result.push({
+                ...subMenuPayload,
+                status: "Success!",
+              });
             }
-
-            result.push({
-              ...subMenuPayload,
-              status: "Success!",
-            });
-          } else {
-            result.push({
-              ...subMenuPayload,
-              status:
-                "Unable to proceed. The user already has access to the sub menu.",
-            });
           }
         }
       }
     }
-
     return {
       isSuccess: true,
       message: "Data have been submitted successfully.",

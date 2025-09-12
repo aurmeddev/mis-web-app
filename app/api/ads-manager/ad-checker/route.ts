@@ -30,29 +30,29 @@ export const GET = async (request: NextRequest) => {
     from: date_from || format(addDays(new Date(), -1), "yyyy-MM-dd"),
     to: date_to || format(addDays(new Date(), 0), "yyyy-MM-dd"),
   };
-  console.log(yesterdayAndToday);
+  // console.log(yesterdayAndToday);
   const graphApi = new FacebookAdsManagerServerService({
     access_token: access_token,
   });
-  const adAccountResult = await graphApi.getAdAccounts({});
-  const AdAccounts = [...adAccountResult.data];
+  const { isSuccess, data, message } = await graphApi.getAdAccounts({});
+  if (!isSuccess) {
+    return NextResponse.json(
+      {
+        isSuccess: false,
+        message: message,
+        data: [],
+      },
+      { status: 500 }
+    );
+  }
+
+  const AdAccounts = [...data];
   for (const ada of AdAccounts) {
     const { data } = await graphApi.adChecker({
       id: ada.id,
       time_ranges: `[{"since":"${yesterdayAndToday.from}","until":"${yesterdayAndToday.to}"}]`,
     });
     ada.campaigns = data;
-  }
-
-  if (!adAccountResult.isSuccess) {
-    return NextResponse.json(
-      {
-        isSuccess: false,
-        message: adAccountResult.message,
-        data: [],
-      },
-      { status: 500 }
-    );
   }
 
   return NextResponse.json(

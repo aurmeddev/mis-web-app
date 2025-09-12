@@ -138,7 +138,6 @@ export class FacebookAdsManagerServerService {
     }
   ) {
     const { id, time_ranges, ...restOfParams } = params;
-
     const defaultFields = `name,adsets{name,daily_budget,targeting{geo_locations{countries}},insights.time_ranges(${time_ranges}){spend},adcreatives{object_story_spec{video_data}}}`;
 
     const searchParams: any = {
@@ -281,6 +280,34 @@ export class FacebookAdsManagerServerService {
           ? "Data fetched successfully."
           : "No data found.",
       data: formattedResult || [],
+    };
+  }
+
+  async accessTokenDebugger() {
+    const searchParams = {
+      input_token: this.config.access_token,
+      access_token: this.config.access_token,
+    };
+    const searchQueryParams = new SearchParamsManager().append(searchParams);
+    const response = await fetch(
+      `${this.graphFbApiConfig.baseUrl}/debug_token${searchQueryParams}`,
+      this.requestOptions
+    );
+
+    if (!response.ok) {
+      const { error } = await response.json();
+      console.error(error);
+      return {
+        isSuccess: false,
+        message: error.message,
+        data: [],
+      };
+    }
+
+    return {
+      isSuccess: true,
+      message: "Access token is valid.",
+      data: [],
     };
   }
 }

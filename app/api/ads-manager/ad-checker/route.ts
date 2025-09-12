@@ -1,21 +1,35 @@
 import { FacebookAdsManagerServerService } from "@/lib/features/ads-manager/FacebookAdsManagerServerService";
+import { CryptoServerService } from "@/lib/features/security/cryptography/CryptoServerService";
 import { SearchParamsManager } from "@/lib/utils/search-params/SearchParamsManager";
 import { addDays, format } from "date-fns";
 import { NextResponse, NextRequest } from "next/server";
-export const GET = async (request: NextRequest) => {
+export const POST = async (request: NextRequest) => {
   const {
-    access_token,
     date_from,
     date_to,
   }: // app_secret_key, NOTE: Develop an additional layer of security by requiring app secret
   {
-    access_token: string;
     date_from?: string;
     date_to?: string;
     // app_secret_key?: string;
   } = new SearchParamsManager().toObject(request.nextUrl.searchParams);
 
-  if (!access_token) {
+  let payload: {
+    access_token: string;
+  } = { access_token: "" };
+  try {
+    payload = await request.json();
+  } catch (error) {
+    return NextResponse.json(
+      {
+        isSuccess: false,
+        message: "Invalid JSON payload.",
+        data: [],
+      },
+      { status: 400 }
+    );
+  }
+  if (!payload.access_token) {
     return NextResponse.json(
       {
         isSuccess: false,
@@ -30,9 +44,25 @@ export const GET = async (request: NextRequest) => {
     from: date_from || format(addDays(new Date(), -1), "yyyy-MM-dd"),
     to: date_to || format(addDays(new Date(), 0), "yyyy-MM-dd"),
   };
-  // console.log(yesterdayAndToday);
+
+  const decipher = new CryptoServerService();
+  const decryptedData = await decipher.decrypt({
+    data: payload.access_token,
+  });
+
+  if (!decryptedData.isSuccess) {
+    return NextResponse.json(
+      {
+        isSuccess: false,
+        message: decryptedData.message,
+        data: [],
+      },
+      { status: 400 }
+    );
+  }
+
   const graphApi = new FacebookAdsManagerServerService({
-    access_token: access_token,
+    access_token: decryptedData.decryptedData,
   });
   const { isSuccess, data, message } = await graphApi.getAdAccounts({});
   if (!isSuccess) {

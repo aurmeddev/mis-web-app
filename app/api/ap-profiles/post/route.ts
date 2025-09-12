@@ -21,7 +21,7 @@ export const POST = async (request: NextRequest) => {
     );
   }
 
-  // // Decrypt the user ID from the session
+  // Decrypt the user ID from the session
   const decipher = new CryptoServerService();
   const { isSuccess, decryptedData } = await decipher.decrypt({
     data: session.user.id,
@@ -185,7 +185,8 @@ export const POST = async (request: NextRequest) => {
           );
         }
 
-        getFbAccountInfo = { ...getFbAccountInfo, ...token };
+        const encrypt = await encryptSensitiveData(token);
+        getFbAccountInfo = { ...getFbAccountInfo, ...encrypt };
       }
     }
 
@@ -233,4 +234,29 @@ export const getServerCurrentDatetime = async () => {
     values: [],
   });
   return date[0].date_now;
+};
+
+const encryptSensitiveData = async (params: {
+  app_secret_key?: string;
+  marketing_api_access_token?: string;
+}) => {
+  const cipher = new CryptoServerService();
+  const result: any = {};
+  const { app_secret_key, marketing_api_access_token } = params;
+  const sensitiveData: any = {
+    app_secret_key,
+    marketing_api_access_token,
+  };
+
+  for (const prop of Object.keys(sensitiveData)) {
+    const value = sensitiveData[prop];
+    if (value) {
+      const { isSuccess, encryptedData, message } = await cipher.encrypt({
+        data: value, // Enrypt
+      });
+      result[prop] = isSuccess ? encryptedData : message;
+    }
+  }
+
+  return result;
 };

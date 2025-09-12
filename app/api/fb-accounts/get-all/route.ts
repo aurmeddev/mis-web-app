@@ -113,11 +113,22 @@ export const GET = async (request: NextRequest) => {
           ...rest
         } = item;
 
-        if (rest.app_2fa_key) {
-          const { isSuccess, encryptedData, message } = await cipher.encrypt({
-            data: rest.app_2fa_key, // Enrypt app_2fa_key
-          });
-          rest.app_2fa_key = isSuccess ? encryptedData : message;
+        const { app_2fa_key, app_secret_key, marketing_api_access_token } =
+          rest;
+        const sensitiveData: any = {
+          app_2fa_key,
+          app_secret_key,
+          marketing_api_access_token,
+        };
+
+        for (const prop of Object.keys(sensitiveData)) {
+          const value = sensitiveData[prop];
+          if (value) {
+            const { isSuccess, encryptedData, message } = await cipher.encrypt({
+              data: value, // Enrypt
+            });
+            rest[prop] = isSuccess ? encryptedData : message;
+          }
         }
 
         if (objUtils.isValidObject(rest.ap_profile)) {

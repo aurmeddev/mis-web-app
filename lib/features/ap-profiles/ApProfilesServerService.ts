@@ -66,12 +66,27 @@ export class ApProfilesServerService {
           const { created_at, is_active, created_by, ap_created_by, ...rest } =
             item;
 
-          if (rest.fb_account.app_2fa_key) {
-            const { isSuccess, encryptedData, message } = await cipher.encrypt({
-              data: rest.fb_account.app_2fa_key, // Enrypt app_2fa_key
-            });
-            rest.fb_account.app_2fa_key = isSuccess ? encryptedData : message;
+          if (rest.fb_account) {
+            const { app_2fa_key, app_secret_key, marketing_api_access_token } =
+              rest.fb_account;
+            const sensitiveData: any = {
+              app_2fa_key,
+              app_secret_key,
+              marketing_api_access_token,
+            };
+
+            for (const prop of Object.keys(sensitiveData)) {
+              const value = sensitiveData[prop];
+              if (value) {
+                const { isSuccess, encryptedData, message } =
+                  await cipher.encrypt({
+                    data: value, // Enrypt
+                  });
+                rest.fb_account[prop] = isSuccess ? encryptedData : message;
+              }
+            }
           }
+
           return {
             ...rest,
             description: rest.fb_account?.fb_owner_name

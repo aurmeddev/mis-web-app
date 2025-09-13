@@ -80,6 +80,7 @@ export const PUT = async (
       {
         fb_account_id: prop.new_fb_account_id ?? prop.fb_account_id,
         fb_account: getFbAccountInfo,
+        status: "active",
       },
     ];
     return NextResponse.json(

@@ -39,6 +39,7 @@ export const PUT = async (
     })
   ) {
     const token: Record<string, any> = {};
+    let getFbAccountInfo: Record<string, any> = {};
     console.log(
       "Ang app_secret_key or marketing_api_access_token ang naay changes"
     );
@@ -65,11 +66,27 @@ export const PUT = async (
       );
     }
 
+    const customSearchParams = new URLSearchParams();
+    customSearchParams.set("method", "find-one");
+    const { data } = await fbs.find({
+      searchKeyword: "validation",
+      requestUrlSearchParams: customSearchParams,
+      payload: { id: Number(prop.new_fb_account_id) || prop.fb_account_id },
+    });
+
+    getFbAccountInfo = data[0];
+
+    const response = [
+      {
+        fb_account_id: prop.new_fb_account_id ?? prop.fb_account_id,
+        fb_account: getFbAccountInfo,
+      },
+    ];
     return NextResponse.json(
       {
         isSuccess: true,
         message: "The access token have been updated successfully.",
-        data: [{ ...token }],
+        data: response,
       },
       { status: 201 }
     );

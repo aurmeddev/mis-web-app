@@ -50,7 +50,7 @@ export const PUT = async (
     }
     // Update Fb Account's marketing api acccess token
     const addAccessToken = await fbs.update({
-      id: prop.fb_account_id || Number(prop.new_fb_account_id),
+      id: Number(prop.new_fb_account_id) || prop.fb_account_id,
       ...token,
     });
 

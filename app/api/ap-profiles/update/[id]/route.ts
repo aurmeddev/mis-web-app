@@ -249,7 +249,6 @@ const validateFbAccountAssignment = async (
 ) => {
   const { new_fb_account_id, new_profile_name } = params;
   const aps = new ApProfilesServerService();
-
   const customSearchParams = new URLSearchParams();
   customSearchParams.set("method", "find-one");
   if (new_fb_account_id) {
@@ -390,19 +389,30 @@ const updateAppSecretKeyAccessToken = async (
     return { isSuccess, data, message };
   }
 
-  // Encrypt app_secret_key or marketing_api_access_token
-  const cipher = new CryptoServerService();
-  const encryptionResult = await cipher.encryptObjectData({
-    ...payload,
+  const customSearchParams = new URLSearchParams();
+  customSearchParams.set("method", "find-one");
+  const fbAccountInfoResult = await fbs.find({
+    searchKeyword: "validation",
+    requestUrlSearchParams: customSearchParams,
+    payload: {
+      id: fbAccountId,
+    },
   });
 
+  if (!fbAccountInfoResult.isSuccess) {
+    return {
+      isSuccess: fbAccountInfoResult.isSuccess,
+      message: fbAccountInfoResult.message,
+      data: [],
+    };
+  }
   return {
     isSuccess: true,
     message: "The access token have been updated successfully.",
     data: [
       {
         fb_account_id: fbAccountId,
-        fb_account: encryptionResult,
+        fb_account: fbAccountInfoResult.data,
         status: "active", // Returns profile's status
       },
     ],

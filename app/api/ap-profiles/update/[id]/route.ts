@@ -429,7 +429,7 @@ const updateAppSecretKeyAccessToken = async (
 
   return {
     isSuccess: true,
-    message: "The access token have been updated successfully.",
+    message: "Data has been updated successfully.",
     data: [
       {
         fb_account: formatFbAccountInfo(fbAccountInfoResult.data),

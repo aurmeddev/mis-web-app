@@ -18,6 +18,7 @@ export type FbAccount = {
   age_of_fb: string;
   contact_no: string;
   app_2fa_key: string;
+  app_secret_key: string;
   recruited_by: RecruitedBy;
   email_address: string;
   fb_owner_name: string;

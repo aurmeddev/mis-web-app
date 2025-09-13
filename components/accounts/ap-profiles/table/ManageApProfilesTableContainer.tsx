@@ -47,7 +47,6 @@ export function ManageApProfilesTableContainer({
 }: ManageApProfilesTableContainerProps) {
   const profilesService = new ApProfilesService();
   const searchParamsManager = new SearchParamsManager();
-  const decipher = new CryptoClientService();
 
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -142,7 +141,20 @@ export function ManageApProfilesTableContainer({
     setShowResults(false);
   };
 
-  const buildPayload = (isUpdateMode: boolean) => {
+  const handleModifyEditingData = (params: {
+    marketing_api_access_token?: string;
+    app_secret_key?: string;
+  }) => {
+    setEditingData((prevState) => ({
+      ...prevState,
+      ...params,
+    }));
+  };
+
+  const buildPayload = (
+    isUpdateMode: boolean,
+    editingData: Partial<Profile>
+  ) => {
     if (!editingData) return {};
     const payload: any = {};
 
@@ -155,28 +167,34 @@ export function ManageApProfilesTableContainer({
       }
     }
 
-    // if (
-    //   form.marketing_api_access_token !== editingData.marketing_api_access_token
-    // ) {
-    //   if (!isUpdateMode) {
-    //     payload.fb_account_id = form.fb_account_id;
-    //   } else {
-    //     payload.fb_account_id = editingData.fb_account?.id;
-    //   }
-    //   payload.marketing_api_access_token = form.marketing_api_access_token;
-    // }
+    if (!isUpdateMode) {
+      payload.fb_account_id = form.fb_account_id;
+    } else {
+      payload.fb_account_id = editingData.fb_account?.id;
+    }
 
-    // if (form.app_secret_key !== editingData.app_secret_key) {
-    //   if (!isUpdateMode) {
-    //     payload.fb_account_id = form.fb_account_id;
-    //   } else {
-    //     payload.fb_account_id = editingData.fb_account?.id;
-    //   }
-    //   payload.app_secret_key = form.app_secret_key;
-    // }
+    if (
+      form.marketing_api_access_token !== editingData.marketing_api_access_token
+    ) {
+      if (!isUpdateMode) {
+        payload.fb_account_id = form.fb_account_id;
+      } else {
+        payload.fb_account_id = editingData.fb_account?.id;
+      }
+      payload.marketing_api_access_token = form.marketing_api_access_token;
+    }
 
-    payload.marketing_api_access_token = form.marketing_api_access_token;
-    payload.app_secret_key = form.app_secret_key;
+    if (form.app_secret_key !== editingData.app_secret_key) {
+      if (!isUpdateMode) {
+        payload.fb_account_id = form.fb_account_id;
+      } else {
+        payload.fb_account_id = editingData.fb_account?.id;
+      }
+      payload.app_secret_key = form.app_secret_key;
+    }
+
+    // payload.marketing_api_access_token = form.marketing_api_access_token;
+    // payload.app_secret_key = form.app_secret_key;
 
     if (
       form.fb_account_id !== editingData.fb_account?.id &&
@@ -195,10 +213,10 @@ export function ManageApProfilesTableContainer({
       payload.remarks = form.remarks;
     }
 
-    if (!isUpdateMode) {
-      payload.fb_account_id = form.fb_account_id;
-    } else {
-      payload.fb_account_id = editingData.fb_account?.id;
+    // cleanups
+    if (payload.new_fb_account_id == 0) {
+      delete payload["marketing_api_access_token"];
+      delete payload["app_secret_key"];
     }
 
     return payload;
@@ -208,7 +226,7 @@ export function ManageApProfilesTableContainer({
     ev.preventDefault();
     const isUpdateMode = Object.keys(editingData).length >= 1;
 
-    const payload = buildPayload(isUpdateMode);
+    const payload = buildPayload(isUpdateMode, editingData);
     setIsSubmitInProgress(true);
 
     const response = isUpdateMode
@@ -267,45 +285,22 @@ export function ManageApProfilesTableContainer({
     resetForm();
   };
 
-  const getTokens = async (params: {
-    app_secret_key?: string;
-    marketing_api_access_token?: string;
-  }) => {
-    const tokens: any = {};
-    const { app_secret_key, marketing_api_access_token } = params;
-    const sensitiveData: any = {
-      app_secret_key,
-      marketing_api_access_token,
-    };
-
-    for (const prop of Object.keys(sensitiveData)) {
-      const value = sensitiveData[prop];
-      if (value) {
-        const { isSuccess, encryptedData, message } = await decipher.encrypt({
-          data: value, // Decrypt
-        });
-        tokens[prop] = isSuccess ? encryptedData : message;
-      }
-    }
-
-    return tokens;
-  };
-
   const handleUpdateEntry = async (
     response: ApiResponseProps,
     payload: any
   ) => {
-    const tokens = await getTokens({
-      app_secret_key: payload.app_secret_key,
-      marketing_api_access_token: payload.marketing_api_access_token,
-    });
+    // const tokens = await getTokens({
+    //   app_secret_key: payload.app_secret_key,
+    //   marketing_api_access_token: payload.marketing_api_access_token,
+    //   type: "encrypt",
+    // });
 
-    const marketingApiAccessToken = tokens["marketing_api_access_token"]
-      ? tokens["marketing_api_access_token"]
-      : form.marketing_api_access_token;
-    const appSecretKey = tokens["app_secret_key"]
-      ? tokens["app_secret_key"]
-      : form.app_secret_key;
+    // const marketingApiAccessToken = tokens["marketing_api_access_token"]
+    //   ? tokens["marketing_api_access_token"]
+    //   : form.marketing_api_access_token;
+    // const appSecretKey = tokens["app_secret_key"]
+    //   ? tokens["app_secret_key"]
+    //   : form.app_secret_key;
 
     setTableData((prevData: Profile[]) =>
       prevData.map((item) => {
@@ -319,31 +314,38 @@ export function ManageApProfilesTableContainer({
           "marketing_api_access_token" in payload;
         const hasAppSecretKey = "app_secret_key" in payload;
 
-        // if has set new fb account in payload use response to propagate
-        // if has marketing api access token in payload destructure and modify the marketing_api_access_token
+        // if has set new fb account in payload, use response to propagate.
+        // if has marketing api access token in payload, destructure and modify the marketing_api_access_token and app_secret_key.
+        let fbAccount: any = {};
+        if (hasSetNewFbAccount) {
+          fbAccount = response.data[0].fb_account;
+        }
+
+        if (hasMarketingApiAccessToken || hasAppSecretKey) {
+          fbAccount = {
+            ...fbAccount,
+            marketing_api_access_token:
+              response.data[0].marketing_api_access_token,
+            app_secret_key: response.data[0].app_secret_key,
+          };
+        }
+
+        if ((!hasRemovedFbAccount && !hasSetNewFbAccount) || hasOnlyRemarks) {
+          fbAccount = { ...item.fb_account, ...fbAccount };
+        }
+
         const output =
           item.id === editingData.id
             ? {
                 ...item,
                 ...form,
-                fb_account: hasSetNewFbAccount
-                  ? response.data[0].fb_account
-                  : hasMarketingApiAccessToken || hasAppSecretKey
-                  ? {
-                      ...item.fb_account,
-                      marketing_api_access_token: marketingApiAccessToken,
-                      app_secret_key: appSecretKey,
-                    }
-                  : !hasRemovedFbAccount || hasOnlyRemarks
-                  ? item.fb_account
-                  : {},
+                fb_account: fbAccount,
                 status:
                   hasSetNewFbAccount || hasRemovedFbAccount
                     ? response.data[0].status
                     : item.status,
               }
             : item;
-
         return output;
       })
     );
@@ -351,28 +353,19 @@ export function ManageApProfilesTableContainer({
   };
 
   const handleEditChange = async (id: number | null) => {
-    const tokens: any = {};
     const selectedProfile = tableData.find(
       (data: { id: number }) => data.id === id
     ) as any;
 
-    if (selectedProfile.fb_account) {
-      const { app_secret_key, marketing_api_access_token } =
-        selectedProfile.fb_account;
-      const sensitiveData: any = {
-        app_secret_key,
-        marketing_api_access_token,
-      };
+    let tokens: any = {};
 
-      for (const prop of Object.keys(sensitiveData)) {
-        const value = sensitiveData[prop];
-        if (value) {
-          const { isSuccess, decryptedData, message } = await decipher.decrypt({
-            data: value, // Decrypt
-          });
-          tokens[prop] = isSuccess ? decryptedData : message;
-        }
-      }
+    if (selectedProfile.fb_account) {
+      tokens = await getTokens({
+        app_secret_key: selectedProfile.fb_account.app_secret_key,
+        marketing_api_access_token:
+          selectedProfile.fb_account.marketing_api_access_token,
+        type: "decrypt",
+      });
     }
 
     setEditingData({
@@ -453,6 +446,7 @@ export function ManageApProfilesTableContainer({
         editingData={editingData}
         handleSubmit={handleSubmit}
         handleInputChange={handleInputChange}
+        handleModifyEditingData={handleModifyEditingData}
         isActionDisabled={isSubmitInProgress}
         hasAccessToMarketingApiAccessToken={hasAccessToMarketingApiAccessToken}
       />
@@ -503,3 +497,42 @@ export function ManageApProfilesTableContainer({
     </>
   );
 }
+
+export const getTokens = async (params: {
+  app_secret_key?: string;
+  marketing_api_access_token?: string;
+  type: "encrypt" | "decrypt";
+}) => {
+  const decipher = new CryptoClientService();
+  const tokens: any = {};
+
+  const { app_secret_key, marketing_api_access_token } = params;
+  const sensitiveData: any = {
+    app_secret_key,
+    marketing_api_access_token,
+  };
+
+  if (params.type === "encrypt") {
+    for (const prop of Object.keys(sensitiveData)) {
+      const value = sensitiveData[prop];
+      if (value) {
+        const { isSuccess, encryptedData, message } = await decipher.encrypt({
+          data: value, // Decrypt
+        });
+        tokens[prop] = isSuccess ? encryptedData : message;
+      }
+    }
+  } else {
+    for (const prop of Object.keys(sensitiveData)) {
+      const value = sensitiveData[prop];
+      if (value) {
+        const { isSuccess, decryptedData, message } = await decipher.decrypt({
+          data: value, // Decrypt
+        });
+        tokens[prop] = isSuccess ? decryptedData : message;
+      }
+    }
+  }
+
+  return tokens;
+};

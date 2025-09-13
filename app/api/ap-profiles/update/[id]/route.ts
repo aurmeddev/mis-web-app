@@ -153,6 +153,13 @@ export const PUT = async (
     });
 
     let getFbAccountInfo: any = {};
+    const customSearchParams = new URLSearchParams();
+    customSearchParams.set("method", "find-one");
+
+    const fbAccountId = hasNewAssignedFbAccount
+      ? prop.new_fb_account_id
+      : prop.fb_account_id;
+
     if (
       (isMarketingApiAccessTokenValid && !hasFbAccountRemoved) ||
       (isAppSecretKeyValid && !hasFbAccountRemoved)
@@ -160,9 +167,6 @@ export const PUT = async (
       console.log(
         "Naay changes sa AP profile info ug sa app_secret_key or marketing_api_access_token"
       );
-      const fbAccountId = hasNewAssignedFbAccount
-        ? prop.new_fb_account_id
-        : prop.fb_account_id;
 
       if (typeof fbAccountId !== "number" || isNaN(fbAccountId)) {
         return NextResponse.json(
@@ -195,11 +199,31 @@ export const PUT = async (
 
       const { status, ...rest } = data[0];
       getFbAccountInfo = rest.fb_account;
+    } else {
+      const fbs = new FbAccountsServerService();
+      const { isSuccess, data, message } = await fbs.find({
+        searchKeyword: "validation",
+        requestUrlSearchParams: customSearchParams,
+        payload: {
+          id: fbAccountId,
+        },
+      });
+
+      if (!isSuccess) {
+        NextResponse.json(
+          {
+            isSuccess,
+            message,
+            data,
+          },
+          { status: 400 }
+        );
+      }
+
+      getFbAccountInfo = formatFbAccountInfo(data);
     }
 
     const aps = new ApProfilesServerService();
-    const customSearchParams = new URLSearchParams();
-    customSearchParams.set("method", "find-one");
     const { data } = await aps.find({
       searchKeyword: "validation",
       requestUrlSearchParams: customSearchParams,
@@ -403,33 +427,35 @@ const updateAppSecretKeyAccessToken = async (
     };
   }
 
-  const formattedFbAccountInfo = fbAccountInfoResult.data.map(
-    (element: any) => {
-      const {
-        id,
-        fb_owner_name,
-        username,
-        app_secret_key,
-        marketing_api_access_token,
-      } = element;
-      return {
-        id,
-        fb_owner_name,
-        username,
-        app_secret_key,
-        marketing_api_access_token,
-      };
-    }
-  );
-
   return {
     isSuccess: true,
     message: "The access token have been updated successfully.",
     data: [
       {
-        fb_account: { ...formattedFbAccountInfo[0] },
+        fb_account: formatFbAccountInfo(data),
         status: "active", // Returns profile's status
       },
     ],
   };
+};
+
+const formatFbAccountInfo = (data: any) => {
+  const formattedFbAccountInfo = data.map((element: any) => {
+    const {
+      id,
+      fb_owner_name,
+      username,
+      app_secret_key,
+      marketing_api_access_token,
+    } = element;
+    return {
+      id,
+      fb_owner_name,
+      username,
+      app_secret_key,
+      marketing_api_access_token,
+    };
+  });
+
+  return { ...formattedFbAccountInfo[0] };
 };

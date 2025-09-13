@@ -26,17 +26,6 @@ export const PUT = async (
   const data: UpdateApProfilesProps = await request.json();
   const { id, marketing_api_access_token, app_secret_key, ...prop } = data;
 
-  if (!prop.profile_name) {
-    return NextResponse.json(
-      {
-        isSuccess: false,
-        message: "Profile name is missing.",
-        data: [],
-      },
-      { status: 400 }
-    );
-  }
-
   const isMarketingApiAccessTokenValid =
     marketing_api_access_token !== undefined &&
     marketing_api_access_token !== null;
@@ -353,7 +342,7 @@ const hasOnlyTheAppSecretKeyOrAccessTokenChanged = (
     hasNewAssignedFbAccount &&
     (isAppSecretKeyValid || isMarketingApiAccessTokenValid)
   ) {
-    return false; // The assigned FB account, app secret key, or access token has changed.
+    return false; // The assigned FB account and app secret key/access token changed.
   }
 
   if (

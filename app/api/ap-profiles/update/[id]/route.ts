@@ -429,7 +429,7 @@ const updateAppSecretKeyAccessToken = async (
     data: [
       {
         fb_account_id: fbAccountId,
-        fb_account: formattedFbAccountInfo,
+        fb_account: { ...formattedFbAccountInfo[0] },
         status: "active", // Returns profile's status
       },
     ],

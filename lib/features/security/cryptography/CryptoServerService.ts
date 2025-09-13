@@ -87,6 +87,8 @@ export class CryptoServerService {
           data: String(value),
         });
         result[prop] = isSuccess ? encryptedData : message;
+      } else {
+        result[prop] = "";
       }
     }
 
@@ -102,6 +104,8 @@ export class CryptoServerService {
           data: String(value),
         });
         result[prop] = isSuccess ? decryptedData : message;
+      } else {
+        result[prop] = "";
       }
     }
 

@@ -406,13 +406,30 @@ const updateAppSecretKeyAccessToken = async (
     };
   }
 
+  const formattedFbAccountInfo = fbAccountInfoResult.data.map(
+    (element: any) => {
+      const {
+        fb_owner_name,
+        username,
+        app_secret_key,
+        marketing_api_access_token,
+      } = element;
+      return {
+        fb_owner_name,
+        username,
+        app_secret_key,
+        marketing_api_access_token,
+      };
+    }
+  );
+
   return {
     isSuccess: true,
     message: "The access token have been updated successfully.",
     data: [
       {
         fb_account_id: fbAccountId,
-        fb_account: { ...fbAccountInfoResult.data[0] },
+        fb_account: formattedFbAccountInfo,
         status: "active", // Returns profile's status
       },
     ],

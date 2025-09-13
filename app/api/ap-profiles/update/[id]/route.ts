@@ -241,7 +241,7 @@ export const PUT = async (
     return NextResponse.json(
       {
         isSuccess: true,
-        message: "Data have been updated successfully.",
+        message: "Data has been updated successfully.",
         data: response,
       },
       { status: 201 }

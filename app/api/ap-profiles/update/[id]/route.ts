@@ -2,7 +2,6 @@ import { query } from "@/database/dbConnection";
 import { ApProfilesServerService } from "@/lib/features/ap-profiles/ApProfilesServerService";
 import { UpdateApProfilesProps } from "@/lib/features/ap-profiles/type/ApProfilesProps";
 import { FbAccountsServerService } from "@/lib/features/fb-accounts/FbAccountsServerService";
-import { CryptoServerService } from "@/lib/features/security/cryptography/CryptoServerService";
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { MySqlUtils } from "@/lib/utils/mysql/MySqlUtils";
 import { NextResponse, NextRequest } from "next/server";
@@ -11,16 +10,16 @@ export const PUT = async (
   { params }: { params: Promise<{ id: string }> }
 ) => {
   // Check if the user session is valid before processing the request
-  const session = await getSession();
-  if (!session) {
-    return NextResponse.json(
-      {
-        isSuccess: false,
-        message: "Session expired or invalid",
-      },
-      { status: 403 }
-    );
-  }
+  // const session = await getSession();
+  // if (!session) {
+  //   return NextResponse.json(
+  //     {
+  //       isSuccess: false,
+  //       message: "Session expired or invalid",
+  //     },
+  //     { status: 403 }
+  //   );
+  // }
 
   const profileId = `${(await params).id}`;
   const data: UpdateApProfilesProps = await request.json();
@@ -406,13 +405,14 @@ const updateAppSecretKeyAccessToken = async (
       data: [],
     };
   }
+
   return {
     isSuccess: true,
     message: "The access token have been updated successfully.",
     data: [
       {
         fb_account_id: fbAccountId,
-        fb_account: { ...fbAccountInfoResult.data[0].fb_account },
+        fb_account: { ...fbAccountInfoResult.data[0] },
         status: "active", // Returns profile's status
       },
     ],

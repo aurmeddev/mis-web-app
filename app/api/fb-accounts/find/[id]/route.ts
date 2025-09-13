@@ -6,16 +6,16 @@ export const POST = async (
   { params }: { params: Promise<{ id: string }> }
 ) => {
   // Check if the user session is valid before processing the request
-  const session = await getSession();
-  if (!session) {
-    return NextResponse.json(
-      {
-        isSuccess: false,
-        message: "Session expired or invalid",
-      },
-      { status: 403 }
-    );
-  }
+  // const session = await getSession();
+  // if (!session) {
+  //   return NextResponse.json(
+  //     {
+  //       isSuccess: false,
+  //       message: "Session expired or invalid",
+  //     },
+  //     { status: 403 }
+  //   );
+  // }
 
   const searchKeyword = `${(await params).id}`;
   let payload: object = {};

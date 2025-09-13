@@ -25,6 +25,7 @@ import { Loader2, X } from "lucide-react";
 import { ApProfilesService } from "@/lib/features/ap-profiles/ApProfilesService";
 import { AssignFBSearchResults } from "../search/AssignFBSearchResults";
 import { SearchWrapper } from "../search/SearchWrapper";
+import { getTokens } from "../table/ManageApProfilesTableContainer";
 
 type ManageApProfilesDialogProps = {
   form: any;
@@ -34,6 +35,10 @@ type ManageApProfilesDialogProps = {
   editingData: any;
   handleSubmit: (ev: FormEvent<HTMLFormElement>) => void;
   handleInputChange: (name: string, value: string | number) => void;
+  handleModifyEditingData: (params: {
+    marketing_api_access_token?: string;
+    app_secret_key?: string;
+  }) => void;
   isActionDisabled: boolean;
   hasAccessToMarketingApiAccessToken: boolean;
 };
@@ -46,6 +51,7 @@ export function ManageApProfilesDialog({
   editingData,
   handleSubmit,
   handleInputChange,
+  handleModifyEditingData,
   isActionDisabled,
   hasAccessToMarketingApiAccessToken,
 }: ManageApProfilesDialogProps) {
@@ -105,16 +111,24 @@ export function ManageApProfilesDialog({
     }
   };
 
-  const handleSelectItem = (item: any) => {
+  const handleSelectItem = async (item: any) => {
+    const tokens = await getTokens({
+      app_secret_key: item.app_secret_key,
+      marketing_api_access_token: item.marketing_api_access_token,
+      type: "decrypt",
+    });
+
     setSearchQuery((prevState: any) => ({
       ...prevState,
       query: "",
       selectedResult: item,
     }));
+    handleInputChange("app_secret_key", tokens.app_secret_key);
     handleInputChange(
       "marketing_api_access_token",
-      item.marketing_api_access_token
+      tokens.marketing_api_access_token
     );
+    handleModifyEditingData({ ...tokens });
     handleInputChange("fb_account_id", item.id);
     setShowResults(false);
   };
@@ -162,6 +176,7 @@ export function ManageApProfilesDialog({
     if (open) handleClose();
   }, [open]);
 
+  //identify if editingData has existing fb account data
   useEffect(() => {
     const fbAccount = editingData.fb_account;
     const validFbAccount =
@@ -170,7 +185,7 @@ export function ManageApProfilesDialog({
       ...prevState,
       selectedResult: validFbAccount,
     }));
-  }, [editingData]);
+  }, [editingData.fb_account]);
 
   const isUpdateMode = Object.keys(editingData).length >= 1;
 

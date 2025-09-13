@@ -105,7 +105,9 @@ export function ManageApProfilesTable({
         )}
 
         {data.map((rowData: any, idx: number) => {
-          const hasFbAccount = Object.keys(rowData.fb_account).length >= 1;
+          const fbAccount = rowData.fb_account;
+          const hasFbAccountNames =
+            "fb_owner_name" in fbAccount || "username" in fbAccount;
           return (
             <TableRow key={idx}>
               <TableCell className="border-r font-medium text-sm max-w-[10%]">
@@ -115,7 +117,7 @@ export function ManageApProfilesTable({
                 {rowData.profile_name}
               </TableCell>
               <TableCell className="border-r text-sm">
-                {hasFbAccount && (
+                {hasFbAccountNames && (
                   <div className="flex flex-col">
                     <div className="flex gap-2 items-center">
                       <div className="text-muted-foreground text-xs">

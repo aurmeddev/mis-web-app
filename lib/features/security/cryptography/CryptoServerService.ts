@@ -77,4 +77,34 @@ export class CryptoServerService {
       };
     }
   }
+
+  async encryptObjectData<T>(params: { [key: string]: T }) {
+    const result: Record<string, any> = {};
+    for (const prop of Object.keys(params)) {
+      const value = params[prop];
+      if (value) {
+        const { isSuccess, encryptedData, message } = await this.encrypt({
+          data: String(value),
+        });
+        result[prop] = isSuccess ? encryptedData : message;
+      }
+    }
+
+    return result;
+  }
+
+  async decryptObjectData<T>(params: { [key: string]: T }) {
+    const result: Record<string, any> = {};
+    for (const prop of Object.keys(params)) {
+      const value = params[prop];
+      if (value) {
+        const { isSuccess, decryptedData, message } = await this.decrypt({
+          data: String(value),
+        });
+        result[prop] = isSuccess ? decryptedData : message;
+      }
+    }
+
+    return result;
+  }
 }

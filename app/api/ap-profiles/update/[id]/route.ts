@@ -2,6 +2,7 @@ import { query } from "@/database/dbConnection";
 import { ApProfilesServerService } from "@/lib/features/ap-profiles/ApProfilesServerService";
 import { UpdateApProfilesProps } from "@/lib/features/ap-profiles/type/ApProfilesProps";
 import { FbAccountsServerService } from "@/lib/features/fb-accounts/FbAccountsServerService";
+import { CryptoServerService } from "@/lib/features/security/cryptography/CryptoServerService";
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { MySqlUtils } from "@/lib/utils/mysql/MySqlUtils";
 import { NextResponse, NextRequest } from "next/server";
@@ -25,69 +26,80 @@ export const PUT = async (
   const data: UpdateApProfilesProps = await request.json();
   const { id, marketing_api_access_token, app_secret_key, ...prop } = data;
 
+  if (!prop.profile_name) {
+    return NextResponse.json(
+      {
+        isSuccess: false,
+        message: "Profile name is missing.",
+        data: [],
+      },
+      { status: 400 }
+    );
+  }
+
   const isMarketingApiAccessTokenValid =
     marketing_api_access_token !== undefined &&
     marketing_api_access_token !== null;
   const isAppSecretKeyValid =
     app_secret_key !== undefined && app_secret_key !== null;
-  const fbs = new FbAccountsServerService();
+
+  const hasFbAccountRemoved = prop.new_fb_account_id === 0;
+  const hasNewAssignedFbAccount =
+    typeof prop.new_fb_account_id == "number" && prop.new_fb_account_id !== 0;
+
   if (
     hasOnlyTheAppSecretKeyOrAccessTokenChanged({
-      ...prop,
+      profile_name: prop.profile_name,
+      new_profile_name: prop.new_profile_name,
+      remarks: prop.remarks,
+      hasFbAccountRemoved,
+      hasNewAssignedFbAccount,
       isMarketingApiAccessTokenValid,
       isAppSecretKeyValid,
     })
   ) {
-    const token: Record<string, any> = {};
-    let getFbAccountInfo: Record<string, any> = {};
     console.log(
       "Ang app_secret_key or marketing_api_access_token ang naay changes"
     );
-    if (isMarketingApiAccessTokenValid) {
-      token.marketing_api_access_token = marketing_api_access_token;
-    }
-    if (isAppSecretKeyValid) {
-      token.app_secret_key = app_secret_key;
-    }
-    // Update Fb Account's marketing api acccess token
-    const addAccessToken = await fbs.update({
-      id: Number(prop.new_fb_account_id) || prop.fb_account_id,
-      ...token,
-    });
 
-    if (!addAccessToken.isSuccess) {
-      NextResponse.json(
+    const fbAccountId = hasNewAssignedFbAccount
+      ? prop.new_fb_account_id
+      : prop.fb_account_id;
+
+    if (typeof fbAccountId !== "number" || isNaN(fbAccountId)) {
+      return NextResponse.json(
         {
-          isSuccess: addAccessToken.isSuccess,
-          message: addAccessToken.message,
+          isSuccess: false,
+          message: "Invalid Facebook Account ID.",
           data: [],
         },
         { status: 400 }
       );
     }
 
-    const customSearchParams = new URLSearchParams();
-    customSearchParams.set("method", "find-one");
-    const { data } = await fbs.find({
-      searchKeyword: "validation",
-      requestUrlSearchParams: customSearchParams,
-      payload: { id: Number(prop.new_fb_account_id) || prop.fb_account_id },
+    // Update Fb Account's app secret key or marketing api acccess token
+    const { isSuccess, data, message } = await updateAppSecretKeyAccessToken({
+      fbAccountId: fbAccountId,
+      app_secret_key,
+      marketing_api_access_token,
     });
 
-    getFbAccountInfo = data[0];
+    if (!isSuccess) {
+      NextResponse.json(
+        {
+          isSuccess,
+          message,
+          data,
+        },
+        { status: 400 }
+      );
+    }
 
-    const response = [
-      {
-        fb_account_id: prop.new_fb_account_id ?? prop.fb_account_id,
-        fb_account: getFbAccountInfo,
-        status: "active",
-      },
-    ];
     return NextResponse.json(
       {
         isSuccess: true,
         message: "The access token have been updated successfully.",
-        data: response,
+        data: data,
       },
       { status: 201 }
     );
@@ -111,17 +123,16 @@ export const PUT = async (
   // Check if there's any changes on the ap profile info
 
   const payload: { [key: string]: any } = {};
-  const hasFbAccountRemoved = prop.new_fb_account_id === 0;
-  const hasProfileAssignedNewFbAccount =
-    prop.new_fb_account_id && prop.fb_account_id !== prop.new_fb_account_id;
   const hasProfileNameChanged =
-    prop.new_profile_name && prop.profile_name !== prop.new_profile_name;
+    typeof prop.profile_name == "string" &&
+    typeof prop.new_profile_name == "string" &&
+    prop.profile_name !== prop.new_profile_name;
 
   if (hasFbAccountRemoved) {
     // Remove FB Account from the AP Profile
     payload.fb_account_id = 0;
     payload.is_active = 0; // Set status to available
-  } else if (hasProfileAssignedNewFbAccount) {
+  } else if (hasNewAssignedFbAccount) {
     payload.fb_account_id = prop.new_fb_account_id;
     payload.is_active = 1; // Set status to active
   }
@@ -154,56 +165,53 @@ export const PUT = async (
     });
 
     let getFbAccountInfo: any = {};
-    const customSearchParams = new URLSearchParams();
-    customSearchParams.set("method", "find-one");
-    if ((prop.new_fb_account_id ?? 0) > 0) {
-      const { data } = await fbs.find({
-        searchKeyword: "validation",
-        requestUrlSearchParams: customSearchParams,
-        payload: { id: prop.new_fb_account_id },
-      });
-
-      getFbAccountInfo = data[0];
-    }
-
     if (
       (isMarketingApiAccessTokenValid && !hasFbAccountRemoved) ||
       (isAppSecretKeyValid && !hasFbAccountRemoved)
     ) {
-      const token: Record<string, any> = {};
       console.log(
         "Naay changes sa AP profile info ug sa app_secret_key or marketing_api_access_token"
       );
-      if (isMarketingApiAccessTokenValid) {
-        token.marketing_api_access_token = marketing_api_access_token;
-      }
-      if (isAppSecretKeyValid) {
-        token.app_secret_key = app_secret_key;
-      }
-      // Update marketing api acccess token in Fb Account
-      const fbAccountId = hasProfileAssignedNewFbAccount
-        ? Number(prop.new_fb_account_id)
+      const fbAccountId = hasNewAssignedFbAccount
+        ? prop.new_fb_account_id
         : prop.fb_account_id;
-      const addAccessToken = await fbs.update({
-        id: fbAccountId,
-        ...token,
-      });
 
-      if (!addAccessToken.isSuccess) {
-        NextResponse.json(
+      if (typeof fbAccountId !== "number" || isNaN(fbAccountId)) {
+        return NextResponse.json(
           {
-            isSuccess: addAccessToken.isSuccess,
-            message: addAccessToken.message,
+            isSuccess: false,
+            message: "Invalid Facebook Account ID.",
             data: [],
           },
           { status: 400 }
         );
       }
 
-      getFbAccountInfo = { ...getFbAccountInfo, ...token };
+      // Update Fb Account's app secret key or marketing api acccess token
+      const { isSuccess, data, message } = await updateAppSecretKeyAccessToken({
+        fbAccountId: fbAccountId,
+        app_secret_key,
+        marketing_api_access_token,
+      });
+
+      if (!isSuccess) {
+        NextResponse.json(
+          {
+            isSuccess,
+            message,
+            data,
+          },
+          { status: 400 }
+        );
+      }
+
+      const { status, ...tokens } = data[0];
+      getFbAccountInfo = tokens;
     }
 
     const aps = new ApProfilesServerService();
+    const customSearchParams = new URLSearchParams();
+    customSearchParams.set("method", "find-one");
     const { data } = await aps.find({
       searchKeyword: "validation",
       requestUrlSearchParams: customSearchParams,
@@ -214,8 +222,10 @@ export const PUT = async (
 
     const response = [
       {
-        fb_account_id: prop.new_fb_account_id ?? prop.fb_account_id,
-        fb_account: getFbAccountInfo || {},
+        fb_account_id: hasNewAssignedFbAccount
+          ? prop.new_fb_account_id
+          : prop.fb_account_id,
+        fb_account: getFbAccountInfo,
         status: data[0].status,
       },
     ];
@@ -319,8 +329,8 @@ type IsOnlyMarketingApiTokenChangedProps = {
   profile_name?: string;
   new_profile_name?: string;
   remarks?: string;
-  fb_account_id: number;
-  new_fb_account_id?: number;
+  hasFbAccountRemoved: boolean;
+  hasNewAssignedFbAccount: boolean;
   isMarketingApiAccessTokenValid: boolean;
   isAppSecretKeyValid: boolean;
 };
@@ -328,37 +338,84 @@ const hasOnlyTheAppSecretKeyOrAccessTokenChanged = (
   params: IsOnlyMarketingApiTokenChangedProps
 ) => {
   const {
-    fb_account_id,
-    new_fb_account_id,
+    hasFbAccountRemoved,
+    hasNewAssignedFbAccount,
     isMarketingApiAccessTokenValid,
     isAppSecretKeyValid,
     ...rest
   } = params;
 
-  const hasAssignedFbAccountOnly =
-    new_fb_account_id !== 0 &&
-    (!isMarketingApiAccessTokenValid || !isAppSecretKeyValid);
-  if (hasAssignedFbAccountOnly) {
-    return false;
-  }
-
-  const hasFbAccountRemoved = new_fb_account_id === 0;
   if (hasFbAccountRemoved) {
-    return false;
-  }
-
-  const hasChanged = Object.values(rest).some(
-    (value: any) => value !== undefined && value !== null
-  );
-
-  if (hasChanged) {
-    return false;
+    return false; // The FB account from the profile has removed.
   }
 
   if (
-    (isMarketingApiAccessTokenValid || isAppSecretKeyValid) &&
-    (fb_account_id || new_fb_account_id)
+    hasNewAssignedFbAccount &&
+    (isAppSecretKeyValid || isMarketingApiAccessTokenValid)
   ) {
-    return true;
+    return false; // The assigned FB account, app secret key, or access token has changed.
   }
+
+  if (
+    Object.values(rest).some(
+      (value: any) => value !== undefined && value !== null
+    )
+  ) {
+    return false; // Either the profile name or the remarks have changed.
+  }
+
+  if (!isAppSecretKeyValid && !isMarketingApiAccessTokenValid) {
+    return false;
+  }
+
+  return true;
+};
+
+type UpdateAppSecretKeyAccessTokenProps = {
+  fbAccountId: number;
+  marketing_api_access_token: string | null | undefined;
+  app_secret_key: string | null | undefined;
+};
+const updateAppSecretKeyAccessToken = async (
+  params: UpdateAppSecretKeyAccessTokenProps
+) => {
+  const { fbAccountId, ...rest } = params;
+  const payload: Record<string, any> = {};
+
+  type RestKeys = keyof typeof rest;
+  for (const prop of Object.keys(rest) as RestKeys[]) {
+    const value = rest[prop];
+    if (value !== undefined && value !== null) {
+      payload[prop] = value;
+    }
+  }
+
+  const fbs = new FbAccountsServerService();
+  // Update Fb Account's app secret key or marketing api acccess token
+  const { isSuccess, data, message } = await fbs.update({
+    id: fbAccountId,
+    ...payload,
+  });
+
+  if (!isSuccess) {
+    return { isSuccess, data, message };
+  }
+
+  // Encrypt app_secret_key or marketing_api_access_token
+  const cipher = new CryptoServerService();
+  const encryptionResult = await cipher.encryptObjectData({
+    ...payload,
+  });
+
+  return {
+    isSuccess: true,
+    message: "The access token have been updated successfully.",
+    data: [
+      {
+        fb_account_id: fbAccountId,
+        fb_account: encryptionResult,
+        status: "active", // Returns profile's status
+      },
+    ],
+  };
 };

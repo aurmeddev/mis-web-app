@@ -10,16 +10,16 @@ export const PUT = async (
   { params }: { params: Promise<{ id: string }> }
 ) => {
   // Check if the user session is valid before processing the request
-  // const session = await getSession();
-  // if (!session) {
-  //   return NextResponse.json(
-  //     {
-  //       isSuccess: false,
-  //       message: "Session expired or invalid",
-  //     },
-  //     { status: 403 }
-  //   );
-  // }
+  const session = await getSession();
+  if (!session) {
+    return NextResponse.json(
+      {
+        isSuccess: false,
+        message: "Session expired or invalid",
+      },
+      { status: 403 }
+    );
+  }
 
   const profileId = `${(await params).id}`;
   const data: UpdateApProfilesProps = await request.json();
@@ -193,8 +193,8 @@ export const PUT = async (
         );
       }
 
-      const { status, ...tokens } = data[0];
-      getFbAccountInfo = tokens;
+      const { status, ...rest } = data[0];
+      getFbAccountInfo = rest.fb_account;
     }
 
     const aps = new ApProfilesServerService();

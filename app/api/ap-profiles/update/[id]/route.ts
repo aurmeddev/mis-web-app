@@ -210,9 +210,6 @@ export const PUT = async (
 
     const response = [
       {
-        fb_account_id: hasNewAssignedFbAccount
-          ? prop.new_fb_account_id
-          : prop.fb_account_id,
         fb_account: getFbAccountInfo,
         status: data[0].status,
       },
@@ -409,12 +406,14 @@ const updateAppSecretKeyAccessToken = async (
   const formattedFbAccountInfo = fbAccountInfoResult.data.map(
     (element: any) => {
       const {
+        id,
         fb_owner_name,
         username,
         app_secret_key,
         marketing_api_access_token,
       } = element;
       return {
+        id,
         fb_owner_name,
         username,
         app_secret_key,
@@ -428,7 +427,6 @@ const updateAppSecretKeyAccessToken = async (
     message: "The access token have been updated successfully.",
     data: [
       {
-        fb_account_id: fbAccountId,
         fb_account: { ...formattedFbAccountInfo[0] },
         status: "active", // Returns profile's status
       },

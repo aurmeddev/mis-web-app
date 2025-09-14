@@ -1,3 +1,4 @@
+import { PaginationProps } from "@/lib/utils/pagination/type/PaginationProps";
 import { BaseSearchKeywordProps } from "../../search-keyword/type/SearchKeywordProps";
 
 type BaseDomainManagerServiceProps = {
@@ -11,11 +12,14 @@ type UpdateDomainManagerServiceProps = BaseDomainManagerServiceProps & {
 type FindDomainManagerServiceProps = BaseSearchKeywordProps;
 
 type ToggleDomainManagerServiceStatusProps = { id: number; is_active: 0 | 1 };
-
+type GetAllDomainManagerServiceProps = Omit<PaginationProps, "total_pages"> & {
+  status?: "active" | "inactive";
+};
 export type {
   PostDomainManagerServiceProps,
   BaseDomainManagerServiceProps,
   UpdateDomainManagerServiceProps,
   FindDomainManagerServiceProps,
   ToggleDomainManagerServiceStatusProps,
+  GetAllDomainManagerServiceProps,
 };

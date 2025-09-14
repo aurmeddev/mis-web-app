@@ -4,15 +4,17 @@ import {
   FindDomainManagerServiceProps,
   UpdateDomainManagerServiceProps,
   ToggleDomainManagerServiceStatusProps,
+  GetAllDomainManagerServiceProps,
 } from "./type/DomainManagerServiceProps";
 import { ApiResponseProps } from "@/database/dbConnection";
 import { SearchParamsManager } from "@/lib/utils/search-params/SearchParamsManager";
+import { PaginationProps } from "@/lib/utils/pagination/type/PaginationProps";
 
 export class DomainManagerClientService {
   async post(params: PostDomainManagerServiceProps): Promise<ApiResponseProps> {
     try {
       const response = await fetch(
-        `${appBaseUrl}/api/ads-managerdomains/post`,
+        `${appBaseUrl}/api/ads-manager/domains/post`,
         {
           method: "POST",
           headers: {
@@ -86,6 +88,25 @@ export class DomainManagerClientService {
           "Content-type": "application/json",
         },
         body: JSON.stringify(payload),
+      }
+    );
+
+    return await response.json();
+  }
+
+  async getAll(
+    params: GetAllDomainManagerServiceProps
+  ): Promise<ApiResponseProps & { pagination?: PaginationProps }> {
+    const searchParams = new SearchParamsManager();
+    const searchQueryParams = searchParams.append(params);
+    const response = await fetch(
+      `${appBaseUrl}/api/ads-manager/domains/get-all${searchQueryParams}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-type": "application/json",
+        },
+        cache: "no-store",
       }
     );
 

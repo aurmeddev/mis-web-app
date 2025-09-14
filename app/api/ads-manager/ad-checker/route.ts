@@ -146,7 +146,7 @@ function formatCampaigns(data: any) {
         ad_account_name: name,
         account_status,
         disable_reason,
-        ad_status: {
+        ad_checker_summary: {
           code: 404,
           message: ["No adsets found."],
         },

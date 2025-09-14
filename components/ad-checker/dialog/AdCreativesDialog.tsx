@@ -18,7 +18,7 @@ type Props = {
   handleOpen: (open: boolean) => void;
 };
 
-export function AdCheckerDialog({ adCreatives, open, handleOpen }: Props) {
+export function AdCreativesDialog({ adCreatives, open, handleOpen }: Props) {
   const [images, setImages] = useState<Record<number, string>>({});
 
   useEffect(() => {

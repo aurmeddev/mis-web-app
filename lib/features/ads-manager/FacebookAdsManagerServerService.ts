@@ -200,8 +200,8 @@ export class FacebookAdsManagerServerService {
                   domain: newSetOfDomains,
                 });
                 restOfAdsets.domain = domainValidationResult.domain;
-                restOfAdsets.ad_checker_status_result = {
-                  ...restOfAdsets.ad_checker_status_result,
+                restOfAdsets.ad_checker_status_details = {
+                  ...restOfAdsets.ad_checker_status_details,
                   domain_status: domainValidationResult.message,
                 };
                 restOfAdsets.adcreatives = adcreativesResult.filter(
@@ -226,17 +226,17 @@ export class FacebookAdsManagerServerService {
                   ? `Exceeded ($${this.maximumDailyBudget}) daily budget amount.`
                   : "OK";
 
-              restOfAdsets.ad_checker_status_result = {
-                ...restOfAdsets.ad_checker_status_result,
+              restOfAdsets.ad_checker_status_details = {
+                ...restOfAdsets.ad_checker_status_details,
                 ...statuses,
               };
 
               const flag_message = Object.values(
-                restOfAdsets.ad_checker_status_result
+                restOfAdsets.ad_checker_status_details
               ).filter((value) => value !== "OK");
 
-              const ad_status = Object.values(
-                restOfAdsets.ad_checker_status_result
+              const ad_checker_summary = Object.values(
+                restOfAdsets.ad_checker_status_details
               ).every((value) => value === "OK")
                 ? { code: 200, message: ["Everything is OK!"] } // Everything is OK!
                 : { code: 500, message: flag_message }; // Flag suspicious
@@ -252,7 +252,7 @@ export class FacebookAdsManagerServerService {
                     ? `${convertedToUsd.toFixed(2)}`
                     : `daily budget error`
                 }`,
-                ad_status: ad_status,
+                ad_checker_summary: ad_checker_summary,
               };
             })
           );
@@ -260,7 +260,7 @@ export class FacebookAdsManagerServerService {
           restOfProps.adsets = [
             {
               name,
-              ad_status: {
+              ad_checker_summary: {
                 code: 404,
                 message: ["No adsets found."],
               },

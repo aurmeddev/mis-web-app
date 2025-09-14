@@ -297,10 +297,11 @@ export class FacebookAdsManagerServerService {
     if (!response.ok) {
       const { error } = await response.json();
       console.error(error);
+      const { status } = getAccessTokenStatus(error.message);
       return {
         isSuccess: false,
         message: error.message,
-        data: [],
+        data: [{ status }],
       };
     }
 
@@ -397,7 +398,7 @@ const validateDomain = async ({ domain }: { domain: string[] }) => {
   return { domain: result, message: message };
 };
 
-function formatDomainsForSentence(domainsString: string) {
+const formatDomainsForSentence = (domainsString: string) => {
   const domains = domainsString.split(",");
   if (domains.length === 1) {
     return `The ${domains[0]} was not found in the interbetbs account.`;
@@ -406,7 +407,42 @@ function formatDomainsForSentence(domainsString: string) {
   const lastDomain = domains[domains.length - 1]; // Get the very last domain.
   const formattedList = allButLast.join(", ");
   return `The ${formattedList} and ${lastDomain} were not found in the interbetbs account.`;
-}
+};
+
+const getAccessTokenStatus = (error: string) => {
+  // A lookup table for error messages.
+  const ERROR_MESSAGES = {
+    "log in": {
+      status: "Fb Account Logout",
+    },
+    "not authorized application": {
+      status: "Unauthorized access",
+    },
+    "Session has expired": {
+      status: "Expired access token",
+    },
+    "Object with ID 'me' does not exist": {
+      status: "Facebook Developer's Account error",
+    },
+  };
+
+  // Find the first matching error message in the lookup table.
+  const matchingMessage = Object.keys(ERROR_MESSAGES).find((key) =>
+    error.includes(key)
+  );
+
+  // Get the message from the lookup table, or use a default one.
+  const { status } = matchingMessage
+    ? ERROR_MESSAGES[matchingMessage as keyof typeof ERROR_MESSAGES]
+    : {
+        status: "Invalid access token",
+      };
+
+  // Return the final formatted message object.
+  return {
+    status,
+  };
+};
 
 // import { createHmac } from "crypto";
 // type GenerateAppSecretProofProps = {

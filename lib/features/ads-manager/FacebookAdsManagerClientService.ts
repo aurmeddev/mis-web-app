@@ -13,4 +13,21 @@ export class FacebookAdsManagerClientService {
 
     return await response.json();
   }
+
+  async accessTokenDebugger(params: {
+    access_token: string;
+  }): Promise<ApiResponseProps> {
+    const response = await fetch(
+      `${appBaseUrl}/api/ads-manager/access-token-debugger`,
+      {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify(params),
+      }
+    );
+
+    return await response.json();
+  }
 }

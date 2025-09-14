@@ -54,7 +54,7 @@ export class ApProfilesServerService {
       if (response.length === 0) {
         return {
           isSuccess: true,
-          message: "No profile found.",
+          message: "Profile not found.",
           data: [],
         };
       }

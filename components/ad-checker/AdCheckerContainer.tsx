@@ -6,7 +6,8 @@ import { AdCheckerTable } from "./table/AdCheckerTable";
 import { startTransition, useEffect, useState } from "react";
 import { FacebookAdsManagerClientService } from "@/lib/features/ads-manager/FacebookAdsManagerClientService";
 import { toast } from "sonner";
-import { AdCheckerDialog } from "./dialog/AdCheckerDialog";
+import { AdCreativesDialog } from "./dialog/AdCreativesDialog";
+import { AdCheckerProgressDialog } from "./dialog/AdCheckerProgressDialog";
 
 type Props = {
   searchParams: { page: number; limit: number } & GetAllFbAccountsProps;
@@ -30,7 +31,7 @@ export type AdData = {
   links: Record<string, any>;
   targeting_geo: string[];
   spend: number;
-  ad_status: Record<string, any>;
+  ad_checker_summary: Record<string, any>;
 };
 
 export type AdCreatives = {
@@ -58,6 +59,10 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
   const [tableData, setTableData] = useState<AdData[]>([]);
   const [adCreativeData, setAdCreativeData] = useState<AdCreatives[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isAdCheckerProgressDialogOpen, setIsAdCheckerProgressDialogOpen] =
+    useState(false);
+  const [adCheckerProgress, setAdCheckerProgress] = useState(0);
+  const [profile, setProfile] = useState<string>("");
 
   useEffect(() => {
     if (!isDialogOpen) {
@@ -65,13 +70,17 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
     }
   }, [isDialogOpen]);
 
-  const handleDialogOpen = (open: boolean) => {
+  const handleAdCreativesDialogOpen = (open: boolean) => {
     setIsDialogOpen(open);
     if (!open) {
       startTransition(() => setAdCreativeData([]));
     } else {
       setAdCreativeData([]);
     }
+  };
+
+  const handleAdCheckerProgressDialogOpen = (open: boolean) => {
+    setIsDialogOpen(open);
   };
 
   const handleSetValidatedProfiles = (
@@ -82,11 +91,21 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
 
   const handleSubmitRequest = async () => {
     setTableData([]);
+    setIsAdCheckerProgressDialogOpen(true);
+    setAdCheckerProgress(0);
     for (const profile of validatedProfiles) {
       if (profile.accessToken == null || profile.accessToken == "") continue;
 
+      // setAdCheckerProgressData((prevState: any) => ({ profile: profile.profile, progress: }))
+      setProfile(profile.profile);
       const { data } = await fbAdsManagerService.adChecker({
-        access_token: profile.accessToken,
+        access_token: profile.accessToken.trim(),
+      });
+
+      const divisor = (100 / validatedProfiles.length).toFixed();
+      setAdCheckerProgress((prev) => {
+        const currentProgress = (prev += Number(divisor));
+        return currentProgress >= 99 ? 100 : currentProgress;
       });
 
       const adData: AdData[] = data.map((ad) => {
@@ -109,32 +128,28 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
           domain_name: ad.domain || [],
           spend: ad.spend || 0,
           links,
-          ad_status: ad.ad_status,
+          ad_checker_summary: ad.ad_checker_summary,
           targeting_geo: ad.targeting_countries || [],
         };
       });
 
       const sortedAdData: any = adData.sort(
-        (a, b) => b.ad_status.code - a.ad_status.code
+        (a, b) => b.ad_checker_summary.code - a.ad_checker_summary.code
       );
 
       setTableData((prevState) => [...prevState, ...sortedAdData]);
     }
     setIsActionDisabled(false);
+    setIsAdCheckerProgressDialogOpen(false);
   };
 
   const handleSubmit = async () => {
     setIsActionDisabled(true);
-    toast.promise(handleSubmitRequest, {
-      loading: "Processing profile...",
-      position: "bottom-left",
-      success: () => "Profiles has been successfully loaded.",
-      error: "Error",
-    });
+    handleSubmitRequest();
   };
 
   const handleViewCreatives = (adCreatives: AdCreatives[]) => {
-    handleDialogOpen(true);
+    handleAdCreativesDialogOpen(true);
     setAdCreativeData(adCreatives);
   };
 
@@ -147,11 +162,20 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
         </p>
       </div>
 
-      <AdCheckerDialog
+      <AdCreativesDialog
         adCreatives={adCreativeData}
         open={isDialogOpen}
-        handleOpen={handleDialogOpen}
+        handleOpen={handleAdCreativesDialogOpen}
       />
+
+      <AdCheckerProgressDialog
+        open={isAdCheckerProgressDialogOpen}
+        handleOpen={handleAdCheckerProgressDialogOpen}
+        profile={profile}
+        profilesLength={validatedProfiles.length}
+        progress={adCheckerProgress}
+      />
+
       <div className="flex gap-4 min-h-[calc(100dvh-12rem)] mt-4 pr-4">
         <AdCheckerSidebar
           isActionDisabled={isActionDisabled}

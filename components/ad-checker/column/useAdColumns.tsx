@@ -22,15 +22,15 @@ export function useAdColumns(onViewCreatives: (adCreatives: any) => void) {
         minSize: 150,
       },
       {
-        accessorKey: "ad_status",
-        header: "Ad Status",
+        accessorKey: "ad_checker_summary",
+        header: "Ad Checker Summary",
         cell: ({ getValue }) => {
           const cellValue = getValue<any>();
           return (
             <div className="whitespace-normal">
               <ul>
-                {cellValue.message.map((adStatus: any, idx: number) => (
-                  <li key={idx}>- {adStatus}</li>
+                {cellValue.message.map((adCheckerSummary: any, idx: number) => (
+                  <li key={idx}>- {adCheckerSummary}</li>
                 ))}
               </ul>
             </div>
@@ -113,6 +113,13 @@ export function useAdColumns(onViewCreatives: (adCreatives: any) => void) {
         header: "Ad Creatives",
         cell: ({ getValue }) => {
           const adCreatives = getValue<Record<string, any>>();
+          if (adCreatives.length) {
+            return (
+              <div className="text-xs text-center text-muted-foreground">
+                No Ad Creatives
+              </div>
+            );
+          }
           return (
             <AdCheckerAction
               onViewCreatives={() => onViewCreatives(adCreatives)}

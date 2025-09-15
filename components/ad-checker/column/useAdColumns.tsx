@@ -113,7 +113,7 @@ export function useAdColumns(onViewCreatives: (adCreatives: any) => void) {
         header: "Ad Creatives",
         cell: ({ getValue }) => {
           const adCreatives = getValue<Record<string, any>>();
-          if (adCreatives.length) {
+          if (adCreatives.length == 0) {
             return (
               <div className="text-xs text-center text-muted-foreground">
                 No Ad Creatives

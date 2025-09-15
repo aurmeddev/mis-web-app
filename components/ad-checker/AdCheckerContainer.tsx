@@ -1,5 +1,4 @@
 "use client";
-import { TableLoader } from "@/components/skeleton-loader/TableLoader";
 import { GetAllFbAccountsProps } from "@/lib/features/fb-accounts/type/FbAccountsProps";
 import { AdCheckerSidebar } from "./AdCheckerSidebar";
 import { AdCheckerTable } from "./table/AdCheckerTable";
@@ -17,6 +16,8 @@ type Props = {
 export type ProfileMarketingApiAccessToken = {
   profile: string;
   accessToken: string;
+  status: string[];
+  canRequest: boolean;
 };
 
 export type AdData = {
@@ -43,14 +44,6 @@ export type AdCreatives = {
 
 export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
   const fbAdsManagerService = new FacebookAdsManagerClientService();
-
-  const showToast = (isSuccess: boolean, message: string) => {
-    if (isSuccess) {
-      toast.success(message);
-    } else {
-      toast.error(message);
-    }
-  };
 
   const [isActionDisabled, setIsActionDisabled] = useState(false);
   const [validatedProfiles, setValidatedProfiles] = useState<
@@ -90,50 +83,76 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
   };
 
   const handleSubmitRequest = async () => {
-    setTableData([]);
     setIsAdCheckerProgressDialogOpen(true);
     setAdCheckerProgress(0);
+
     for (const profile of validatedProfiles) {
-      if (profile.accessToken == null || profile.accessToken == "") continue;
-
-      // setAdCheckerProgressData((prevState: any) => ({ profile: profile.profile, progress: }))
-      setProfile(profile.profile);
-      const { data } = await fbAdsManagerService.adChecker({
-        access_token: profile.accessToken.trim(),
-      });
-
-      const divisor = (100 / validatedProfiles.length).toFixed();
-      setAdCheckerProgress((prev) => {
-        const currentProgress = (prev += Number(divisor));
-        return currentProgress >= 99 ? 100 : currentProgress;
-      });
-
-      const adData: AdData[] = data.map((ad) => {
-        const links: AdCreatives[] =
-          ad?.adcreatives?.map((creative: Record<string, any>) => ({
-            image: creative.image_url,
-            title: creative.title,
-            message: creative.message,
-            url: creative.call_to_action?.value?.link ?? "",
-          })) ?? [];
-
-        return {
-          id: Number(ad.id) || 0,
+      const invalidProfiles: AdData[] = [];
+      if (!profile.accessToken || !profile.canRequest) {
+        invalidProfiles.push({
+          id: 0,
           profile: profile.profile,
-          ad_account: ad.ad_account_name || "",
-          account_status: ad.account_status,
-          disable_reason: ad.disable_reason,
-          campaign_name: ad.name || "",
-          daily_budget: Number(ad.daily_budget || 0),
-          domain_name: ad.domain || [],
-          spend: ad.spend || 0,
-          links,
-          ad_checker_summary: ad.ad_checker_summary,
-          targeting_geo: ad.targeting_countries || [],
-        };
-      });
+          ad_account: "",
+          account_status: "",
+          disable_reason: "",
+          campaign_name: "",
+          daily_budget: 0,
+          domain_name: [],
+          spend: 0,
+          links: [],
+          ad_checker_summary: { message: profile.status },
+          targeting_geo: [],
+        });
+      }
 
-      const sortedAdData: any = adData.sort(
+      let adData: AdData[] = [];
+      if (profile.canRequest) {
+        setProfile(profile.profile);
+        const { data } = await fbAdsManagerService.adChecker({
+          access_token: profile.accessToken.trim(),
+        });
+
+        const divisor = (100 / validatedProfiles.length).toFixed();
+        setAdCheckerProgress((prev) => {
+          const currentProgress = (prev += Number(divisor));
+          return currentProgress >= 99 ? 100 : currentProgress;
+        });
+
+        adData = data.map((ad) => {
+          const links: AdCreatives[] =
+            ad?.adcreatives?.map((creative: Record<string, any>) => ({
+              image: creative.image_url,
+              title: creative.title,
+              message: creative.message,
+              url: creative.call_to_action?.value?.link ?? "",
+            })) ?? [];
+
+          return {
+            id: Number(ad.id) || 0,
+            profile: profile.profile,
+            ad_account: ad.ad_account_name || "",
+            account_status: ad.account_status,
+            disable_reason: ad.disable_reason,
+            campaign_name: ad.name || "",
+            daily_budget: Number(ad.daily_budget || 0),
+            domain_name: ad.domain || [],
+            spend: ad.spend || 0,
+            links,
+            ad_checker_summary: ad.ad_checker_summary,
+            targeting_geo: ad.targeting_countries || [],
+          };
+        });
+      } else {
+        const divisor = (100 / validatedProfiles.length).toFixed();
+        setAdCheckerProgress((prev) => {
+          const currentProgress = (prev += Number(divisor));
+          return currentProgress >= 99 ? 100 : currentProgress;
+        });
+      }
+
+      const combinedAdData = [...invalidProfiles, ...adData];
+
+      const sortedAdData: any = combinedAdData.sort(
         (a, b) => b.ad_checker_summary.code - a.ad_checker_summary.code
       );
 
@@ -145,6 +164,7 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
 
   const handleSubmit = async () => {
     setIsActionDisabled(true);
+    setTableData([]);
     handleSubmitRequest();
   };
 

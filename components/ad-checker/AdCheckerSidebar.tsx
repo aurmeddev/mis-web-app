@@ -8,12 +8,15 @@ import { Trash2, X } from "lucide-react";
 import { ApProfilesService } from "@/lib/features/ap-profiles/ApProfilesService";
 import { Progress } from "../ui/progress";
 import { ProfileMarketingApiAccessToken } from "./AdCheckerContainer";
+import { GlobalTooltip } from "../tooltip/GlobalTooltip";
+import { FacebookAdsManagerServerService } from "@/lib/features/ads-manager/FacebookAdsManagerServerService";
+import { FacebookAdsManagerClientService } from "@/lib/features/ads-manager/FacebookAdsManagerClientService";
 
 type Props = {
   isActionDisabled: boolean;
   onSubmit: () => void;
-  onSetValidatedProfiles: (data: Array<ProfileMarketingApiAccessToken>) => void;
-  validatedProfiles: Array<ProfileMarketingApiAccessToken>;
+  onSetValidatedProfiles: (data: ProfileMarketingApiAccessToken[]) => void;
+  validatedProfiles: ProfileMarketingApiAccessToken[];
 };
 
 export function AdCheckerSidebar({
@@ -44,6 +47,7 @@ export function AdCheckerSidebar({
   );
 
   const handleProfileChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    onSetValidatedProfiles([]);
     handleProfileChangeDebounce(e.target.value);
     e.target.value = "";
   };
@@ -66,7 +70,7 @@ export function AdCheckerSidebar({
   };
 
   const getAccessToken = async (profiles: string[]) => {
-    const results: Array<ProfileMarketingApiAccessToken> = [];
+    const results: ProfileMarketingApiAccessToken[] = [];
 
     const divisor = (100 / profiles.length).toFixed();
     for (const profile of profiles) {
@@ -74,13 +78,31 @@ export function AdCheckerSidebar({
         const currentProgress = (prev += Number(divisor));
         return currentProgress >= 99 ? 100 : currentProgress;
       });
-      const { isSuccess, data } = await profilesService.find({
+      const { data } = await profilesService.find({
         method: "find-one",
         searchKeyword: profile,
       });
-      const accessToken =
-        data[0]?.fb_account.marketing_api_access_token || null;
-      results.push({ profile, accessToken });
+
+      let accessToken = null;
+      let canRequest = true;
+      const status = [];
+      if (data.length > 0) {
+        accessToken = data[0]?.fb_account.marketing_api_access_token || null;
+        if (accessToken) {
+          const adsManagerApi = new FacebookAdsManagerClientService();
+          const { isSuccess, data, message } =
+            await adsManagerApi.accessTokenDebugger({
+              access_token: accessToken,
+            });
+
+          if (!isSuccess) {
+            status.push(data[0].status);
+            canRequest = false;
+          }
+        }
+      }
+
+      results.push({ profile, accessToken, status, canRequest });
     }
 
     startTransition(() => setProgress(0));
@@ -98,44 +120,47 @@ export function AdCheckerSidebar({
       <div className="border relative rounded">
         {validatedProfiles.length >= 1 && (
           <div className="flex flex-wrap gap-2 p-2 w-full">
-            {validatedProfiles.map((data, idx) => (
-              <Badge
-                key={idx}
-                className="flex relative"
-                variant={!data.accessToken ? "destructive" : "secondary"}
-              >
-                <div>{data.profile}</div>
-                <span
-                  className="cursor-pointer"
-                  onClick={() =>
-                    handleRemoveProfile({ profileName: data.profile })
-                  }
+            {validatedProfiles.map((data, idx) => {
+              if (!data.canRequest) {
+                return (
+                  <GlobalTooltip key={idx} tooltipText={data.status[0]}>
+                    <Badge
+                      className="flex relative"
+                      variant={!data.canRequest ? "destructive" : "secondary"}
+                    >
+                      <div>{data.profile}</div>
+                      <span
+                        className="cursor-pointer"
+                        onClick={() =>
+                          handleRemoveProfile({ profileName: data.profile })
+                        }
+                      >
+                        <X className="h-4 w-4" />
+                      </span>
+                    </Badge>
+                  </GlobalTooltip>
+                );
+              }
+
+              return (
+                <Badge
+                  key={idx}
+                  className="flex relative"
+                  variant={!data.canRequest ? "destructive" : "secondary"}
                 >
-                  <X className="h-4 w-4" />
-                </span>
-              </Badge>
-            ))}
+                  <div>{data.profile}</div>
+                  <span
+                    className="cursor-pointer"
+                    onClick={() =>
+                      handleRemoveProfile({ profileName: data.profile })
+                    }
+                  >
+                    <X className="h-4 w-4" />
+                  </span>
+                </Badge>
+              );
+            })}
           </div>
-        )}
-
-        {currentProgressPosition == 0 && (
-          <Input
-            className="bg-transparent border-none focus-visible:ring-0 shadow-none outline-none placeholder:text-muted-foreground"
-            disabled={progress !== 0}
-            onChange={handleProfileChange}
-            name="profiles"
-            placeholder="Enter profile(s)"
-          />
-        )}
-
-        {validatedProfiles.length > 0 && (
-          <Button
-            className="absolute bg-transparent bottom-0 cursor-pointer opacity-70 right-0 hover:opacity-100 hover:bg-transparent"
-            onClick={() => handleRemoveProfile({ removeAll: true })}
-            variant={"link"}
-          >
-            <Trash2 />
-          </Button>
         )}
 
         {extractedProfiles.length >= 1 &&
@@ -155,6 +180,26 @@ export function AdCheckerSidebar({
               </div>
             </div>
           )}
+
+        {currentProgressPosition == 0 && (
+          <Input
+            className="bg-transparent border-none focus-visible:ring-0 shadow-none outline-none placeholder:text-muted-foreground"
+            disabled={progress !== 0}
+            onChange={handleProfileChange}
+            name="profiles"
+            placeholder="Enter profile(s)"
+          />
+        )}
+
+        {validatedProfiles.length > 1 && (
+          <Button
+            className="absolute bg-transparent bottom-0 cursor-pointer opacity-70 right-0 hover:opacity-100 hover:bg-transparent"
+            onClick={() => handleRemoveProfile({ removeAll: true })}
+            variant={"link"}
+          >
+            <Trash2 />
+          </Button>
+        )}
       </div>
       <Button
         className="cursor-pointer"

@@ -75,17 +75,32 @@ export function useAdColumns(onViewCreatives: (adCreatives: any) => void) {
       {
         accessorKey: "daily_budget",
         header: "Daily Budget",
-        cell: ({ getValue }) => {
+        cell: ({ getValue, row }) => {
+          const adCheckerSummary: { code: number } =
+            row.getValue("ad_checker_summary");
+          if (adCheckerSummary.code == 404) {
+            return "";
+          }
           const cellValue = getValue<string | number>();
           if (typeof cellValue === "undefined") return <>Daily budget error</>;
-          return `$${getValue<number>().toLocaleString()}`;
+
+          const realValue = getValue<number>();
+          return realValue ? `$${realValue.toLocaleString()}` : "";
         },
         size: 50,
       },
       {
         accessorKey: "spend",
         header: "Spend",
-        cell: ({ getValue }) => `$${getValue<number>().toLocaleString()}`,
+        cell: ({ getValue, row }) => {
+          const adCheckerSummary: { code: number } =
+            row.getValue("ad_checker_summary");
+          if (adCheckerSummary.code == 404) {
+            return "";
+          }
+          const realValue = getValue<number>();
+          return realValue ? `$${realValue.toLocaleString()}` : "";
+        },
         size: 80,
       },
       {

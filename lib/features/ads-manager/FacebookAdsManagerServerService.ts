@@ -138,7 +138,7 @@ export class FacebookAdsManagerServerService {
     }
   ) {
     const { id, time_ranges, ...restOfParams } = params;
-    const defaultFields = `name,adsets{name,daily_budget,targeting{geo_locations{countries}},insights.time_ranges(${time_ranges}){spend},adcreatives{object_story_spec{video_data}}}`;
+    const defaultFields = `name,daily_budget,adsets{name,daily_budget,targeting{geo_locations{countries}},insights.time_ranges(${time_ranges}){spend},adcreatives{object_story_spec{video_data}}}`;
 
     const searchParams: any = {
       access_token: this.config.access_token,
@@ -169,7 +169,8 @@ export class FacebookAdsManagerServerService {
     const result: ResultProps = await response.json();
     const formattedResult = await Promise.all(
       result.data.map(async (prop) => {
-        const { id, adsets, name, ...restOfProps } = prop;
+        const { id, adsets, name, daily_budget, ...restOfProps } = prop;
+        const campaignDailyBudget = daily_budget;
         const hasAdsets = adsets?.data.length > 0;
         if (hasAdsets) {
           restOfProps.adsets = await Promise.all(
@@ -211,7 +212,9 @@ export class FacebookAdsManagerServerService {
                 restOfAdsets.adcreatives = [];
               }
 
-              const convertedToUsd = restOfAdsets.daily_budget / 100;
+              const convertedToUsd = restOfAdsets.daily_budget
+                ? restOfAdsets.daily_budget / 100
+                : campaignDailyBudget / 100; // Use the campaign's daily budget as a fallback if the ad set's daily budget is not available.
               const targeting_countries = targeting?.geo_locations?.countries;
               const remarks = targeting?.geo_locations?.countries.includes("US")
                 ? "Suspicious geo-location targeting."

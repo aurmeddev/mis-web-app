@@ -47,9 +47,13 @@ export function useAdColumns(onViewCreatives: (adCreatives: any) => void) {
             cellValue.charAt(0).toUpperCase() +
             cellValue.substr(1, cellValue.length);
           return (
-            <Badge variant="secondary" className="text-xs">
-              {normalCase}
-            </Badge>
+            <>
+              {cellValue && (
+                <Badge variant="secondary" className="text-xs">
+                  {normalCase}
+                </Badge>
+              )}
+            </>
           );
         },
         size: 80,
@@ -71,7 +75,11 @@ export function useAdColumns(onViewCreatives: (adCreatives: any) => void) {
       {
         accessorKey: "daily_budget",
         header: "Daily Budget",
-        cell: ({ getValue }) => `$${getValue<number>().toLocaleString()}`,
+        cell: ({ getValue }) => {
+          const cellValue = getValue<string | number>();
+          if (typeof cellValue === "undefined") return <>Daily budget error</>;
+          return `$${getValue<number>().toLocaleString()}`;
+        },
         size: 50,
       },
       {

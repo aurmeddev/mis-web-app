@@ -1,6 +1,6 @@
 "use client";
 import { useDebouncedCallback } from "use-debounce";
-import { ChangeEvent, startTransition, useState } from "react";
+import { ChangeEvent, startTransition, useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { Input } from "../ui/input";
@@ -11,11 +11,15 @@ import { ProfileMarketingApiAccessToken } from "./AdCheckerContainer";
 import { GlobalTooltip } from "../tooltip/GlobalTooltip";
 import { FacebookAdsManagerServerService } from "@/lib/features/ads-manager/FacebookAdsManagerServerService";
 import { FacebookAdsManagerClientService } from "@/lib/features/ads-manager/FacebookAdsManagerClientService";
+import { toast } from "sonner";
 
 type Props = {
   isActionDisabled: boolean;
   onSubmit: () => void;
-  onSetValidatedProfiles: (data: ProfileMarketingApiAccessToken[]) => void;
+  onSetValidatedProfiles: (
+    data: ProfileMarketingApiAccessToken[],
+    isRemove: boolean
+  ) => void;
   validatedProfiles: ProfileMarketingApiAccessToken[];
 };
 
@@ -27,7 +31,9 @@ export function AdCheckerSidebar({
 }: Props) {
   const profilesService = new ApProfilesService();
   const [extractedProfiles, setExtractedProfiles] = useState<string[]>([]);
+  const [addedProfiles, setAddedProfiles] = useState<string[]>([]);
   const [progress, setProgress] = useState<number>(0);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const handleProfileChangeDebounce = useDebouncedCallback(
     async (data: string) => {
@@ -36,18 +42,32 @@ export function AdCheckerSidebar({
       }
       const splitProfiles = formatInputProfile(data);
       const distinctProfiles = new Set(splitProfiles);
-      const destructedProfiles = [...distinctProfiles];
-      setExtractedProfiles(destructedProfiles);
-      const profileMarketingApiAccessToken = await getAccessToken(
-        destructedProfiles
+      const destructuredProfiles = [...distinctProfiles];
+
+      const hasCommon = validatedProfiles.some((item) =>
+        destructuredProfiles.includes(item.profile)
       );
-      onSetValidatedProfiles(profileMarketingApiAccessToken);
+      if (hasCommon) {
+        toast.info("Duplicate profile(s) detected.");
+        return;
+      }
+
+      setAddedProfiles(destructuredProfiles);
+      // setExtractedProfiles((prevState) => [
+      //   ...prevState,
+      //   ...destructuredProfiles,
+      // ]);
+      setIsProcessing(true);
+      const profileMarketingApiAccessToken = await getAccessToken(
+        destructuredProfiles
+      );
+      setIsProcessing(false);
+      onSetValidatedProfiles(profileMarketingApiAccessToken, false);
     },
     500
   );
 
   const handleProfileChange = async (e: ChangeEvent<HTMLInputElement>) => {
-    onSetValidatedProfiles([]);
     handleProfileChangeDebounce(e.target.value);
     e.target.value = "";
   };
@@ -63,9 +83,10 @@ export function AdCheckerSidebar({
       const filteredProfiles = validatedProfiles.filter(
         (data) => !data.profile.includes(String(profileName))
       );
-      onSetValidatedProfiles(filteredProfiles);
+      onSetValidatedProfiles(filteredProfiles, true);
     } else {
-      onSetValidatedProfiles([]);
+      // setExtractedProfiles([]);
+      onSetValidatedProfiles([], true);
     }
   };
 
@@ -118,7 +139,7 @@ export function AdCheckerSidebar({
 
   const currentProgressPosition = getPositionFromPercentage(
     progress,
-    extractedProfiles.length
+    addedProfiles.length
   );
 
   return (
@@ -169,25 +190,23 @@ export function AdCheckerSidebar({
           </div>
         )}
 
-        {extractedProfiles.length >= 1 &&
-          currentProgressPosition !== validatedProfiles.length &&
-          currentProgressPosition !== 0 && (
-            <div className="bg-secondary p-2 relative w-full">
-              <div className="font-semibold mb-2 text-xs text-muted-foreground">
-                Processing profiles...
-              </div>
-              <Progress value={progress} className="w-full" />
-
-              <div className="flex font-semibold justify-between text-muted-foreground text-xs">
-                <div>
-                  {currentProgressPosition}/{extractedProfiles.length} profiles.
-                </div>
-                <div>{progress}%</div>
-              </div>
+        {isProcessing && (
+          <div className="bg-secondary p-2 relative w-full">
+            <div className="font-semibold mb-2 text-xs text-muted-foreground">
+              Processing profiles...
             </div>
-          )}
+            <Progress value={progress} className="w-full" />
 
-        {currentProgressPosition == 0 && (
+            <div className="flex font-semibold justify-between text-muted-foreground text-xs">
+              <div>
+                {currentProgressPosition}/{addedProfiles.length} profiles.
+              </div>
+              <div>{progress}%</div>
+            </div>
+          </div>
+        )}
+
+        {!isProcessing && (
           <Input
             className="bg-transparent border-none focus-visible:ring-0 shadow-none outline-none placeholder:text-muted-foreground"
             disabled={progress !== 0}
@@ -197,7 +216,7 @@ export function AdCheckerSidebar({
           />
         )}
 
-        {validatedProfiles.length > 1 && (
+        {validatedProfiles.length > 1 && !isProcessing && (
           <Button
             className="absolute bg-transparent bottom-0 cursor-pointer opacity-70 right-0 hover:opacity-100 hover:bg-transparent"
             onClick={() => handleRemoveProfile({ removeAll: true })}

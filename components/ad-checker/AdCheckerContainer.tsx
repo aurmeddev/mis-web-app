@@ -31,7 +31,7 @@ export type AdData = {
   domain_name: any;
   links: Record<string, any>;
   targeting_geo: string[];
-  spend: number;
+  spend: string | number;
   ad_checker_summary: Record<string, any>;
 };
 
@@ -77,9 +77,18 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
   };
 
   const handleSetValidatedProfiles = (
-    data: ProfileMarketingApiAccessToken[]
+    data: ProfileMarketingApiAccessToken[],
+    isRemove: boolean
   ) => {
-    setValidatedProfiles(data);
+    if (isRemove) {
+      setValidatedProfiles(data);
+    } else {
+      setValidatedProfiles((prevState) => {
+        const merged = [...prevState, ...data];
+        const map = new Map(merged.map((item) => [item.profile, item]));
+        return Array.from(map.values());
+      });
+    }
   };
 
   const handleSubmitRequest = async () => {
@@ -96,9 +105,9 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
           account_status: "",
           disable_reason: "",
           campaign_name: "",
-          daily_budget: "0",
+          daily_budget: "",
           domain_name: [],
-          spend: 0,
+          spend: "",
           links: [],
           ad_checker_summary: { message: profile.status },
           targeting_geo: [],
@@ -177,7 +186,7 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
       <div>
         <div className="text-xl">Ad Checker</div>
         <p className="text-sm">
-          Easily verify your ad domain for accuracy and trustworthiness.
+          Secure your campaigns by checking for hacked or malicious ads.
         </p>
       </div>
 

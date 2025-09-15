@@ -93,13 +93,18 @@ export function useAdColumns(onViewCreatives: (adCreatives: any) => void) {
         accessorKey: "spend",
         header: "Spend",
         cell: ({ getValue, row }) => {
+          const realValue = getValue<any>();
+          if (realValue === null || realValue === "") {
+            return "";
+          }
+
           const adCheckerSummary: { code: number } =
             row.getValue("ad_checker_summary");
           if (adCheckerSummary.code == 404) {
             return "";
           }
-          const realValue = getValue<number>();
-          return realValue ? `$${realValue.toLocaleString()}` : "";
+
+          return realValue >= 0 ? `$${realValue.toLocaleString()}` : "";
         },
         size: 80,
       },

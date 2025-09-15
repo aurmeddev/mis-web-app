@@ -78,7 +78,7 @@ export function AdCheckerSidebar({
         const currentProgress = (prev += Number(divisor));
         return currentProgress >= 99 ? 100 : currentProgress;
       });
-      const { data } = await profilesService.find({
+      const { data, message } = await profilesService.find({
         method: "find-one",
         searchKeyword: profile,
       });
@@ -99,7 +99,13 @@ export function AdCheckerSidebar({
             status.push(data[0].status);
             canRequest = false;
           }
+        } else {
+          canRequest = false;
+          status.push("Missing access token");
         }
+      } else {
+        canRequest = false;
+        status.push(message);
       }
 
       results.push({ profile, accessToken, status, canRequest });

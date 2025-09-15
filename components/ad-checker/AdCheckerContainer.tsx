@@ -27,7 +27,7 @@ export type AdData = {
   account_status: string;
   disable_reason: string;
   campaign_name: string;
-  daily_budget: number;
+  daily_budget: string | number;
   domain_name: any;
   links: Record<string, any>;
   targeting_geo: string[];
@@ -96,7 +96,7 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
           account_status: "",
           disable_reason: "",
           campaign_name: "",
-          daily_budget: 0,
+          daily_budget: "0",
           domain_name: [],
           spend: 0,
           links: [],
@@ -134,7 +134,7 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
             account_status: ad.account_status,
             disable_reason: ad.disable_reason,
             campaign_name: ad.name || "",
-            daily_budget: Number(ad.daily_budget || 0),
+            daily_budget: ad.daily_budget,
             domain_name: ad.domain || [],
             spend: ad.spend || 0,
             links,
@@ -151,7 +151,6 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
       }
 
       const combinedAdData = [...invalidProfiles, ...adData];
-
       const sortedAdData: any = combinedAdData.sort(
         (a, b) => b.ad_checker_summary.code - a.ad_checker_summary.code
       );

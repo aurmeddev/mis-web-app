@@ -552,12 +552,12 @@ const validateDomain = async ({ domain }: { domain: string[] }) => {
 const formatDomainsForSentence = (domainsString: string) => {
   const domains = domainsString.split(",");
   if (domains.length === 1) {
-    return `The ${domains[0]} was not found in the interbetbs account.`;
+    return `The ${domains[0]} was not found in the internetbs account.`;
   }
   const allButLast = domains.slice(0, -1); // Get all domains except the last one.
   const lastDomain = domains[domains.length - 1]; // Get the very last domain.
   const formattedList = allButLast.join(", ");
-  return `The ${formattedList} and ${lastDomain} were not found in the interbetbs account.`;
+  return `The ${formattedList} and ${lastDomain} were not found in the internetbs account.`;
 };
 
 const getAccessTokenStatus = (error: string) => {

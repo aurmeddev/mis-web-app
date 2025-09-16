@@ -83,6 +83,27 @@ export function useAdColumns(onViewCreatives: (adCreatives: any) => void) {
         size: 80,
       },
       {
+        accessorKey: "effective_status",
+        header: "Delivery",
+        cell: ({ row, getValue }) => {
+          const accountStatus = String(row.getValue("account_status"));
+          const disableReason = String(row.getValue("disable_reason"));
+          const effectStatus = getValue<string>();
+          if (accountStatus == "ACTIVE") {
+            return <div>{effectStatus}</div>;
+          }
+          return (
+            <div className="whitespace-normal">
+              <div>{accountStatus}</div>
+              <div className="text-sm text-muted-foreground">
+                Reason: <span className="lowercase">{disableReason}</span>
+              </div>
+            </div>
+          );
+        },
+        minSize: 150,
+      },
+      {
         accessorKey: "campaign_name",
         header: "Campaign Name",
         cell: ({ getValue }) => {

@@ -1,4 +1,4 @@
-import { AddDomainContainer } from "@/components/add-domain/AddDomainContainer";
+import { DomainsContainer } from "@/components/domains/DomainsContainer";
 import { NotFound } from "@/components/not-found/not-found";
 import { CryptoUtilsManager } from "@/lib/features/security/cryptography/util/CryptoUtilsManager";
 import { CryptoUtilsServerService } from "@/lib/features/security/cryptography/util/CryptoUtilsServerService";
@@ -22,7 +22,7 @@ export default async function Page({ searchParams }: any) {
 
   const awaitedParams = await searchParams;
   const page = Number(awaitedParams.page) || 1;
-  const limit = Number(awaitedParams.limit) || 10;
+  const limit = Number(awaitedParams.limit) || 50;
   const params = {
     page,
     limit,
@@ -35,5 +35,5 @@ export default async function Page({ searchParams }: any) {
   if (!IS_USER_SUPER_ADMIN) {
     return <NotFound param={notFoundObj} />;
   }
-  return <AddDomainContainer searchParams={params} />;
+  return <DomainsContainer searchParams={params} />;
 }

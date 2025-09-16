@@ -86,7 +86,7 @@ export const POST = async (request: NextRequest) => {
   }
   return NextResponse.json(
     {
-      isSuccess: false,
+      isSuccess: true,
       message: response.message,
       data: response.data,
     },

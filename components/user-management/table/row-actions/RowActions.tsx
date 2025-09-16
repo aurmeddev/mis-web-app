@@ -19,7 +19,7 @@ export function RowActions({
   return isEditing ? (
     <>
       <Button
-        className="h-7 py-0 px-3"
+        className="cursor-pointer h-7 py-0 px-3"
         variant="default"
         onClick={() => onConfirm(id)}
         disabled={isActionDisabled}
@@ -27,7 +27,7 @@ export function RowActions({
         <CheckIcon />
       </Button>
       <Button
-        className="h-7 py-0 px-3"
+        className="cursor-pointer h-7 py-0 px-3"
         variant="destructive"
         onClick={() => onEditChange(null)}
         disabled={isActionDisabled}
@@ -37,7 +37,7 @@ export function RowActions({
     </>
   ) : (
     <Button
-      className="h-7 py-0 px-3"
+      className="cursor-pointer h-7 py-0 px-3"
       variant="outline"
       onClick={() => onEditChange(id)}
     >

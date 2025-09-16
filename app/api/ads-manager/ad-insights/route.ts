@@ -9,16 +9,16 @@ import { addDays, format } from "date-fns";
 import { NextResponse, NextRequest } from "next/server";
 export const POST = async (request: NextRequest) => {
   // Check if the user session is valid before processing the request
-  const session = await getSession();
-  if (!session) {
-    return NextResponse.json(
-      {
-        isSuccess: false,
-        message: "Session expired or invalid",
-      },
-      { status: 403 }
-    );
-  }
+  // const session = await getSession();
+  // if (!session) {
+  //   return NextResponse.json(
+  //     {
+  //       isSuccess: false,
+  //       message: "Session expired or invalid",
+  //     },
+  //     { status: 403 }
+  //   );
+  // }
 
   const {
     date_from,
@@ -56,9 +56,9 @@ export const POST = async (request: NextRequest) => {
     );
   }
 
-  const yesterdayAndToday = {
+  const yesterday = {
     from: date_from || format(addDays(new Date(), -1), "yyyy-MM-dd"),
-    to: date_to || format(addDays(new Date(), 0), "yyyy-MM-dd"),
+    to: date_to || format(addDays(new Date(), -1), "yyyy-MM-dd"),
   };
 
   const decipher = new CryptoServerService();
@@ -94,9 +94,9 @@ export const POST = async (request: NextRequest) => {
 
   const AdAccounts = [...data];
   for (const ada of AdAccounts) {
-    const { data } = await graphApi.adChecker({
+    const { data } = await graphApi.adInsights({
       id: ada.id,
-      time_ranges: `[{"since":"${yesterdayAndToday.from}","until":"${yesterdayAndToday.to}"}]`,
+      time_ranges: `[{"since":"${yesterday.from}","until":"${yesterday.to}"}]`,
     });
     ada.campaigns = data;
   }

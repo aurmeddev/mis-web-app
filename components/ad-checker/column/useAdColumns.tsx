@@ -26,11 +26,30 @@ export function useAdColumns(onViewCreatives: (adCreatives: any) => void) {
         header: "Ad Checker Summary",
         cell: ({ getValue }) => {
           const cellValue = getValue<any>();
+          const isInternaServerError = cellValue.code === 500;
+          const isAdCheckerSummaryOk = cellValue.code === 200;
+          const isAdCheckerSummaryNoAdset = cellValue.code === 404;
+          const isAdCheckerSummaryProfileIssue = cellValue.code === 400;
           return (
             <div className="whitespace-normal">
               <ul>
                 {cellValue.message.map((adCheckerSummary: any, idx: number) => (
-                  <li key={idx}>- {adCheckerSummary}</li>
+                  <li key={idx}>
+                    {isAdCheckerSummaryOk ? (
+                      <Badge className="bg-green-500">{adCheckerSummary}</Badge>
+                    ) : isAdCheckerSummaryNoAdset ? (
+                      <Badge variant={"secondary"}>{adCheckerSummary}</Badge>
+                    ) : isAdCheckerSummaryProfileIssue ? (
+                      <Badge variant={"destructive"}>{adCheckerSummary}</Badge>
+                    ) : (
+                      <>- {adCheckerSummary} </>
+                    )}
+                    {isInternaServerError && (
+                      <Badge className="uppercase" variant={"destructive"}>
+                        Suspicious
+                      </Badge>
+                    )}
+                  </li>
                 ))}
               </ul>
             </div>

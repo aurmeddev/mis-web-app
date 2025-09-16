@@ -109,7 +109,7 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
           domain_name: [],
           spend: "",
           links: [],
-          ad_checker_summary: { message: profile.status },
+          ad_checker_summary: { code: 400, message: profile.status },
           targeting_geo: [],
         });
       }

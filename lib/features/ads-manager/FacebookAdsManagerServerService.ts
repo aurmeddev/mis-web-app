@@ -70,27 +70,14 @@ export class FacebookAdsManagerServerService {
     };
   }
 
-  async getAdInsights(
-    params: Omit<
-      BaseFacebookAdsManagerServiceProps,
-      "access_token" | "use_account_attribution_setting"
-    > & {
+  async adInsights(
+    params: Omit<BaseFacebookAdsManagerServiceProps, "access_token"> & {
       id: string;
     }
-  ): Promise<ApiResponseProps> {
-    const { id, ...restOfParams } = params;
-
-    let fields = [];
-    if (restOfParams.level === "campaign") {
-      const campaignFields = ["campaign_id", "campaign_name"];
-      fields = [...campaignFields, ...baseFieldsInsights];
-    } else if (restOfParams.level === "adset") {
-      const adsetFields = ["adset_id", "adset_name", "campaign_id"];
-      fields = [...adsetFields, ...baseFieldsInsights];
-    } else {
-      const adFields = ["ad_id", "ad_name", "adset_id"];
-      fields = [...adFields, ...baseFieldsInsights];
-    }
+  ) {
+    const { id, time_ranges, ...restOfParams } = params;
+    const insightFields = baseInsightsFields.join(",");
+    const defaultFields = `name,daily_budget,adsets{name,daily_budget,effective_status,targeting{geo_locations{countries}},insights.time_ranges(${time_ranges}){${insightFields}}}`;
 
     const searchParams: any = {
       access_token: this.config.access_token,
@@ -99,12 +86,12 @@ export class FacebookAdsManagerServerService {
     };
 
     if (!restOfParams.fields) {
-      searchParams.fields = fields.join(); // Convert array to string
+      searchParams.fields = defaultFields;
     }
 
     const searchQueryParams = new SearchParamsManager().append(searchParams);
     const response = await fetch(
-      `${this.graphFbApiConfig.baseUrl}/${this.graphFbApiConfig.version}/${id}/insights${searchQueryParams}`,
+      `${this.graphFbApiConfig.baseUrl}/${this.graphFbApiConfig.version}/${id}/campaigns${searchQueryParams}`,
       this.requestOptions
     );
 
@@ -119,20 +106,67 @@ export class FacebookAdsManagerServerService {
     }
 
     const result: ResultProps = await response.json();
+    const formattedResult = await Promise.all(
+      result.data.map(async (prop) => {
+        const { id, adsets, name, daily_budget, ...restOfProps } = prop;
+        const campaignDailyBudget = daily_budget;
+        const hasAdsets = adsets?.data.length > 0;
+        if (hasAdsets) {
+          restOfProps.adsets = await Promise.all(
+            adsets.data.map(async (adset: any) => {
+              const { id, insights, targeting, ...restOfAdsets } = adset;
+              restOfAdsets.effective_status =
+                restOfAdsets.effective_status.includes("PAUSED")
+                  ? "PAUSED"
+                  : restOfAdsets.effective_status;
+              const convertedToUsd = restOfAdsets.daily_budget
+                ? restOfAdsets.daily_budget / 100
+                : campaignDailyBudget / 100; // Use the campaign's daily budget as a fallback if the ad set's daily budget is not available.
+              const targeting_countries = targeting?.geo_locations?.countries;
+
+              return {
+                ...restOfAdsets,
+                ...formatInsightsFields(insights),
+                targeting_countries: targeting_countries,
+                daily_budget: `${
+                  convertedToUsd
+                    ? `${convertedToUsd.toFixed(2)}`
+                    : `daily budget error`
+                }`,
+              };
+            })
+          );
+        } else {
+          restOfProps.adsets = [
+            {
+              name, // Assign the campaign name, if adsets is empty
+              ad_checker_summary: {
+                code: 404,
+                message: ["No adsets found."],
+              },
+            },
+          ];
+        }
+
+        return {
+          ...restOfProps,
+        };
+      })
+    );
     return {
       isSuccess: true,
       message:
         result.data.length > 0
           ? "Data fetched successfully."
           : "No data found.",
-      data: result.data || [],
+      data: formattedResult || [],
     };
   }
 
   async adChecker(
     params: Omit<
       BaseFacebookAdsManagerServiceProps,
-      "access_token" | "use_account_attribution_setting" | "level"
+      "access_token" | "filtering"
     > & {
       id: string;
     }
@@ -316,7 +350,7 @@ export class FacebookAdsManagerServerService {
   }
 }
 
-const baseFieldsInsights = [
+const baseInsightsFields = [
   "account_currency",
   "reach",
   "impressions",
@@ -329,7 +363,6 @@ const baseFieldsInsights = [
   "ctr",
   "inline_link_click_ctr",
 ];
-
 const getAdAccountStatus: Record<number, string> = {
   1: "ACTIVE",
   2: "DISABLED",
@@ -360,6 +393,121 @@ const getAdAccountDisableReason: Record<number, string> = {
   13: "AOAB_DESHARE_LEGAL_ENTITY",
   14: "CTX_THREAD_REVIEW",
   15: "COMPROMISED_AD_ACCOUNT",
+};
+
+export const formatCampaigns = (data: any) => {
+  const result = data.map((adAccount: any) => {
+    const { campaigns, ...rest } = adAccount;
+    const hasCampaigns = campaigns?.length > 0;
+    if (hasCampaigns) {
+      const formattedCampaign = campaigns
+        .map((campaign: any) => {
+          const { adsets } = campaign;
+          const hasAdsets = adsets?.length > 0;
+          if (hasAdsets) {
+            return {
+              ...adsets,
+            };
+          }
+        })
+        .filter(Boolean); // Exclude null or undefined values
+      // Use flatMap to iterate and flatten the nested objects.
+      const flattenedCampaigns = formattedCampaign.flatMap((item: any) => {
+        return Object.values(item);
+      });
+      rest.campaigns = flattenedCampaigns;
+    } else {
+      rest.campaigns = [];
+    }
+    return { ...rest };
+  });
+
+  // Spread Ad account
+  const shallowCopyForSpreadingAdAccount = [...result];
+  const adAccountHasNoAdsets: any = [];
+  const spreadAdAccount: any = [];
+  shallowCopyForSpreadingAdAccount.forEach((adAccount: any) => {
+    const { campaigns, id, name, account_status, disable_reason } = adAccount;
+    const hasCampaigns = campaigns?.length > 0;
+    if (hasCampaigns) {
+      const newCampaign = campaigns.map((camp: any) => {
+        return {
+          ...camp,
+          ad_account_id: id,
+          ad_account_name: name,
+          account_status,
+          disable_reason,
+        };
+      });
+      spreadAdAccount.push(...newCampaign);
+    } else {
+      adAccountHasNoAdsets.push({
+        ad_account_id: id,
+        ad_account_name: name,
+        account_status,
+        disable_reason,
+        ad_checker_summary: {
+          code: 404,
+          message: ["No adsets found."],
+        },
+      });
+    }
+  });
+
+  return [...spreadAdAccount, ...adAccountHasNoAdsets];
+};
+const formatInsightsFields = (insights: any) => {
+  const defaultInsightFields = {
+    account_currency: "USD",
+    reach: "0",
+    impressions: "0",
+    cpm: "0",
+    spend: "0",
+    frequency: "0",
+    cost_per_inline_link_click: "0",
+    cpc: "0",
+    ctr: "0",
+    inline_link_click_ctr: "0",
+  };
+  const events = {
+    lead: "0",
+    purchase: "0",
+    link_click: "0",
+  };
+  if (insights?.data.length > 0) {
+    const { actions, date_start, date_stop, ...rest } = { ...insights.data[0] };
+
+    if (actions?.length > 0) {
+      const result = actions.filter(
+        (key: any) =>
+          key.action_type === "lead" ||
+          key.action_type === "purchase" ||
+          key.action_type === "link_click"
+      );
+
+      if (result.length > 0) {
+        for (const item of result) {
+          if (events.hasOwnProperty(item.action_type)) {
+            events[item.action_type as keyof typeof events] = item.value ?? "0";
+          }
+        }
+      }
+    }
+
+    for (const key of Object.keys(rest)) {
+      if (defaultInsightFields.hasOwnProperty(key)) {
+        defaultInsightFields[key as keyof typeof defaultInsightFields] =
+          rest[key] ?? "0";
+      }
+    }
+
+    return { ...defaultInsightFields, ...events };
+  }
+
+  return {
+    ...defaultInsightFields,
+    ...events,
+  };
 };
 
 const validateDomain = async ({ domain }: { domain: string[] }) => {

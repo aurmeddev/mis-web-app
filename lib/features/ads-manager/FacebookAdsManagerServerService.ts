@@ -172,7 +172,7 @@ export class FacebookAdsManagerServerService {
     }
   ) {
     const { id, time_ranges, ...restOfParams } = params;
-    const defaultFields = `name,daily_budget,adsets{name,daily_budget,targeting{geo_locations{countries}},insights.time_ranges(${time_ranges}){spend},adcreatives{object_story_spec{video_data}}}`;
+    const defaultFields = `name,daily_budget,adsets{name,daily_budget,effective_status,targeting{geo_locations{countries}},insights.time_ranges(${time_ranges}){spend},adcreatives{object_story_spec{video_data}}}`;
 
     const searchParams: any = {
       access_token: this.config.access_token,
@@ -211,6 +211,10 @@ export class FacebookAdsManagerServerService {
             adsets.data.map(async (adset: any) => {
               const { adcreatives, insights, targeting, ...restOfAdsets } =
                 adset;
+              restOfAdsets.effective_status =
+                restOfAdsets.effective_status.includes("PAUSED")
+                  ? "PAUSED"
+                  : restOfAdsets.effective_status;
               const hasAdcreatives = adcreatives?.data.length > 0;
               if (hasAdcreatives) {
                 const domains: string[] = [];

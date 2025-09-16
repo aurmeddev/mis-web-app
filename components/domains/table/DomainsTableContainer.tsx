@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SearchParamsManager } from "@/lib/utils/search-params/SearchParamsManager";
 import { useRouter, useSearchParams } from "next/navigation";
-import { AddDomainTable } from "./AddDomainTable";
+import { DomainsTable } from "./DomainsTable";
 import { SearchInput } from "@/components/search/SearchInput";
 import { SearchQuery } from "@/components/otp-generator/type";
 import { useDebouncedCallback } from "use-debounce";
@@ -35,7 +35,7 @@ type AddDomainForm = {
   name: string;
 };
 
-export function AddDomainTableContainer({
+export function DomainsTableContainer({
   response,
 }: UserManagementTableContainerProps) {
   const domainsService = new DomainManagerClientService();
@@ -301,7 +301,7 @@ export function AddDomainTableContainer({
         </div>
       </div>
       <ScrollArea className="h-[70dvh] mt-4">
-        <AddDomainTable
+        <DomainsTable
           form={form}
           data={tableData}
           addMode={isAddingNew}

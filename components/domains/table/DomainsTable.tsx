@@ -1,6 +1,6 @@
 import { TableBody, Table, TableRow, TableCell } from "@/components/ui/table";
 import { RowAddMode } from "./row-actions/RowAddMode";
-import { AddDomainRecordRaw } from "./AddDomainTableContainer";
+import { AddDomainRecordRaw } from "./DomainsTableContainer";
 import { StatusSelect } from "../select/StatusSelect";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -15,7 +15,7 @@ import {
 import { Header } from "@/components/table/header/Header";
 import { RowActions } from "@/components/user-management/table/row-actions/RowActions";
 
-type AddDomainTableProps = {
+type DomainsTableProps = {
   data: AddDomainRecordRaw[];
   form: AddDomainRecordRaw;
   addMode: boolean;
@@ -45,7 +45,7 @@ function BadgeStatus({ isActive }: { isActive: boolean }) {
   );
 }
 
-export function AddDomainTable({
+export function DomainsTable({
   data,
   form,
   addMode,
@@ -55,7 +55,7 @@ export function AddDomainTable({
   handleInputChange,
   handleStatusChange,
   isActionDisabled,
-}: AddDomainTableProps) {
+}: DomainsTableProps) {
   const tableHeaders = [
     { label: "#", className: "border-r w-[4%]" },
     { label: "Domain Name", className: "border-r w-[30%]" },

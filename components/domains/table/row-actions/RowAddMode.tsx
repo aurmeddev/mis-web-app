@@ -1,7 +1,7 @@
 import { Input } from "@/components/ui/input";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { StatusSelect } from "../../select/StatusSelect";
-import { AddDomainRecordRaw } from "../AddDomainTableContainer";
+import { AddDomainRecordRaw } from "../DomainsTableContainer";
 import { RowActions } from "@/components/user-management/table/row-actions/RowActions";
 
 type RowAddModeProps = {

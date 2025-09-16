@@ -27,6 +27,10 @@ type Props = {
 export function AdCheckerTable({ onViewCreatives, tableData }: Props) {
   const columns = useAdColumns(onViewCreatives);
   const [colSizing, setColSizing] = useState<ColumnSizingState>({});
+  const [columnVisibility, setColumnVisibility] = useState<any>({
+    disable_reason: false,
+    account_status: false,
+  });
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 10,
@@ -39,11 +43,13 @@ export function AdCheckerTable({ onViewCreatives, tableData }: Props) {
     getPaginationRowModel: getPaginationRowModel(),
     onPaginationChange: setPagination,
     onColumnSizingChange: setColSizing,
+    onColumnVisibilityChange: setColumnVisibility,
     enableColumnResizing: true,
     columnResizeMode: "onChange",
     state: {
       pagination,
       columnSizing: colSizing,
+      columnVisibility,
     },
   });
 

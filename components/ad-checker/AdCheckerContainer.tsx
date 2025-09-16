@@ -24,6 +24,7 @@ export type AdData = {
   id: string | number;
   profile: string;
   ad_account: string;
+  effective_status: string;
   account_status: string;
   disable_reason: string;
   campaign_name: string;
@@ -103,6 +104,7 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
           profile: profile.profile,
           ad_account: "",
           account_status: "",
+          effective_status: "",
           disable_reason: "",
           campaign_name: "",
           daily_budget: "",
@@ -140,6 +142,7 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
             id: Number(ad.id) || 0,
             profile: profile.profile,
             ad_account: ad.ad_account_name || "",
+            effective_status: ad.effective_status,
             account_status: ad.account_status,
             disable_reason: ad.disable_reason,
             campaign_name: ad.name || "",

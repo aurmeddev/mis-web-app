@@ -1,4 +1,4 @@
-import { FacebookAdsManagerServerService } from "@/lib/features/ads-manager/FacebookAdsManagerServerService";
+import { FacebookAdsManagerServerService } from "@/lib/features/ads-manager/facebook/FacebookAdsManagerServerService";
 import { CryptoServerService } from "@/lib/features/security/cryptography/CryptoServerService";
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { NextResponse, NextRequest } from "next/server";

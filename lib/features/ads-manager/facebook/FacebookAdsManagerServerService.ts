@@ -5,7 +5,7 @@ import {
   MarketingApiAccessTokenConfigProps,
 } from "./type/FacebookMarketingApiProps";
 import { ApiResponseProps } from "@/database/dbConnection";
-import { DomainManagerServerService } from "../domains/DomainManagerServerService";
+import { DomainManagerServerService } from "../../domains/DomainManagerServerService";
 
 type ResultProps = {
   data: any[];

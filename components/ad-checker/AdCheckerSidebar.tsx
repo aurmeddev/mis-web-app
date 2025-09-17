@@ -9,8 +9,8 @@ import { ApProfilesService } from "@/lib/features/ap-profiles/ApProfilesService"
 import { Progress } from "../ui/progress";
 import { ProfileMarketingApiAccessToken } from "./AdCheckerContainer";
 import { GlobalTooltip } from "../tooltip/GlobalTooltip";
-import { FacebookAdsManagerServerService } from "@/lib/features/ads-manager/FacebookAdsManagerServerService";
-import { FacebookAdsManagerClientService } from "@/lib/features/ads-manager/FacebookAdsManagerClientService";
+import { FacebookAdsManagerServerService } from "@/lib/features/ads-manager/facebook/FacebookAdsManagerServerService";
+import { FacebookAdsManagerClientService } from "@/lib/features/ads-manager/facebook/FacebookAdsManagerClientService";
 import { toast } from "sonner";
 
 type Props = {

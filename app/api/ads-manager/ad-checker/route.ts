@@ -1,7 +1,7 @@
 import {
   FacebookAdsManagerServerService,
   formatCampaigns,
-} from "@/lib/features/ads-manager/FacebookAdsManagerServerService";
+} from "@/lib/features/ads-manager/facebook/FacebookAdsManagerServerService";
 import { CryptoServerService } from "@/lib/features/security/cryptography/CryptoServerService";
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { addDays, format } from "date-fns";

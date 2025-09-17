@@ -3,7 +3,7 @@ import { GetAllFbAccountsProps } from "@/lib/features/fb-accounts/type/FbAccount
 import { AdCheckerSidebar } from "./AdCheckerSidebar";
 import { AdCheckerTable } from "./table/AdCheckerTable";
 import { startTransition, useEffect, useState } from "react";
-import { FacebookAdsManagerClientService } from "@/lib/features/ads-manager/FacebookAdsManagerClientService";
+import { FacebookAdsManagerClientService } from "@/lib/features/ads-manager/facebook/FacebookAdsManagerClientService";
 import { toast } from "sonner";
 import { AdCreativesDialog } from "./dialog/AdCreativesDialog";
 import { AdCheckerProgressDialog } from "./dialog/AdCheckerProgressDialog";

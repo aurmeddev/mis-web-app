@@ -5,6 +5,7 @@ import {
   getCoreRowModel,
   getPaginationRowModel,
   useReactTable,
+  VisibilityState,
 } from "@tanstack/react-table";
 import {
   Table,
@@ -27,7 +28,7 @@ type Props = {
 export function AdCheckerTable({ onViewCreatives, tableData }: Props) {
   const columns = useAdColumns(onViewCreatives);
   const [colSizing, setColSizing] = useState<ColumnSizingState>({});
-  const [columnVisibility, setColumnVisibility] = useState<any>({
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
     disable_reason: false,
     account_status: false,
   });

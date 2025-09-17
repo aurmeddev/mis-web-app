@@ -88,6 +88,8 @@ export function useAdColumns(onViewCreatives: (adCreatives: any) => void) {
         cell: ({ row, getValue }) => {
           const accountStatus = String(row.getValue("account_status"));
           const disableReason = String(row.getValue("disable_reason"));
+          const filteredReason =
+            disableReason.toLocaleLowerCase() !== "none" ? disableReason : "";
           const effectStatus = getValue<string>();
           if (accountStatus == "ACTIVE") {
             return <div>{effectStatus}</div>;
@@ -96,7 +98,7 @@ export function useAdColumns(onViewCreatives: (adCreatives: any) => void) {
             <div className="whitespace-normal">
               <div>{accountStatus}</div>
               <div className="text-sm text-muted-foreground">
-                Reason: <span className="lowercase">{disableReason}</span>
+                <span className="lowercase">{filteredReason}</span>
               </div>
             </div>
           );

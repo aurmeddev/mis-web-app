@@ -4,7 +4,6 @@ import {
 } from "@/lib/features/ads-manager/FacebookAdsManagerServerService";
 import { CryptoServerService } from "@/lib/features/security/cryptography/CryptoServerService";
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
-import { SearchParamsManager } from "@/lib/utils/search-params/SearchParamsManager";
 import { addDays, format } from "date-fns";
 import { NextResponse, NextRequest } from "next/server";
 export const POST = async (request: NextRequest) => {
@@ -20,19 +19,17 @@ export const POST = async (request: NextRequest) => {
     );
   }
 
-  const {
-    date_from,
-    date_to,
-  }: // app_secret_key, NOTE: Develop an additional layer of security by requiring app secret
-  {
+  let payload: {
+    access_token: string;
     date_from?: string;
     date_to?: string;
     // app_secret_key?: string;
-  } = new SearchParamsManager().toObject(request.nextUrl.searchParams);
-
-  let payload: {
-    access_token: string;
-  } = { access_token: "" };
+  } = {
+    access_token: "",
+    date_from: "",
+    date_to: "",
+    // app_secret_key:"",
+  };
   try {
     payload = await request.json();
   } catch (error) {
@@ -57,8 +54,8 @@ export const POST = async (request: NextRequest) => {
   }
 
   const yesterdayAndToday = {
-    from: date_from || format(addDays(new Date(), -1), "yyyy-MM-dd"),
-    to: date_to || format(addDays(new Date(), 0), "yyyy-MM-dd"),
+    from: payload.date_from || format(addDays(new Date(), -1), "yyyy-MM-dd"),
+    to: payload.date_to || format(addDays(new Date(), 0), "yyyy-MM-dd"),
   };
 
   const decipher = new CryptoServerService();

@@ -4,7 +4,6 @@ import {
 } from "@/lib/features/ads-manager/FacebookAdsManagerServerService";
 import { CryptoServerService } from "@/lib/features/security/cryptography/CryptoServerService";
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
-import { SearchParamsManager } from "@/lib/utils/search-params/SearchParamsManager";
 import { addDays, format } from "date-fns";
 import { NextResponse, NextRequest } from "next/server";
 export const POST = async (request: NextRequest) => {
@@ -20,19 +19,12 @@ export const POST = async (request: NextRequest) => {
   //   );
   // }
 
-  const {
-    date_from,
-    date_to,
-  }: // app_secret_key, NOTE: Develop an additional layer of security by requiring app secret
-  {
-    date_from?: string;
-    date_to?: string;
-    // app_secret_key?: string;
-  } = new SearchParamsManager().toObject(request.nextUrl.searchParams);
-
   let payload: {
     access_token: string;
-  } = { access_token: "" };
+    date_from?: string;
+    date_to?: string;
+    filtering: { field: string; operator: "CONTAIN"; value: string }[];
+  } = { access_token: "", filtering: [], date_from: "", date_to: "" };
   try {
     payload = await request.json();
   } catch (error) {
@@ -45,6 +37,7 @@ export const POST = async (request: NextRequest) => {
       { status: 400 }
     );
   }
+
   if (!payload.access_token) {
     return NextResponse.json(
       {
@@ -57,8 +50,8 @@ export const POST = async (request: NextRequest) => {
   }
 
   const yesterday = {
-    from: date_from || format(addDays(new Date(), -1), "yyyy-MM-dd"),
-    to: date_to || format(addDays(new Date(), -1), "yyyy-MM-dd"),
+    from: payload.date_from || format(addDays(new Date(), -1), "yyyy-MM-dd"),
+    to: payload.date_to || format(addDays(new Date(), -1), "yyyy-MM-dd"),
   };
 
   const decipher = new CryptoServerService();
@@ -97,6 +90,7 @@ export const POST = async (request: NextRequest) => {
     const { data } = await graphApi.adInsights({
       id: ada.id,
       time_ranges: `[{"since":"${yesterday.from}","until":"${yesterday.to}"}]`,
+      filtering: payload.filtering || [],
     });
     ada.campaigns = data;
   }

@@ -75,18 +75,16 @@ export class FacebookAdsManagerServerService {
       id: string;
     }
   ) {
-    const { id, time_ranges, ...restOfParams } = params;
+    const { id, time_ranges, filtering } = params;
     const insightFields = baseInsightsFields.join(",");
-    const defaultFields = `name,daily_budget,adsets{name,daily_budget,effective_status,targeting{geo_locations{countries}},insights.time_ranges(${time_ranges}){${insightFields}}}`;
-
     const searchParams: any = {
       access_token: this.config.access_token,
-      ...restOfParams,
+      fields: `name,daily_budget,adsets{name,daily_budget,effective_status,targeting{geo_locations{countries}},insights.time_ranges(${time_ranges}){${insightFields}}}`,
       use_account_attribution_setting: true,
     };
 
-    if (!restOfParams.fields) {
-      searchParams.fields = defaultFields;
+    if (isFilteringValid(filtering || [])) {
+      searchParams.filtering = filtering;
     }
 
     const searchQueryParams = new SearchParamsManager().append(searchParams);
@@ -166,23 +164,17 @@ export class FacebookAdsManagerServerService {
   async adChecker(
     params: Omit<
       BaseFacebookAdsManagerServiceProps,
-      "access_token" | "filtering"
+      "access_token" | "filtering" | "fields"
     > & {
       id: string;
     }
   ) {
-    const { id, time_ranges, ...restOfParams } = params;
-    const defaultFields = `name,daily_budget,adsets{name,daily_budget,effective_status,targeting{geo_locations{countries}},insights.time_ranges(${time_ranges}){spend},adcreatives{object_story_spec{video_data}}}`;
-
+    const { id, time_ranges } = params;
     const searchParams: any = {
       access_token: this.config.access_token,
-      ...restOfParams,
       use_account_attribution_setting: true,
+      fields: `name,daily_budget,adsets{name,daily_budget,effective_status,targeting{geo_locations{countries}},insights.time_ranges(${time_ranges}){spend},adcreatives{object_story_spec{video_data}}}`,
     };
-
-    if (!restOfParams.fields) {
-      searchParams.fields = defaultFields;
-    }
 
     const searchQueryParams = new SearchParamsManager().append(searchParams);
     const response = await fetch(
@@ -597,6 +589,33 @@ const getAccessTokenStatus = (error: string) => {
   return {
     status,
   };
+};
+
+export const isFilteringValid = (
+  filtering: { field: string; operator: "CONTAIN"; value: string }[]
+) => {
+  if (!Array.isArray(filtering)) {
+    return false;
+  }
+
+  for (const item of filtering) {
+    if (typeof item !== "object" || item === null) {
+      return false;
+    }
+
+    // Use a quick check for the required properties and their types.
+    if (
+      typeof item.field !== "string" ||
+      item.field.trim() === "" ||
+      item.operator !== "CONTAIN" ||
+      typeof item.value !== "string" ||
+      item.value.trim() === ""
+    ) {
+      return false;
+    }
+  }
+
+  return true;
 };
 
 // import { createHmac } from "crypto";

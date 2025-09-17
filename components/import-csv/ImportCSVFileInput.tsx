@@ -1,5 +1,5 @@
 "use client";
-import { Import } from "lucide-react";
+import { Import, Upload } from "lucide-react";
 import { Dispatch, SetStateAction, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -65,11 +65,11 @@ export const ImportCSVFileInput = ({
     <>
       <Button
         variant={btnVariant}
-        className={cn("h-8", className)}
+        className={cn("cursor-pointer h-8", className)}
         onClick={() => inputFileRef.current?.click()}
         disabled={isDisabled}
       >
-        <Import />
+        <Upload />
         {title ? title : "Import file"}
       </Button>
       <Input

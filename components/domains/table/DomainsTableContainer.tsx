@@ -1,7 +1,7 @@
 "use client";
 import { ChangeEvent, useEffect, useOptimistic, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { ExternalToast, toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SearchParamsManager } from "@/lib/utils/search-params/SearchParamsManager";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -14,6 +14,8 @@ import { Pagination } from "@/components/pagination/route-based/Pagination";
 import { PaginationProps } from "@/lib/utils/pagination/type/PaginationProps";
 import { ApiResponseProps } from "@/database/dbConnection";
 import { ImportCSVFileInput } from "@/components/import-csv/ImportCSVFileInput";
+import { DomainUtils } from "@/lib/utils/domain/DomainUtils";
+import { DownloadLocalFile } from "@/components/shared/download/DownloadLocalFile";
 
 type UserManagementTableContainerProps = {
   response: ApiResponseProps & {
@@ -43,6 +45,8 @@ export function DomainsTableContainer({
 }: UserManagementTableContainerProps) {
   const domainsService = new DomainManagerClientService();
   const searchParamsManager = new SearchParamsManager();
+  const domainUtils = new DomainUtils();
+
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -70,11 +74,15 @@ export function DomainsTableContainer({
     selectedResult: null,
   });
 
-  const showToast = (isSuccess: boolean, message: string) => {
+  const showToast = (
+    isSuccess: boolean,
+    message: string,
+    option?: ExternalToast
+  ) => {
     if (!isSuccess) {
-      toast.error(message);
+      toast.error(message, option);
     } else {
-      toast.success(message);
+      toast.success(message, option);
     }
   };
 
@@ -296,6 +304,15 @@ export function DomainsTableContainer({
       const filteredData = importData.filter((item) => item.domain_name);
 
       for (const domain of filteredData) {
+        const isValidDomain = domainUtils.isValidDomain(domain.domain_name);
+
+        if (!isValidDomain) {
+          showToast(false, `${domain.domain_name} is not a valid domain.`, {
+            duration: 8000,
+          });
+          continue;
+        }
+
         const { isSuccess, data, message } = await domainsService.post({
           domain_name: domain.domain_name,
         });
@@ -321,15 +338,15 @@ export function DomainsTableContainer({
 
   return (
     <>
-      <div className="flex justify-start gap-2 sm:w-[60%] lg:w-[55%] 2xl:w-1/2 mt-4 w-[40%]">
+      <div className="flex justify-start gap-2 mt-4 w-full">
         <Button
-          className="h-9"
+          className="cursor-pointer h-9"
           variant="default"
           onClick={handleAddDomainEntry}
         >
           New Domain Entry
         </Button>
-        <div className="relative w-full">
+        <div className="relative w-[30%]">
           <SearchInput
             className="h-9"
             searchQuery={searchQuery}
@@ -342,8 +359,16 @@ export function DomainsTableContainer({
         <ImportCSVFileInput
           className="h-9"
           onSetFileData={handleSetFileData}
-          title="Upload domains"
+          title="Upload Domains"
         />
+
+        <div className="self-center w-1/2">
+          <DownloadLocalFile
+            fileNameWithExt="upload-domains-format.csv"
+            text="Download CSV File Format"
+            url={"/downloadable/upload-domains-format.csv"}
+          />
+        </div>
       </div>
       <ScrollArea className="h-[70dvh] mt-4">
         <DomainsTable

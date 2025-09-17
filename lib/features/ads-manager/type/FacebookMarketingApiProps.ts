@@ -7,7 +7,7 @@ type BaseFacebookAdsManagerServiceProps = {
 
 type MarketingApiAccessTokenConfigProps = Omit<
   BaseFacebookAdsManagerServiceProps,
-  "time_ranges" | "fields" | "filtering"
+  "time_ranges" | "filtering"
 >;
 export type {
   BaseFacebookAdsManagerServiceProps,

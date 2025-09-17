@@ -23,17 +23,14 @@ export class FacebookAdsManagerServerService {
   constructor(private config: MarketingApiAccessTokenConfigProps) {
     this.config = config;
   }
-  async getAdAccounts(params: { fields?: string }): Promise<ApiResponseProps> {
-    const defaultFields = `id,name,account_status,disable_reason`;
+  async getAdAccounts(): Promise<ApiResponseProps> {
     const searchParams: any = {
       access_token: this.config.access_token,
       use_account_attribution_setting: true,
+      fields: `id,name,account_status,disable_reason`,
       // filtering: `[{field: "name",operator:"CONTAIN", value: "WZYC-FT-June 23-3"}]`,
     };
 
-    if (!params.fields) {
-      searchParams.fields = defaultFields;
-    }
     const searchQueryParams = new SearchParamsManager().append(searchParams);
     const response = await fetch(
       `${this.graphFbApiConfig.baseUrl}/${this.graphFbApiConfig.version}/me/adaccounts${searchQueryParams}`,

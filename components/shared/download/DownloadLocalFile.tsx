@@ -7,7 +7,7 @@ type Props = {
   url: string;
 };
 
-export default function DownloadLocalFile({
+export function DownloadLocalFile({
   className,
   fileNameWithExt,
   text,

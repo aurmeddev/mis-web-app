@@ -81,7 +81,7 @@ export class FacebookAdsManagerServerService {
     };
 
     if (isFilteringValid(filtering || [])) {
-      searchParams.filtering = filtering;
+      searchParams.filtering = JSON.stringify(filtering);
     }
 
     const searchQueryParams = new SearchParamsManager().append(searchParams);

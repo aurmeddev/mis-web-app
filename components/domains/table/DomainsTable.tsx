@@ -115,7 +115,13 @@ export function DomainsTable({
           return (
             <TableRow key={rowData.id}>
               <TableCell className="border-r w-[10%]">
-                {rowData.row_id}
+                {rowData.row_id ? (
+                  rowData.row_id
+                ) : (
+                  <div className="text-green-500 text-[.6rem] uppercase">
+                    New
+                  </div>
+                )}
               </TableCell>
               <TableCell className="border-r font-medium">
                 {isEditing ? (

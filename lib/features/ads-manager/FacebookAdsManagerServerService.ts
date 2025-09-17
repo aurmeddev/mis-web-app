@@ -161,7 +161,7 @@ export class FacebookAdsManagerServerService {
   async adChecker(
     params: Omit<
       BaseFacebookAdsManagerServiceProps,
-      "access_token" | "filtering" | "fields"
+      "access_token" | "filtering"
     > & {
       id: string;
     }

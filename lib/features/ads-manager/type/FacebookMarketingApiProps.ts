@@ -1,9 +1,8 @@
 type BaseFacebookAdsManagerServiceProps = {
   access_token: string;
-  fields?: string;
   time_ranges: string;
   app_secret_key?: string; // Require app secret or app secret proof for API calls with access tokens used outside of trusted contexts.
-  filtering?: string;
+  filtering?: { field: string; operator: "CONTAIN"; value: string }[];
 };
 
 type MarketingApiAccessTokenConfigProps = Omit<

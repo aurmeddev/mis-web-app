@@ -24,7 +24,13 @@ export const POST = async (request: NextRequest) => {
     date_from?: string;
     date_to?: string;
     filtering: { field: string; operator: "CONTAIN"; value: string }[];
-  } = { access_token: "", filtering: [], date_from: "", date_to: "" };
+    // app_secret_key?: string;
+  } = {
+    access_token: "",
+    filtering: [],
+    date_from: "",
+    date_to: "", // app_secret_key?: string;
+  };
   try {
     payload = await request.json();
   } catch (error) {
@@ -73,7 +79,7 @@ export const POST = async (request: NextRequest) => {
   const graphApi = new FacebookAdsManagerServerService({
     access_token: decryptedData.decryptedData,
   });
-  const { isSuccess, data, message } = await graphApi.getAdAccounts({});
+  const { isSuccess, data, message } = await graphApi.getAdAccounts();
   if (!isSuccess) {
     return NextResponse.json(
       {

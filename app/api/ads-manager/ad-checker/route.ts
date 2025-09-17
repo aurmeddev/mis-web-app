@@ -77,7 +77,7 @@ export const POST = async (request: NextRequest) => {
   const graphApi = new FacebookAdsManagerServerService({
     access_token: decryptedData.decryptedData,
   });
-  const { isSuccess, data, message } = await graphApi.getAdAccounts({});
+  const { isSuccess, data, message } = await graphApi.getAdAccounts();
   if (!isSuccess) {
     return NextResponse.json(
       {

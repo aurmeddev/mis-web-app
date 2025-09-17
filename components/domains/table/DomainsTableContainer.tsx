@@ -1,5 +1,5 @@
 "use client";
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useOptimistic, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -13,6 +13,7 @@ import { DomainManagerClientService } from "@/lib/features/domains/DomainManager
 import { Pagination } from "@/components/pagination/route-based/Pagination";
 import { PaginationProps } from "@/lib/utils/pagination/type/PaginationProps";
 import { ApiResponseProps } from "@/database/dbConnection";
+import { ImportCSVFileInput } from "@/components/import-csv/ImportCSVFileInput";
 
 type UserManagementTableContainerProps = {
   response: ApiResponseProps & {
@@ -34,6 +35,8 @@ type AddDomainForm = {
   ip_address: string;
   name: string;
 };
+
+type ImportData = { domain_name: string };
 
 export function DomainsTableContainer({
   response,
@@ -59,6 +62,7 @@ export function DomainsTableContainer({
   const [tableData, setTableData] = useState<AddDomainRecordRaw[]>(domainsData);
   const [isSubmitInProgress, setIsSubmitInProgress] = useState(false);
   const [hasStatusChanged, setHasStatusChanged] = useState(false);
+  const [importData, setImportData] = useState<ImportData[]>();
   const [searchQuery, setSearchQuery] = useState<SearchQuery>({
     query: "",
     isSearching: false,
@@ -281,11 +285,45 @@ export function DomainsTableContainer({
     router.push(`?${urlQuery.toString()}`);
   };
 
+  const handleSetFileData = (json: any) => {
+    setImportData(json);
+  };
+
+  useEffect(() => {
+    if (!importData?.length) return;
+
+    const uploadDomains = async () => {
+      const filteredData = importData.filter((item) => item.domain_name);
+
+      for (const domain of filteredData) {
+        const { isSuccess, data, message } = await domainsService.post({
+          domain_name: domain.domain_name,
+        });
+
+        if (!isSuccess) {
+          showToast(false, message);
+          continue;
+        }
+
+        setTableData((prevState) => [
+          { ...data[0], domain_name: domain.domain_name },
+          ...prevState,
+        ]);
+      }
+    };
+    toast.promise(uploadDomains, {
+      loading: "Uploading domains...",
+      success: "Upload complete!",
+      error: "Upload failed",
+      position: "bottom-left",
+    });
+  }, [importData]);
+
   return (
     <>
-      <div className="flex justify-start gap-2 sm:w-1/2 2xl:w-1/3 mt-4 w-1/3">
+      <div className="flex justify-start gap-2 sm:w-[60%] lg:w-[55%] 2xl:w-1/2 mt-4 w-[40%]">
         <Button
-          className="h-8"
+          className="h-9"
           variant="default"
           onClick={handleAddDomainEntry}
         >
@@ -293,12 +331,19 @@ export function DomainsTableContainer({
         </Button>
         <div className="relative w-full">
           <SearchInput
+            className="h-9"
             searchQuery={searchQuery}
             onSearchFocus={handleSearchFocus}
             onSearchQueryChange={handleSearchQueryChange}
             placeholder="Search a domain"
           />
         </div>
+
+        <ImportCSVFileInput
+          className="h-9"
+          onSetFileData={handleSetFileData}
+          title="Upload domains"
+        />
       </div>
       <ScrollArea className="h-[70dvh] mt-4">
         <DomainsTable

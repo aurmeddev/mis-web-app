@@ -63,7 +63,7 @@ export default async function RootLayout({
             )}
           </ThemeProvider>
         </UserActivityContextProvider>
-        <Toaster expand />
+        <Toaster expand visibleToasts={5} />
       </body>
     </html>
   );

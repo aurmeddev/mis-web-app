@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { ThemeProvider } from "@/components/theme/theme-provider";
@@ -13,14 +13,10 @@ import { Toaster } from "@/components/ui/sonner";
 import { UserActivityContextProvider } from "@/components/auth/context/UserActivityContextProvider";
 import { UserAccessController } from "@/components/auth/user-access-controller";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -38,9 +34,7 @@ export default async function RootLayout({
 
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${inter.className} antialiased`}>
         <UserActivityContextProvider>
           <ThemeProvider
             attribute="class"

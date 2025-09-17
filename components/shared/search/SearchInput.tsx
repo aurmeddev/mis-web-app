@@ -1,8 +1,8 @@
-import { SearchQuery } from "../otp-generator/type";
-import { Input } from "../ui/input";
 import { Loader2, SearchIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ChangeEvent } from "react";
+import { Input } from "@/components/ui/input";
+import { SearchQuery } from "@/components/otp-generator/type";
 
 type Props = {
   searchQuery: SearchQuery;

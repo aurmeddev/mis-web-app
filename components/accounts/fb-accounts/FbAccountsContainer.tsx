@@ -1,6 +1,6 @@
 import { Suspense } from "react";
-import { TableLoader } from "@/components/skeleton-loader/TableLoader";
-import { TableFetch } from "@/components/table/server-fetch/TableFetch";
+import { TableLoader } from "@/components/shared/skeleton-loader/TableLoader";
+import { TableFetch } from "@/components/shared/table/server-fetch/TableFetch";
 import { FbAccountsService } from "@/lib/features/fb-accounts/FbAccountsService";
 import { FbAccountsTableContainer } from "./table/FbAccountsTableContainer";
 import { Option } from "./type";

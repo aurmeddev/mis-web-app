@@ -18,7 +18,7 @@ import {
 import { AdData } from "../AdCheckerContainer";
 import { useAdColumns } from "../column/useAdColumns";
 import { useState } from "react";
-import { Pagination } from "@/components/pagination/tanstack/Pagination";
+import { Pagination } from "@/components/shared/pagination/tanstack/Pagination";
 
 type Props = {
   tableData: AdData[];

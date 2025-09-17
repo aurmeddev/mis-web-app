@@ -1,8 +1,8 @@
 import { Suspense } from "react";
-import { TableFetch } from "../table/server-fetch/TableFetch";
+import { TableFetch } from "../shared/table/server-fetch/TableFetch";
 import { DomainManagerClientService } from "@/lib/features/domains/DomainManagerClientService";
 import { DomainsTableContainer } from "./table/DomainsTableContainer";
-import { TableLoader } from "../skeleton-loader/TableLoader";
+import { TableLoader } from "../shared/skeleton-loader/TableLoader";
 
 type Props = {
   searchParams: { page: number; limit: number };

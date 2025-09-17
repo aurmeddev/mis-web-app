@@ -8,10 +8,10 @@ import { Trash2, X } from "lucide-react";
 import { ApProfilesService } from "@/lib/features/ap-profiles/ApProfilesService";
 import { Progress } from "../ui/progress";
 import { ProfileMarketingApiAccessToken } from "./AdCheckerContainer";
-import { GlobalTooltip } from "../tooltip/GlobalTooltip";
 import { FacebookAdsManagerServerService } from "@/lib/features/ads-manager/facebook/FacebookAdsManagerServerService";
 import { FacebookAdsManagerClientService } from "@/lib/features/ads-manager/facebook/FacebookAdsManagerClientService";
 import { toast } from "sonner";
+import { GlobalTooltip } from "../shared/tooltip/GlobalTooltip";
 
 type Props = {
   isActionDisabled: boolean;

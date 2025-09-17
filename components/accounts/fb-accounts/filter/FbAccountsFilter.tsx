@@ -5,11 +5,11 @@ import {
 } from "@/components/ui/popover";
 import { ListFilter } from "lucide-react";
 import { FbAccountsFilterProps } from "../type";
-import { MultiSelectComboBox as SelectRecruiter } from "@/components/select/MultiSelectComboBox";
 import { useEffect, useState } from "react";
 import { StatusSelectFilter } from "./select/StatusSelectFilter";
 import { Button } from "@/components/ui/button";
 import { PopoverClose } from "@radix-ui/react-popover";
+import { MultiSelectComboBox as SelectRecruiter } from "@/components/shared/select/MultiSelectComboBox";
 
 export function FbAccountsFilter({
   recruiters,

@@ -1,7 +1,7 @@
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { X } from "lucide-react";
 import { Dispatch, ReactNode, SetStateAction } from "react";
-import { Button } from "../ui/button";
 
 type SearchResultContainerProps = {
   children: ReactNode;

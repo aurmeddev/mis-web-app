@@ -12,7 +12,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { Badge } from "../ui/badge";
+import { Badge } from "@/components/ui/badge";
 
 type MultiSelectComboBoxProps = {
   selectOptions: any;

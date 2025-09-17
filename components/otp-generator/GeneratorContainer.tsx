@@ -4,12 +4,12 @@ import { GeneratorCard } from "./GeneratorCard";
 import { ChangeEvent, useEffect, useState, useTransition } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import { ApProfilesService } from "@/lib/features/ap-profiles/ApProfilesService";
-import { SearchResultContainer } from "../search/SearchResultContainer";
 import { OtpGeneratorService } from "@/lib/features/security/otp-generator/OtpGeneratorService";
 import { GeneratorCardLoading } from "./GeneratorCardLoading";
 import { SearchQuery } from "./type";
 import { GeneratorSearchResults } from "./search/GeneratorSearchResults";
-import { SearchInput } from "../search/SearchInput";
+import { SearchInput } from "../shared/search/SearchInput";
+import { SearchResultContainer } from "../shared/search/SearchResultContainer";
 
 export function GeneratorContainer() {
   const profilesService = new ApProfilesService();

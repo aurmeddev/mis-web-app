@@ -66,7 +66,7 @@ export function DomainsTableContainer({
   const [tableData, setTableData] = useState<AddDomainRecordRaw[]>(domainsData);
   const [isSubmitInProgress, setIsSubmitInProgress] = useState(false);
   const [hasStatusChanged, setHasStatusChanged] = useState(false);
-  const [importData, setImportData] = useState<ImportData[]>();
+  const [importData, setImportData] = useState<ImportData[]>([]);
   const [searchQuery, setSearchQuery] = useState<SearchQuery>({
     query: "",
     isSearching: false,
@@ -297,6 +297,12 @@ export function DomainsTableContainer({
     setImportData(json);
   };
 
+  const handleFileValidate = (isValid: boolean) => {
+    if (!isValid) {
+      showToast(false, "Please upload a valid .csv file.");
+    }
+  };
+
   useEffect(() => {
     if (!importData?.length) return;
 
@@ -358,6 +364,7 @@ export function DomainsTableContainer({
 
         <ImportCSVFileInput
           className="h-9"
+          onFileValidate={handleFileValidate}
           onSetFileData={handleSetFileData}
           title="Upload Domains"
         />

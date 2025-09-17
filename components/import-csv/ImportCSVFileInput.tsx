@@ -12,6 +12,7 @@ type Props = {
   onSetFileData: (json: any) => void;
   setFilename?: Dispatch<SetStateAction<string>>;
   onReset?: () => void;
+  onFileValidate: (isValid: boolean) => void;
   isDisabled?: boolean;
   btnVariant?:
     | "outline"
@@ -30,6 +31,7 @@ export const ImportCSVFileInput = ({
   onSetFileData,
   setFilename,
   onReset,
+  onFileValidate,
   isDisabled,
   btnVariant = "outline",
 }: Props) => {
@@ -38,6 +40,10 @@ export const ImportCSVFileInput = ({
   const csv = new Json2CsvManager();
   const handleFileChange = async (event: any) => {
     const file = event.target.files[0];
+    if (file.type !== "text/csv") {
+      onFileValidate(false);
+      return;
+    }
     if (onReset) {
       onReset();
     }

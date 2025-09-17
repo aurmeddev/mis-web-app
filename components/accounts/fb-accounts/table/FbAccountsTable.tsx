@@ -15,7 +15,7 @@ import {
   UserCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Header } from "@/components/table/header/Header";
+import { Header } from "@/components/shared/table/header/Header";
 
 type FbAccountsTableProps = {
   data: any;

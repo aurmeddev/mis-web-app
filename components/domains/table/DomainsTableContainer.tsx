@@ -6,16 +6,16 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { SearchParamsManager } from "@/lib/utils/search-params/SearchParamsManager";
 import { useRouter, useSearchParams } from "next/navigation";
 import { DomainsTable } from "./DomainsTable";
-import { SearchInput } from "@/components/search/SearchInput";
 import { SearchQuery } from "@/components/otp-generator/type";
 import { useDebouncedCallback } from "use-debounce";
 import { DomainManagerClientService } from "@/lib/features/domains/DomainManagerClientService";
-import { Pagination } from "@/components/pagination/route-based/Pagination";
+import { Pagination } from "@/components/shared/pagination/route-based/Pagination";
 import { PaginationProps } from "@/lib/utils/pagination/type/PaginationProps";
 import { ApiResponseProps } from "@/database/dbConnection";
-import { ImportCSVFileInput } from "@/components/import-csv/ImportCSVFileInput";
+import { ImportCSVFileInput } from "@/components/shared/import-csv/ImportCSVFileInput";
 import { DomainUtils } from "@/lib/utils/domain/DomainUtils";
 import { DownloadLocalFile } from "@/components/shared/download/DownloadLocalFile";
+import { SearchInput } from "@/components/shared/search/SearchInput";
 
 type UserManagementTableContainerProps = {
   response: ApiResponseProps & {

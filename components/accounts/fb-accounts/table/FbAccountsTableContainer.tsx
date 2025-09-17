@@ -13,7 +13,7 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { FbAccountsTable } from "./FbAccountsTable";
 import { FbAccountsDialog } from "../dialog/FbAccountsDialog";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Pagination } from "@/components/pagination/route-based/Pagination";
+import { Pagination } from "@/components/shared/pagination/route-based/Pagination";
 import { SearchQuery } from "@/components/otp-generator/type";
 import { ApiResponseProps } from "@/database/dbConnection";
 import { useDebouncedCallback } from "use-debounce";

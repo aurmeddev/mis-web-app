@@ -1,6 +1,6 @@
 import { Suspense } from "react";
-import { TableLoader } from "@/components/skeleton-loader/TableLoader";
-import { TableFetch } from "@/components/table/server-fetch/TableFetch";
+import { TableLoader } from "@/components/shared/skeleton-loader/TableLoader";
+import { TableFetch } from "@/components/shared/table/server-fetch/TableFetch";
 import { ApProfilesService } from "@/lib/features/ap-profiles/ApProfilesService";
 import { ManageApProfilesTableContainer } from "./table/ManageApProfilesTableContainer";
 

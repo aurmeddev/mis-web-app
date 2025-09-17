@@ -1,8 +1,9 @@
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { SearchInput } from "@/components/search/SearchInput";
-import { SearchResultContainer } from "@/components/search/SearchResultContainer";
+
 import { Dispatch, SetStateAction } from "react";
+import { SearchInput } from "@/components/shared/search/SearchInput";
+import { SearchResultContainer } from "@/components/shared/search/SearchResultContainer";
 
 type SearchWrapperProps = {
   searchQuery: any;

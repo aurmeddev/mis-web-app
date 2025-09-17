@@ -12,7 +12,7 @@ import {
   SearchX,
   User2,
 } from "lucide-react";
-import { Header } from "@/components/table/header/Header";
+import { Header } from "@/components/shared/table/header/Header";
 import { RowActions } from "@/components/user-management/table/row-actions/RowActions";
 
 type DomainsTableProps = {

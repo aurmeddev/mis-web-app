@@ -12,7 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { ManageApProfilesTable } from "./ManageApProfilesTable";
 import { ManageApProfilesDialog } from "../dialog/ManageApProfilesDialog";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Pagination } from "@/components/pagination/route-based/Pagination";
+import { Pagination } from "@/components/shared/pagination/route-based/Pagination";
 import { SearchQuery } from "@/components/otp-generator/type";
 import { ApProfilesService } from "@/lib/features/ap-profiles/ApProfilesService";
 import { ApiResponseProps } from "@/database/dbConnection";

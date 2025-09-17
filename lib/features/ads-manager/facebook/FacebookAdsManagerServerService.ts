@@ -507,12 +507,13 @@ const validateDomain = async ({ domain }: { domain: string[] }) => {
   const api = new DomainManagerServerService();
   const customSearchParams = new URLSearchParams();
   customSearchParams.set("method", "find-one");
+  customSearchParams.set("condition", "all");
   const result = await Promise.all(
     domain.map(async (value) => {
       const { isSuccess, data, message } = await api.find({
         searchKeyword: "validation",
         requestUrlSearchParams: customSearchParams,
-        payload: { domain_name: value },
+        payload: { domain_name: value, status: "active" },
       });
 
       if (!isSuccess) {

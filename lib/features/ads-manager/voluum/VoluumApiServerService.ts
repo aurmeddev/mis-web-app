@@ -1,33 +1,22 @@
-import { VoluumApiConfig } from "./config/VoluumApiConfig";
+import { appBaseUrl } from "@/lib/base-url/appBaseUrl";
+// import { VoluumApiConfig } from "./config/VoluumApiConfig";
 
 export class VoluumApiServerService {
-  private voluumApiConfig = new VoluumApiConfig();
-  constructor(private config: { accessId: string; accessKey: string }) {
-    this.config = config;
-  }
-
+  //   private voluumApiConfig = new VoluumApiConfig();
   async getSessionToken() {
-    const response = await fetch(
-      `${this.voluumApiConfig.baseUrl}/auth/access/session`,
-      {
-        method: "POST",
-        headers: {
-          "Content-type": "application/json",
-        },
-        body: JSON.stringify(this.config),
-      }
-    );
+    const response = await fetch(`${appBaseUrl}/api/voluum/get-session`, {
+      method: "GET",
+      headers: {
+        "Content-type": "application/json",
+      },
+      next: { revalidate: 5400 }, // Revalidate every 1.5 hours or 5400 seconds
+    });
 
-    if (!response.ok) {
-      const { error } = await response.json();
-      console.error(error);
-      return {
-        isSuccess: false,
-        message: error.message,
-        data: [],
-      };
-    }
-
-    return await response.json();
+    const { isSuccess, data, message } = await response.json();
+    return {
+      isSuccess,
+      data,
+      message,
+    };
   }
 }

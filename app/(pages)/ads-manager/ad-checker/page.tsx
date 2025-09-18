@@ -1,6 +1,6 @@
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { NotFound } from "@/components/not-found/not-found";
-import { AdCheckerContainer } from "@/components/ad-checker/AdCheckerContainer";
+import { AdCheckerContainer } from "@/components/ads-manager/ad-checker/AdCheckerContainer";
 export default async function Page({ searchParams }: any) {
   const session = await getSession();
   const awaitedParams = await searchParams;

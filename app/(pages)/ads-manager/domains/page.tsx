@@ -1,4 +1,4 @@
-import { DomainsContainer } from "@/components/domains/DomainsContainer";
+import { DomainsContainer } from "@/components/ads-manager/domains/DomainsContainer";
 import { NotFound } from "@/components/not-found/not-found";
 import { CryptoUtilsManager } from "@/lib/features/security/cryptography/util/CryptoUtilsManager";
 import { CryptoUtilsServerService } from "@/lib/features/security/cryptography/util/CryptoUtilsServerService";

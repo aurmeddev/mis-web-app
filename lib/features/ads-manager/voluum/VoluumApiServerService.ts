@@ -215,7 +215,7 @@ export const getCostPerEvent = (params: getCostPerEventProps) => {
   }
 
   const costPerEvent = spend / value;
-  return costPerEvent.toFixed(2);
+  return Number(costPerEvent.toFixed(2));
 };
 
 const plusOneDay = (dateString: string) => {

@@ -152,6 +152,7 @@ export class FacebookAdsManagerServerService {
               code: 404,
               message: ["No traffic data"],
             },
+            ...formatInsightsFields([]),
           },
         ],
       },

@@ -1,11 +1,11 @@
 import { Input } from "@/components/ui/input";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { StatusSelect } from "../../select/StatusSelect";
-import { AddDomainRecordRaw } from "../DomainsTableContainer";
+import { DomainsRecordRaw } from "../DomainsTableContainer";
 import { RowActions } from "@/components/user-management/table/row-actions/RowActions";
 
 type RowAddModeProps = {
-  form: AddDomainRecordRaw;
+  form: DomainsRecordRaw;
   onInputChange: (name: string, value: string) => void;
   onStatusChange: (value: string) => void;
   handleConfirm: (id: number) => void;

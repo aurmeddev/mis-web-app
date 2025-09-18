@@ -37,11 +37,11 @@ export function RowActions({
     </>
   ) : (
     <Button
-      className="cursor-pointer h-7 py-0 px-3"
+      className="cursor-pointer py-0 px-3"
       variant="outline"
       onClick={() => onEditChange(id)}
     >
-      <Pencil className="mr-1 h-4 w-4" /> Edit
+      <Pencil className="mr-0 h-4 w-4" /> Edit
     </Button>
   );
 }

@@ -2,7 +2,10 @@ import {
   FacebookAdsManagerServerService,
   formatCampaigns,
 } from "@/lib/features/ads-manager/facebook/FacebookAdsManagerServerService";
-import { VoluumApiServerService } from "@/lib/features/ads-manager/voluum/VoluumApiServerService";
+import {
+  getCostPerEvent,
+  VoluumApiServerService,
+} from "@/lib/features/ads-manager/voluum/VoluumApiServerService";
 import { CryptoServerService } from "@/lib/features/security/cryptography/CryptoServerService";
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { addDays, format } from "date-fns";
@@ -126,6 +129,18 @@ export const POST = async (request: NextRequest) => {
     });
     for (const key of Object.keys({ ...data[0] })) {
       const value = data[0][key];
+      if (typeof value === "number" && key === "v_lead") {
+        campaign.v_cpl = getCostPerEvent({
+          spend: Number(campaign?.spend),
+          value: value,
+        });
+      }
+      if (typeof value === "number" && key === "v_ftd") {
+        campaign.v_cpa = getCostPerEvent({
+          spend: Number(campaign?.spend),
+          value: value,
+        });
+      }
       campaign[key] = value;
     }
   }

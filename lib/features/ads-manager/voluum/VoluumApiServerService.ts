@@ -38,7 +38,7 @@ export class VoluumApiServerService {
       return {
         isSuccess: extractResult.isSuccess,
         message: extractResult.message,
-        data: handleResponseError("-"),
+        data: handleCustomVoluumResponse({ status: "invalid adset name" }),
       };
     }
 
@@ -50,7 +50,7 @@ export class VoluumApiServerService {
     if (!isSuccess) {
       return {
         isSuccess,
-        data: handleResponseError("error"),
+        data: handleCustomVoluumResponse({ status: "error" }),
         message,
       };
     }
@@ -73,14 +73,22 @@ export class VoluumApiServerService {
       return {
         isSuccess: false,
         message: error,
-        data: handleResponseError("error"),
+        data: handleCustomVoluumResponse({ status: "error" }),
       };
     }
 
     const { rows } = await response.json();
+    if (rows.length === 0) {
+      return {
+        isSuccess: true,
+        message: "Data has been fetched successfully!",
+        data: handleCustomVoluumResponse({ status: "archived" }),
+      };
+    }
+
     const result = formatAdInsightsResponseData(rows);
     return {
-      isSuccess: false,
+      isSuccess: true,
       message: "Data has been fetched successfully!",
       data: result,
     };
@@ -137,7 +145,16 @@ const formatAdInsightsResponseData = (
     finalResponse[newKey] = value ?? "0";
   }
 
-  return [finalResponse];
+  return [finalResponse].map((keys) => {
+    const { v_conversions, v_registered, v_lead, ...rest } = keys;
+    return {
+      ...rest,
+      v_campaign_status: "ok",
+      v_cpl: 0,
+      v_cpa: 0,
+      v_lead: v_registered !== 0 ? v_registered : v_lead,
+    };
+  });
 };
 
 const extractVoluumnCampaignId = (adset_name: string) => {
@@ -164,21 +181,41 @@ const extractVoluumnCampaignId = (adset_name: string) => {
   };
 };
 
-const handleResponseError = (value: string) => {
+type handleCustomVoluumResponseProps = {
+  status: "error" | "archived" | "no adsets found" | "invalid adset name";
+};
+export const handleCustomVoluumResponse = (
+  params: handleCustomVoluumResponseProps
+) => {
   const defaultResponseError = {
-    v_campaign_name: "error",
-    v_conversions: "error",
-    v_registered: "error",
-    v_lead: "error",
-    v_ftd: "error",
-    v_cv: "error",
+    v_campaign_name: "-",
+    v_lead: "-",
+    v_ftd: "-",
+    v_cv: "-",
+    v_cpl: "-",
+    v_cpa: "-",
+    v_campaign_status: params.status,
   };
 
-  const finalResponse: Record<string, any> = {};
-  for (const key in defaultResponseError) {
-    finalResponse[key] = value;
+  return [defaultResponseError];
+};
+
+type getCostPerEventProps = {
+  spend: number;
+  value: number;
+};
+export const getCostPerEvent = (params: getCostPerEventProps) => {
+  const { spend, value } = params;
+  if (typeof spend !== "number" || typeof value !== "number") {
+    return 0;
   }
-  return [finalResponse];
+
+  if (spend <= 0) {
+    return 0;
+  }
+
+  const costPerEvent = spend / value;
+  return costPerEvent.toFixed(2);
 };
 
 const plusOneDay = (dateString: string) => {

@@ -451,21 +451,20 @@ export const formatCampaigns = (data: any) => {
 };
 const formatInsightsFields = (insights: any) => {
   const defaultInsightFields = {
-    account_currency: "USD",
-    reach: "0",
-    impressions: "0",
-    cpm: "0",
-    spend: "0",
-    frequency: "0",
-    cost_per_inline_link_click: "0",
-    cpc: "0",
-    ctr: "0",
-    inline_link_click_ctr: "0",
+    reach: 0,
+    impressions: 0,
+    cpm: 0,
+    spend: 0,
+    frequency: 0,
+    cost_per_inline_link_click: 0,
+    cpc: 0,
+    ctr: 0,
+    inline_link_click_ctr: 0,
   };
   const events = {
-    lead: "0",
-    purchase: "0",
-    link_click: "0",
+    lead: 0,
+    purchase: 0,
+    link_click: 0,
   };
   if (insights?.data.length > 0) {
     const { actions, date_start, date_stop, ...rest } = { ...insights.data[0] };
@@ -481,20 +480,21 @@ const formatInsightsFields = (insights: any) => {
       if (result.length > 0) {
         for (const item of result) {
           if (events.hasOwnProperty(item.action_type)) {
-            events[item.action_type as keyof typeof events] = item.value ?? "0";
+            const value = Number(item.value) || 0;
+            events[item.action_type as keyof typeof events] = value;
           }
         }
       }
     }
 
-    for (const key of Object.keys(rest)) {
+    for (const key in rest) {
       if (defaultInsightFields.hasOwnProperty(key)) {
-        defaultInsightFields[key as keyof typeof defaultInsightFields] =
-          rest[key] ?? "0";
+        const value = Number(rest[key]) || 0;
+        defaultInsightFields[key as keyof typeof defaultInsightFields] = value;
       }
     }
 
-    return { ...defaultInsightFields, ...events };
+    return { account_currency: "USD", ...defaultInsightFields, ...events };
   }
 
   return {

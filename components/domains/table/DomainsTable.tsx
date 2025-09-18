@@ -1,6 +1,6 @@
 import { TableBody, Table, TableRow, TableCell } from "@/components/ui/table";
 import { RowAddMode } from "./row-actions/RowAddMode";
-import { AddDomainRecordRaw } from "./DomainsTableContainer";
+import { DomainsRecordRaw } from "./DomainsTableContainer";
 import { StatusSelect } from "../select/StatusSelect";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -14,10 +14,11 @@ import {
 } from "lucide-react";
 import { Header } from "@/components/shared/table/header/Header";
 import { RowActions } from "@/components/user-management/table/row-actions/RowActions";
+import { Button } from "@/components/ui/button";
 
 type DomainsTableProps = {
-  data: AddDomainRecordRaw[];
-  form: AddDomainRecordRaw;
+  data: DomainsRecordRaw[];
+  form: DomainsRecordRaw;
   addMode: boolean;
   editingRow: number | null;
   handleConfirm: (id: number) => void;
@@ -25,6 +26,7 @@ type DomainsTableProps = {
   handleInputChange: (name: string, value: string) => void;
   handleStatusChange: (value: string) => void;
   isActionDisabled: boolean;
+  onViewInternetbsInfo: (domain: string) => void;
 };
 
 function BadgeStatus({ isActive }: { isActive: boolean }) {
@@ -55,10 +57,11 @@ export function DomainsTable({
   handleInputChange,
   handleStatusChange,
   isActionDisabled,
+  onViewInternetbsInfo,
 }: DomainsTableProps) {
   const tableHeaders = [
     { label: "#", className: "border-r w-[4%]" },
-    { label: "Domain Name", className: "border-r w-[30%]" },
+    { label: "Domain Name", className: "border-r w-[20%]" },
     {
       label: "Status",
       icon: <CircleFadingPlus className="h-4 w-4" />,
@@ -78,7 +81,7 @@ export function DomainsTable({
     {
       label: "Actions",
       icon: <CircleStop className="h-4 w-4" />,
-      className: "w-[15%]",
+      className: "lg:w-[25%] w-[20%]",
     },
   ];
   return (
@@ -109,7 +112,7 @@ export function DomainsTable({
           </TableRow>
         )}
 
-        {data.map((rowData: AddDomainRecordRaw, idx: number) => {
+        {data.map((rowData: DomainsRecordRaw, idx: number) => {
           const isEditing = editingRow === rowData.id;
 
           return (
@@ -158,7 +161,7 @@ export function DomainsTable({
               </TableCell>
               <TableCell className="border-r">{rowData.created_at}</TableCell>
               <TableCell>
-                <div className="flex justify-center gap-2 text-center">
+                <div className="flex items-center justify-center gap-2 text-center">
                   <RowActions
                     id={rowData.id}
                     isEditing={isEditing}
@@ -166,6 +169,13 @@ export function DomainsTable({
                     onEditChange={handleEditChange}
                     isActionDisabled={isActionDisabled}
                   />
+                  <Button
+                    onClick={() => onViewInternetbsInfo(rowData.domain_name)}
+                    className="cursor-pointer text-xs"
+                    variant={"outline"}
+                  >
+                    View Details
+                  </Button>
                 </div>
               </TableCell>
             </TableRow>

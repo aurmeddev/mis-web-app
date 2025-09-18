@@ -1,5 +1,11 @@
 "use client";
-import { ChangeEvent, useEffect, useOptimistic, useState } from "react";
+import {
+  ChangeEvent,
+  startTransition,
+  useEffect,
+  useOptimistic,
+  useState,
+} from "react";
 import { Button } from "@/components/ui/button";
 import { ExternalToast, toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -16,15 +22,17 @@ import { ImportCSVFileInput } from "@/components/shared/import-csv/ImportCSVFile
 import { DomainUtils } from "@/lib/utils/domain/DomainUtils";
 import { DownloadLocalFile } from "@/components/shared/download/DownloadLocalFile";
 import { SearchInput } from "@/components/shared/search/SearchInput";
+import { InternetBsApiClientService } from "@/lib/features/domains/domain-checker/internetbs-api/InternetBsApiClientService";
+import { DomainsDialog } from "../dialog/DomainsDialog";
 
 type UserManagementTableContainerProps = {
   response: ApiResponseProps & {
     pagination?: PaginationProps;
   };
-  domainsData: AddDomainRecordRaw[];
+  domainsData: DomainsRecordRaw[];
 };
 
-export type AddDomainRecordRaw = AddDomainForm & {
+export type DomainsRecordRaw = DomainsForm & {
   row_id?: number;
   id: number;
   domain_name: string;
@@ -33,12 +41,23 @@ export type AddDomainRecordRaw = AddDomainForm & {
   status: "active" | "inactive";
 };
 
-type AddDomainForm = {
+type DomainsForm = {
   ip_address: string;
   name: string;
 };
 
 type ImportData = { domain_name: string };
+
+export type InternetBSInfo = {
+  domain: string;
+  expirationdate: string;
+  registrationdate: string;
+  paiduntil: string;
+  autorenew: string;
+  whoisprivacy: string;
+  domainstatus: string;
+  nameserver: Record<string, string>;
+};
 
 export function DomainsTableContainer({
   response,
@@ -46,6 +65,7 @@ export function DomainsTableContainer({
   const domainsService = new DomainManagerClientService();
   const searchParamsManager = new SearchParamsManager();
   const domainUtils = new DomainUtils();
+  const internetbsService = new InternetBsApiClientService();
 
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -54,7 +74,7 @@ export function DomainsTableContainer({
   const searchParamTotalPages = response.pagination?.total_pages;
   const searchParamLimit = response.pagination?.limit || 50;
 
-  const domainsData = response.data as AddDomainRecordRaw[];
+  const domainsData = response.data as DomainsRecordRaw[];
 
   const [editingRow, setEditingRow] = useState<number | null>(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
@@ -63,9 +83,13 @@ export function DomainsTableContainer({
     name: "",
     is_active: 0,
   });
-  const [tableData, setTableData] = useState<AddDomainRecordRaw[]>(domainsData);
+  const [tableData, setTableData] = useState<DomainsRecordRaw[]>(domainsData);
   const [isSubmitInProgress, setIsSubmitInProgress] = useState(false);
   const [hasStatusChanged, setHasStatusChanged] = useState(false);
+  const [isDomainsDialogOpen, setIsDomainsDialogOpen] = useState(false);
+  const [internetBsInfo, setInternetBsInfo] = useState<Partial<InternetBSInfo>>(
+    {}
+  );
   const [importData, setImportData] = useState<ImportData[]>([]);
   const [searchQuery, setSearchQuery] = useState<SearchQuery>({
     query: "",
@@ -73,6 +97,10 @@ export function DomainsTableContainer({
     result: { data: [], isSuccess: false, message: "" },
     selectedResult: null,
   });
+
+  useEffect(() => {
+    setTableData(domainsData);
+  }, [domainsData]);
 
   const showToast = (
     isSuccess: boolean,
@@ -86,10 +114,6 @@ export function DomainsTableContainer({
     }
   };
 
-  useEffect(() => {
-    setTableData(domainsData);
-  }, [domainsData]);
-
   const handleInputChange = (name: string, value: string) => {
     setForm((prevState: any) => ({
       ...prevState,
@@ -99,7 +123,7 @@ export function DomainsTableContainer({
 
   const handleStatusChange = (value: string) => {
     const selectedRecord = tableData.find(
-      (record: AddDomainRecordRaw) => record.id === editingRow
+      (record: DomainsRecordRaw) => record.id === editingRow
     );
     const originalValue = String(selectedRecord?.status);
     setForm((prevState: any) => ({
@@ -112,11 +136,15 @@ export function DomainsTableContainer({
 
   const handleConfirm = async () => {
     const canRequest = hasAnyValueChanged();
-
-    setIsSubmitInProgress(true);
-
     const { created_at, created_by, team_name, status, row_id, ...rest } = form;
     const updatePayload = rest as { id: number; domain_name: string };
+    const isValidDomain = domainUtils.isValidDomain(rest.domain_name);
+
+    if (!isValidDomain) {
+      notifyInvalidDomain(rest.domain_name);
+      return;
+    }
+    setIsSubmitInProgress(true);
 
     if (!isAddingNew && hasStatusChanged) {
       const payload: { id: number; is_active: 0 | 1 } = {
@@ -183,10 +211,7 @@ export function DomainsTableContainer({
       status: "active",
     };
 
-    setTableData((prevData: AddDomainRecordRaw[]) => [
-      updatedForm,
-      ...prevData,
-    ]);
+    setTableData((prevData: DomainsRecordRaw[]) => [updatedForm, ...prevData]);
 
     setIsAddingNew(false);
     setForm((prevState: any) => ({
@@ -196,7 +221,7 @@ export function DomainsTableContainer({
   };
 
   const handleUpdateEntry = () => {
-    setTableData((prevData: AddDomainRecordRaw[]) =>
+    setTableData((prevData: DomainsRecordRaw[]) =>
       prevData.map((item) =>
         item.id === form.id ? { ...item, ...form, status: form.status } : item
       )
@@ -228,7 +253,7 @@ export function DomainsTableContainer({
   const hasAnyValueChanged = () => {
     if (isAddingNew) return { both: true, domainName: true };
     const selectedRecord = tableData.find(
-      (record: AddDomainRecordRaw) => record.id === editingRow
+      (record: DomainsRecordRaw) => record.id === editingRow
     );
 
     if (selectedRecord) {
@@ -303,6 +328,58 @@ export function DomainsTableContainer({
     }
   };
 
+  const notifyInvalidDomain = (domain: string) => {
+    showToast(false, `${domain} is not a valid domain.`, { duration: 8000 });
+  };
+
+  const handleViewInternetbsInfo = async (domain: string) => {
+    if (!domain) return;
+
+    const { isSuccess, data, message } = await internetbsService.getDomainInfo({
+      domain,
+    });
+
+    if (!isSuccess) {
+      showToast(false, message);
+      return;
+    }
+
+    const {
+      autorenew,
+      domainstatus,
+      expirationdate,
+      registrationdate,
+      nameserver,
+      paiduntil,
+      whoisprivacy,
+      status,
+      message: failureMessage,
+    } = data[0];
+
+    if (status == "FAILURE") {
+      showToast(false, failureMessage);
+      return;
+    }
+
+    const info: InternetBSInfo = {
+      autorenew,
+      domain,
+      domainstatus,
+      expirationdate,
+      registrationdate,
+      nameserver,
+      paiduntil,
+      whoisprivacy,
+    };
+
+    setInternetBsInfo(info);
+    startTransition(() => setIsDomainsDialogOpen(true));
+  };
+
+  const handleDomainsDialogOpenState = (isOpen: boolean) => {
+    setIsDomainsDialogOpen(isOpen);
+  };
+
   useEffect(() => {
     if (!importData?.length) return;
 
@@ -313,9 +390,7 @@ export function DomainsTableContainer({
         const isValidDomain = domainUtils.isValidDomain(domain.domain_name);
 
         if (!isValidDomain) {
-          showToast(false, `${domain.domain_name} is not a valid domain.`, {
-            duration: 8000,
-          });
+          notifyInvalidDomain(domain.domain_name);
           continue;
         }
 
@@ -344,6 +419,11 @@ export function DomainsTableContainer({
 
   return (
     <>
+      <DomainsDialog
+        open={isDomainsDialogOpen}
+        onDialogOpenState={handleDomainsDialogOpenState}
+        internetBsInfo={internetBsInfo}
+      />
       <div className="flex justify-start gap-2 mt-4 w-full">
         <Button
           className="cursor-pointer h-9"
@@ -388,6 +468,7 @@ export function DomainsTableContainer({
           handleInputChange={handleInputChange}
           handleStatusChange={handleStatusChange}
           isActionDisabled={isSubmitInProgress}
+          onViewInternetbsInfo={handleViewInternetbsInfo}
         />
       </ScrollArea>
       <Pagination

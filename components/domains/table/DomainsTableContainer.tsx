@@ -87,6 +87,7 @@ export function DomainsTableContainer({
   const [isSubmitInProgress, setIsSubmitInProgress] = useState(false);
   const [hasStatusChanged, setHasStatusChanged] = useState(false);
   const [isDomainsDialogOpen, setIsDomainsDialogOpen] = useState(false);
+  const [processingDomain, setProcessingDomain] = useState<string>("");
   const [internetBsInfo, setInternetBsInfo] = useState<Partial<InternetBSInfo>>(
     {}
   );
@@ -335,6 +336,7 @@ export function DomainsTableContainer({
   const handleViewInternetbsInfo = async (domain: string) => {
     if (!domain) return;
 
+    setProcessingDomain(domain);
     const { isSuccess, data, message } = await internetbsService.getDomainInfo({
       domain,
     });
@@ -373,7 +375,10 @@ export function DomainsTableContainer({
     };
 
     setInternetBsInfo(info);
-    startTransition(() => setIsDomainsDialogOpen(true));
+    startTransition(() => {
+      setProcessingDomain("");
+      setIsDomainsDialogOpen(true);
+    });
   };
 
   const handleDomainsDialogOpenState = (isOpen: boolean) => {
@@ -468,6 +473,7 @@ export function DomainsTableContainer({
           handleInputChange={handleInputChange}
           handleStatusChange={handleStatusChange}
           isActionDisabled={isSubmitInProgress}
+          processingDomain={processingDomain}
           onViewInternetbsInfo={handleViewInternetbsInfo}
         />
       </ScrollArea>

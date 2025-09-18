@@ -93,10 +93,24 @@ export class FacebookAdsManagerServerService {
     if (!response.ok) {
       const { error } = await response.json();
       console.error(error);
+      const fallbackResponseData = [
+        {
+          adsets: [
+            {
+              name: null,
+              ad_insights_summary: {
+                code: 500,
+                message: ["Facebook server error"],
+              },
+              ...formatInsightsFields([]),
+            },
+          ],
+        },
+      ];
       return {
         isSuccess: false,
         message: error.message,
-        data: [],
+        data: fallbackResponseData,
       };
     }
 

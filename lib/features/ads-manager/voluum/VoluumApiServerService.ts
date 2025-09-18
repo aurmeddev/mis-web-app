@@ -184,7 +184,7 @@ const extractVoluumnCampaignId = (adset_name: string) => {
 type handleCustomVoluumResponseProps = {
   status: "Voluum server error" | "Archived" | "Invalid adset name";
 };
-export const handleCustomVoluumResponse = (
+const handleCustomVoluumResponse = (
   params: handleCustomVoluumResponseProps
 ) => {
   const defaultResponseError = {

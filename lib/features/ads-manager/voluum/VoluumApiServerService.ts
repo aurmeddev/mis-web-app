@@ -3,16 +3,6 @@ import { VoluumApiConfig } from "./config/VoluumApiConfig";
 
 export class VoluumApiServerService {
   private voluumApiConfig = new VoluumApiConfig();
-  private handleResponseError = [
-    {
-      campaign_name: "error",
-      conversions: "error",
-      registered: "error",
-      lead: "error",
-      ftd: "error",
-      cv: "error",
-    },
-  ];
   async getSessionToken() {
     const response = await fetch(`${appBaseUrl}/api/voluum/get-session`, {
       method: "GET",
@@ -31,7 +21,8 @@ export class VoluumApiServerService {
   }
 
   async adInsights(params: {
-    campaign_id: string;
+    // spend: string | number;
+    adset_name: string;
     date_from: string;
     date_to: string;
   }) {
@@ -41,6 +32,17 @@ export class VoluumApiServerService {
      * @param {string} customConversions11 - registered
      * @param {string} conversions - leads/registered
      */
+
+    const extractResult = extractVoluumnCampaignId(params.adset_name);
+    if (!extractResult.isSuccess) {
+      return {
+        isSuccess: extractResult.isSuccess,
+        message: extractResult.message,
+        data: handleResponseError("-"),
+      };
+    }
+
+    const voluumCampaignId = extractResult.data[0].id;
     const date_from = `${params.date_from}T00:00:00.000Z`;
     const date_to = `${plusOneDay(params.date_to)}T00:00:00.000Z`;
 
@@ -48,13 +50,13 @@ export class VoluumApiServerService {
     if (!isSuccess) {
       return {
         isSuccess,
-        data: this.handleResponseError,
+        data: handleResponseError("error"),
         message,
       };
     }
 
     const response = await fetch(
-      `${this.voluumApiConfig.baseUrl}/report?include=ACTIVE&offset=0&tz=Asia/Singapore&column=cv&column=conversions&column=customConversions6&column=customConversions7&column=customConversions11&column=campaignName&groupBy=campaign&sort=campaignName&filter=${params.campaign_id}&limit=1&from=${date_from}&currency=USD&to=${date_to}&conversionTimeMode=CONVERSION&direction=DESC`,
+      `${this.voluumApiConfig.baseUrl}/report?include=ACTIVE&offset=0&tz=Asia/Singapore&column=cv&column=conversions&column=customConversions6&column=customConversions7&column=customConversions11&column=campaignName&groupBy=campaign&sort=campaignName&filter=${voluumCampaignId}&limit=1&from=${date_from}&currency=USD&to=${date_to}&conversionTimeMode=CONVERSION&direction=DESC`,
       {
         method: "GET",
         headers: {
@@ -66,20 +68,21 @@ export class VoluumApiServerService {
     );
 
     if (!response.ok) {
-      const { error } = await response.json();
+      const error = await response.text();
       console.error(error);
       return {
         isSuccess: false,
-        message: error.message,
-        data: this.handleResponseError,
+        message: error,
+        data: handleResponseError("error"),
       };
     }
 
     const { rows } = await response.json();
+    const result = formatAdInsightsResponseData(rows);
     return {
       isSuccess: false,
       message: "Data has been fetched successfully!",
-      data: formatAdInsightsResponseData(rows),
+      data: result,
     };
   }
 }
@@ -119,12 +122,12 @@ const formatAdInsightsResponseData = (
 
   // A mapping object to define the new keys.
   const keyMapping = {
-    campaignName: "campaign_name",
-    conversions: "conversions",
-    customConversions11: "registered",
-    customConversions6: "lead",
-    customConversions7: "ftd",
-    cv: "cv",
+    campaignName: "v_campaign_name",
+    conversions: "v_conversions",
+    customConversions11: "v_registered",
+    customConversions6: "v_lead",
+    customConversions7: "v_ftd",
+    cv: "v_cv",
   };
 
   const finalResponse: any = {};
@@ -134,6 +137,47 @@ const formatAdInsightsResponseData = (
     finalResponse[newKey] = value ?? "0";
   }
 
+  return [finalResponse];
+};
+
+const extractVoluumnCampaignId = (adset_name: string) => {
+  if (!adset_name) {
+    return {
+      isSuccess: false,
+      message: "Adset name is missing!",
+      data: [],
+    };
+  }
+
+  if (adset_name.split("_").length !== 6) {
+    return {
+      isSuccess: false,
+      message: "Adset name is invalid.",
+      data: [],
+    };
+  }
+
+  return {
+    isSuccess: true,
+    message: "Extracted voluumn ID successfully!",
+    data: [{ id: adset_name.split("_")[5].split(" ")[0] }], // Get only the voluum campaign id
+  };
+};
+
+const handleResponseError = (value: string) => {
+  const defaultResponseError = {
+    v_campaign_name: "error",
+    v_conversions: "error",
+    v_registered: "error",
+    v_lead: "error",
+    v_ftd: "error",
+    v_cv: "error",
+  };
+
+  const finalResponse: Record<string, any> = {};
+  for (const key in defaultResponseError) {
+    finalResponse[key] = value;
+  }
   return [finalResponse];
 };
 

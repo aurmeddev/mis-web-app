@@ -2,6 +2,7 @@ import {
   FacebookAdsManagerServerService,
   formatCampaigns,
 } from "@/lib/features/ads-manager/facebook/FacebookAdsManagerServerService";
+import { VoluumApiServerService } from "@/lib/features/ads-manager/voluum/VoluumApiServerService";
 import { CryptoServerService } from "@/lib/features/security/cryptography/CryptoServerService";
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { addDays, format } from "date-fns";
@@ -24,12 +25,14 @@ export const POST = async (request: NextRequest) => {
     date_from?: string;
     date_to?: string;
     filtering: { field: string; operator: "CONTAIN"; value: string }[];
+    isVoluumIncluded: boolean;
     // app_secret_key?: string;
   } = {
+    isVoluumIncluded: false,
     access_token: "",
     filtering: [],
-    date_from: "",
-    date_to: "", // app_secret_key?: string;
+    date_from: undefined,
+    date_to: undefined, // app_secret_key: undefined;
   };
   try {
     payload = await request.json();
@@ -101,11 +104,37 @@ export const POST = async (request: NextRequest) => {
     ada.campaigns = data;
   }
 
+  const formattedCampaigns = formatCampaigns(AdAccounts);
+  if (!payload.isVoluumIncluded) {
+    return NextResponse.json(
+      {
+        isSuccess: true,
+        message: "Success",
+        data: formattedCampaigns,
+      },
+      { status: 200 }
+    );
+  }
+
+  const voluumApi = new VoluumApiServerService();
+  const withVoluumAdInsights = formattedCampaigns.slice(); // Create a new array using slice method.
+  for (const campaign of withVoluumAdInsights) {
+    const { data } = await voluumApi.adInsights({
+      adset_name: campaign?.name,
+      date_from: yesterday.from,
+      date_to: yesterday.to,
+    });
+    for (const key of Object.keys({ ...data[0] })) {
+      const value = data[0][key];
+      campaign[key] = value;
+    }
+  }
+
   return NextResponse.json(
     {
       isSuccess: true,
       message: "Success",
-      data: formatCampaigns(AdAccounts),
+      data: withVoluumAdInsights,
     },
     { status: 200 }
   );

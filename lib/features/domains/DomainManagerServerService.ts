@@ -63,7 +63,7 @@ export class DomainManagerServerService {
 
       return {
         isSuccess: true,
-        message: "Domain have been saved successfully.",
+        message: "Domain has been saved successfully.",
         data: [result],
       };
     } catch (error: any) {

@@ -286,7 +286,7 @@ export function DomainsTableContainer({
         method: "find-one",
         searchKeyword: searchText,
       });
-      setTableData(data);
+      setTableData([{ row_id: 1, ...data[0] }]);
       setSearchQuery({ ...searchQuery, isSearching: false });
     },
     500

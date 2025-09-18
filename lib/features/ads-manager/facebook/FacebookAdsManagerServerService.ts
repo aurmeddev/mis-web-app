@@ -480,8 +480,8 @@ const formatInsightsFields = (insights: any) => {
       if (result.length > 0) {
         for (const item of result) {
           if (events.hasOwnProperty(item.action_type)) {
-            events[item.action_type as keyof typeof events] =
-              Number(item.value) || 0;
+            const value = Number(item.value) || 0;
+            events[item.action_type as keyof typeof events] = value;
           }
         }
       }
@@ -489,12 +489,12 @@ const formatInsightsFields = (insights: any) => {
 
     for (const key in rest) {
       if (defaultInsightFields.hasOwnProperty(key)) {
-        defaultInsightFields[key as keyof typeof defaultInsightFields] =
-          Number(rest[key]) || 0;
+        const value = Number(rest[key]) || 0;
+        defaultInsightFields[key as keyof typeof defaultInsightFields] = value;
       }
     }
 
-    return { ...defaultInsightFields, account_currency: "USD", ...events };
+    return { account_currency: "USD", ...defaultInsightFields, ...events };
   }
 
   return {

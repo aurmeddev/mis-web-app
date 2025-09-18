@@ -50,7 +50,7 @@ export class VoluumApiServerService {
     if (!isSuccess) {
       return {
         isSuccess,
-        data: handleCustomVoluumResponse({ status: "Error" }),
+        data: handleCustomVoluumResponse({ status: "Voluum server error" }),
         message,
       };
     }
@@ -73,7 +73,7 @@ export class VoluumApiServerService {
       return {
         isSuccess: false,
         message: error,
-        data: handleCustomVoluumResponse({ status: "Error" }),
+        data: handleCustomVoluumResponse({ status: "Voluum server error" }),
       };
     }
 
@@ -182,18 +182,18 @@ const extractVoluumnCampaignId = (adset_name: string) => {
 };
 
 type handleCustomVoluumResponseProps = {
-  status: "Error" | "Archived" | "Invalid adset name";
+  status: "Voluum server error" | "Archived" | "Invalid adset name";
 };
 export const handleCustomVoluumResponse = (
   params: handleCustomVoluumResponseProps
 ) => {
   const defaultResponseError = {
-    v_campaign_name: "-",
-    v_lead: "-",
-    v_ftd: "-",
-    v_cv: "-",
-    v_cpl: "-",
-    v_cpa: "-",
+    v_campaign_name: null,
+    v_lead: null,
+    v_ftd: null,
+    v_cv: null,
+    v_cpl: null,
+    v_cpa: null,
     v_campaign_status: params.status,
   };
 

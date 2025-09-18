@@ -147,7 +147,7 @@ export class FacebookAdsManagerServerService {
       {
         adsets: [
           {
-            name: "",
+            name: null,
             ad_insights_summary: {
               code: 404,
               message: ["No traffic data"],

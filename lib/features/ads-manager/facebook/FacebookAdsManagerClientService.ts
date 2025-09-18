@@ -13,6 +13,7 @@ type adInsightsProps = Omit<
 > & {
   date_from?: string;
   date_to?: string;
+  isVoluumIncluded: boolean;
 };
 type accessTokenDebuggerProps = Omit<
   BaseFacebookAdsManagerServiceProps,

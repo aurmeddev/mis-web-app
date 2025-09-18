@@ -9,6 +9,7 @@ import {
   Calendar,
   CircleFadingPlus,
   CircleStop,
+  Loader2,
   SearchX,
   User2,
 } from "lucide-react";
@@ -26,6 +27,7 @@ type DomainsTableProps = {
   handleInputChange: (name: string, value: string) => void;
   handleStatusChange: (value: string) => void;
   isActionDisabled: boolean;
+  processingDomain: string;
   onViewInternetbsInfo: (domain: string) => void;
 };
 
@@ -57,6 +59,7 @@ export function DomainsTable({
   handleInputChange,
   handleStatusChange,
   isActionDisabled,
+  processingDomain,
   onViewInternetbsInfo,
 }: DomainsTableProps) {
   const tableHeaders = [
@@ -114,7 +117,7 @@ export function DomainsTable({
 
         {data.map((rowData: DomainsRecordRaw, idx: number) => {
           const isEditing = editingRow === rowData.id;
-
+          const isProcessing = processingDomain == rowData.domain_name;
           return (
             <TableRow key={rowData.id}>
               <TableCell className="border-r w-[10%]">
@@ -171,7 +174,12 @@ export function DomainsTable({
                   />
                   <Button
                     onClick={() => onViewInternetbsInfo(rowData.domain_name)}
-                    className="cursor-pointer text-xs"
+                    className={cn(
+                      "cursor-pointer relative text-xs",
+                      isProcessing
+                        ? "animate-pulse bg-muted pointer-events-none"
+                        : ""
+                    )}
                     variant={"outline"}
                   >
                     View Details

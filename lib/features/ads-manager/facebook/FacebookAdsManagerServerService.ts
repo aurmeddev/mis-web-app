@@ -128,19 +128,13 @@ export class FacebookAdsManagerServerService {
                     ? `${convertedToUsd.toFixed(2)}`
                     : `daily budget error`
                 }`,
+                ad_insights_summary: {
+                  code: 200,
+                  message: ["Ok"],
+                },
               };
             })
           );
-        } else {
-          restOfProps.adsets = [
-            {
-              name, // Assign the campaign name, if adsets is empty
-              ad_checker_summary: {
-                code: 404,
-                message: ["No adsets found."],
-              },
-            },
-          ];
         }
 
         return {
@@ -148,13 +142,27 @@ export class FacebookAdsManagerServerService {
         };
       })
     );
+
+    const fallbackResponseData = [
+      {
+        adsets: [
+          {
+            name: "",
+            ad_insights_summary: {
+              code: 404,
+              message: ["No traffic data"],
+            },
+          },
+        ],
+      },
+    ];
     return {
       isSuccess: true,
       message:
         result.data.length > 0
           ? "Data fetched successfully."
           : "No data found.",
-      data: formattedResult || [],
+      data: formattedResult.length > 0 ? formattedResult : fallbackResponseData,
     };
   }
 
@@ -441,7 +449,7 @@ export const formatCampaigns = (data: any) => {
         disable_reason,
         ad_checker_summary: {
           code: 404,
-          message: ["No adsets found."],
+          message: ["No adsets found"],
         },
       });
     }
@@ -466,7 +474,7 @@ const formatInsightsFields = (insights: any) => {
     purchase: 0,
     link_click: 0,
   };
-  if (insights?.data.length > 0) {
+  if (insights?.data?.length > 0) {
     const { actions, date_start, date_stop, ...rest } = { ...insights.data[0] };
 
     if (actions?.length > 0) {
@@ -498,6 +506,7 @@ const formatInsightsFields = (insights: any) => {
   }
 
   return {
+    account_currency: "USD",
     ...defaultInsightFields,
     ...events,
   };

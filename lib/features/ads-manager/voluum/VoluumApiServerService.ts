@@ -50,7 +50,7 @@ export class VoluumApiServerService {
     if (!isSuccess) {
       return {
         isSuccess,
-        data: handleCustomVoluumResponse({ status: "Error" }),
+        data: handleCustomVoluumResponse({ status: "Voluum server error" }),
         message,
       };
     }
@@ -73,7 +73,7 @@ export class VoluumApiServerService {
       return {
         isSuccess: false,
         message: error,
-        data: handleCustomVoluumResponse({ status: "Error" }),
+        data: handleCustomVoluumResponse({ status: "Voluum server error" }),
       };
     }
 
@@ -96,24 +96,24 @@ export class VoluumApiServerService {
 }
 
 type formatAdInsightsResponseDataProps = {
-  campaignName: string;
-  conversions: string;
-  customConversions11: string;
-  customConversions6: string;
-  customConversions7: string;
-  cv: string;
+  campaignName: number;
+  conversions: number;
+  customConversions11: number;
+  customConversions6: number;
+  customConversions7: number;
+  cv: number;
 };
 
 const formatAdInsightsResponseData = (
   response: formatAdInsightsResponseDataProps[]
 ) => {
   const defaultResponse = {
-    campaignName: "0",
-    conversions: "0",
-    customConversions11: "0",
-    customConversions6: "0",
-    customConversions7: "0",
-    cv: "0",
+    campaignName: 0,
+    conversions: 0,
+    customConversions11: 0,
+    customConversions6: 0,
+    customConversions7: 0,
+    cv: 0,
   };
 
   // Providing default values for missing keys.
@@ -122,8 +122,8 @@ const formatAdInsightsResponseData = (
     const firstItem = response[0];
     for (const key in formattedData) {
       if (firstItem.hasOwnProperty(key)) {
-        formattedData[key as keyof typeof formattedData] =
-          firstItem[key as keyof typeof firstItem] ?? "0";
+        const value = firstItem[key as keyof typeof firstItem];
+        formattedData[key as keyof typeof formattedData] = value || 0;
       }
     }
   }
@@ -142,7 +142,7 @@ const formatAdInsightsResponseData = (
   for (const oldKey in keyMapping) {
     const newKey = keyMapping[oldKey as keyof typeof keyMapping]; // Get the new key name from the mapping object.
     const value = formattedData[oldKey as keyof typeof keyMapping]; // Get the value from the original
-    finalResponse[newKey] = value ?? "0";
+    finalResponse[newKey] = value || 0;
   }
 
   return [finalResponse].map((keys) => {
@@ -182,18 +182,18 @@ const extractVoluumnCampaignId = (adset_name: string) => {
 };
 
 type handleCustomVoluumResponseProps = {
-  status: "Error" | "Archived" | "Invalid adset name";
+  status: "Voluum server error" | "Archived" | "Invalid adset name";
 };
 export const handleCustomVoluumResponse = (
   params: handleCustomVoluumResponseProps
 ) => {
   const defaultResponseError = {
-    v_campaign_name: "-",
-    v_lead: "-",
-    v_ftd: "-",
-    v_cv: "-",
-    v_cpl: "-",
-    v_cpa: "-",
+    v_campaign_name: null,
+    v_lead: null,
+    v_ftd: null,
+    v_cv: null,
+    v_cpl: null,
+    v_cpa: null,
     v_campaign_status: params.status,
   };
 

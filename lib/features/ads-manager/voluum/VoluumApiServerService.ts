@@ -38,7 +38,7 @@ export class VoluumApiServerService {
       return {
         isSuccess: extractResult.isSuccess,
         message: extractResult.message,
-        data: handleCustomVoluumResponse({ status: "invalid adset name" }),
+        data: handleCustomVoluumResponse({ status: "Invalid adset name" }),
       };
     }
 
@@ -50,7 +50,7 @@ export class VoluumApiServerService {
     if (!isSuccess) {
       return {
         isSuccess,
-        data: handleCustomVoluumResponse({ status: "error" }),
+        data: handleCustomVoluumResponse({ status: "Error" }),
         message,
       };
     }
@@ -73,7 +73,7 @@ export class VoluumApiServerService {
       return {
         isSuccess: false,
         message: error,
-        data: handleCustomVoluumResponse({ status: "error" }),
+        data: handleCustomVoluumResponse({ status: "Error" }),
       };
     }
 
@@ -82,7 +82,7 @@ export class VoluumApiServerService {
       return {
         isSuccess: true,
         message: "Data has been fetched successfully!",
-        data: handleCustomVoluumResponse({ status: "archived" }),
+        data: handleCustomVoluumResponse({ status: "Archived" }),
       };
     }
 
@@ -149,7 +149,7 @@ const formatAdInsightsResponseData = (
     const { v_conversions, v_registered, v_lead, ...rest } = keys;
     return {
       ...rest,
-      v_campaign_status: "ok",
+      v_campaign_status: "Ok",
       v_cpl: 0,
       v_cpa: 0,
       v_lead: v_registered !== 0 ? v_registered : v_lead,
@@ -182,7 +182,7 @@ const extractVoluumnCampaignId = (adset_name: string) => {
 };
 
 type handleCustomVoluumResponseProps = {
-  status: "error" | "archived" | "no adsets found" | "invalid adset name";
+  status: "Error" | "Archived" | "Invalid adset name";
 };
 export const handleCustomVoluumResponse = (
   params: handleCustomVoluumResponseProps

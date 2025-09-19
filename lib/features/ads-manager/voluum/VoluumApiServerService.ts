@@ -210,7 +210,7 @@ export const getCostPerEvent = (params: getCostPerEventProps) => {
     return 0;
   }
 
-  if (spend <= 0) {
+  if (spend <= 0 || value <= 0) {
     return 0;
   }
 

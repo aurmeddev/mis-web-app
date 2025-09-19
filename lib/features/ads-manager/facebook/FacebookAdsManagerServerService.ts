@@ -144,7 +144,7 @@ export class FacebookAdsManagerServerService {
                 }`,
                 ad_insights_summary: {
                   code: 200,
-                  message: ["Ok"],
+                  message: ["Everything is OK!"],
                 },
               };
             })

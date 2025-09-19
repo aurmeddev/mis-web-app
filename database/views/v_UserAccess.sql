@@ -18,6 +18,7 @@ SELECT
                     'id', main_menu.id,
                     'title', main_menu.title,
                     'url', main_menu.url,
+                    'icon', main_menu.icon,
                     'sort_number', main_menu.sort_number,
                     'items',
                     COALESCE(

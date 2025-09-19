@@ -158,9 +158,7 @@ export function useAdColumns(onViewCreatives: (adCreatives: any) => void) {
           return (
             <div className="whitespace-normal">
               {cellValue.map((domain: any) => (
-                <div key={domain.name}>
-                  {domain.name} - {domain.status}
-                </div>
+                <div key={domain.name}>{domain.name}</div>
               ))}
             </div>
           );

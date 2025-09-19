@@ -286,7 +286,8 @@ export function DomainsTableContainer({
         method: "find-one",
         searchKeyword: searchText,
       });
-      setTableData([{ row_id: 1, ...data[0] }]);
+      const rowIdData = data.length > 0 ? [{ row_id: 1, ...data[0] }] : data;
+      setTableData(rowIdData);
       setSearchQuery({ ...searchQuery, isSearching: false });
     },
     500

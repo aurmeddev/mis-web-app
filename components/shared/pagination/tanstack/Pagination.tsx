@@ -15,7 +15,7 @@ import { Table } from "@tanstack/react-table";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 
 type Props = {
-  table: Table<AdData>;
+  table: Table<any>;
   tableDataLength: number;
 };
 

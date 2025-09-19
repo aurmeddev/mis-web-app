@@ -75,11 +75,17 @@ export function AppSidebar({ session, ...props }: AppSidebarProps) {
 }
 
 const addIconPerMenu = (array: any[]) => {
-  const icon = [Layers, Users, ShieldCheck, Compass];
-  return array.map((item, index) => {
+  const icons = {
+    Layers: Layers,
+    Users: Users,
+    ShieldCheck: ShieldCheck,
+    Compass: Compass,
+  };
+  return array.map((item) => {
+    const { icon, ...rest } = item;
     return {
-      ...item,
-      icon: icon[index] ?? LayoutDashboardIcon, // fallback to a default icon if not enough icons
+      ...rest,
+      icon: icons[icon as keyof typeof icons] ?? LayoutDashboardIcon, // fallback to a default icon if not enough icons
     };
   });
 };

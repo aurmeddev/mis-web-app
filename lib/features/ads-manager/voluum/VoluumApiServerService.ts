@@ -149,7 +149,7 @@ const formatAdInsightsResponseData = (
     const { v_conversions, v_registered, v_lead, ...rest } = keys;
     return {
       ...rest,
-      v_campaign_status: "Ok",
+      v_campaign_status: "Everything is OK!",
       v_cpl: 0,
       v_cpa: 0,
       v_lead: v_registered !== 0 ? v_registered : v_lead,

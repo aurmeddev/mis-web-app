@@ -19,6 +19,15 @@ export class FacebookAdsManagerServerService {
     },
     cache: "no-store",
   };
+  private companyTargetingCountries = [
+    "MY",
+    "SG",
+    "ID",
+    "KH",
+    "HK",
+    "TH",
+    "BD",
+  ];
   private maximumDailyBudget = 500;
   constructor(private config: MarketingApiAccessTokenConfigProps) {
     this.config = config;
@@ -266,9 +275,10 @@ export class FacebookAdsManagerServerService {
                 ? restOfAdsets.daily_budget / 100
                 : campaignDailyBudget / 100; // Use the campaign's daily budget as a fallback if the ad set's daily budget is not available.
               const targeting_countries = targeting?.geo_locations?.countries;
-              const remarks = targeting?.geo_locations?.countries.includes("US")
-                ? "Suspicious geo-location targeting."
-                : "OK";
+              const remarks = validateTargetingCountries({
+                targetingCountries: targeting_countries || [],
+                reference: this.companyTargetingCountries,
+              });
 
               const statuses: Record<string, any> = {
                 targeting_countries_status: remarks,
@@ -638,6 +648,32 @@ export const isFilteringValid = (
   }
 
   return true;
+};
+
+const validateTargetingCountries = (params: {
+  targetingCountries: string[];
+  reference: string[];
+}) => {
+  if (params.targetingCountries.length === 0) {
+    return "No geo-location targeting.";
+  }
+
+  const { targetingCountries, reference } = params;
+  const adCheckerSummary = [];
+  for (const country of targetingCountries) {
+    if (!reference.includes(country)) {
+      adCheckerSummary.push({
+        country: country,
+        status: "Suspicious geo-location targeting.",
+      });
+    } else {
+      adCheckerSummary.push({ country: country, status: "OK" });
+    }
+  }
+
+  const result = adCheckerSummary.filter((value) => value.status !== "OK");
+  const suspicious = result.length > 0;
+  return suspicious ? "Suspicious geo-location targeting." : "OK";
 };
 
 // import { createHmac } from "crypto";

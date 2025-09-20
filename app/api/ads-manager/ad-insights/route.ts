@@ -31,7 +31,7 @@ export const POST = async (request: NextRequest) => {
     isVoluumIncluded: boolean;
     // app_secret_key?: string;
   } = {
-    isVoluumIncluded: false,
+    isVoluumIncluded: true,
     access_token: "",
     filtering: [],
     date_from: undefined,

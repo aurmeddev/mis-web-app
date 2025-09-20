@@ -69,7 +69,11 @@ export class VoluumApiServerService {
 
     if (!response.ok) {
       const error = await response.text();
-      console.error(error);
+      try {
+        console.error(JSON.parse(error));
+      } catch (error) {
+        console.error(error);
+      }
       return {
         isSuccess: false,
         message: error,

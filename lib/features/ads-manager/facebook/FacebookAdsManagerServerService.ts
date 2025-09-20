@@ -81,6 +81,27 @@ export class FacebookAdsManagerServerService {
       use_account_attribution_setting: true,
     };
 
+    const getFallbackResponseData = (params: {
+      code: 404 | 500;
+      status: "Facebook server error" | "No traffic data" | "No adsets found";
+    }) => {
+      const { code, status } = params;
+      return [
+        {
+          adsets: [
+            {
+              name: null,
+              ad_insights_summary: {
+                code: code,
+                message: [status],
+              },
+              ...formatInsightsFields([]),
+            },
+          ],
+        },
+      ];
+    };
+
     if (isFilteringValid(filtering || [])) {
       searchParams.filtering = JSON.stringify(filtering);
     }
@@ -94,24 +115,13 @@ export class FacebookAdsManagerServerService {
     if (!response.ok) {
       const { error } = await response.json();
       console.error(error);
-      const fallbackResponseData = [
-        {
-          adsets: [
-            {
-              name: null,
-              ad_insights_summary: {
-                code: 500,
-                message: ["Facebook server error"],
-              },
-              ...formatInsightsFields([]),
-            },
-          ],
-        },
-      ];
       return {
         isSuccess: false,
         message: error.message,
-        data: fallbackResponseData,
+        data: getFallbackResponseData({
+          code: 500,
+          status: "Facebook server error",
+        }),
       };
     }
 
@@ -150,6 +160,11 @@ export class FacebookAdsManagerServerService {
               };
             })
           );
+        } else {
+          restOfProps.adsets = getFallbackResponseData({
+            code: 404,
+            status: "No adsets found",
+          });
         }
 
         return {
@@ -158,27 +173,19 @@ export class FacebookAdsManagerServerService {
       })
     );
 
-    const fallbackResponseData = [
-      {
-        adsets: [
-          {
-            name: null,
-            ad_insights_summary: {
-              code: 404,
-              message: ["No traffic data"],
-            },
-            ...formatInsightsFields([]),
-          },
-        ],
-      },
-    ];
     return {
       isSuccess: true,
       message:
         result.data.length > 0
           ? "Data fetched successfully."
           : "No data found.",
-      data: formattedResult.length > 0 ? formattedResult : fallbackResponseData,
+      data:
+        formattedResult.length > 0
+          ? formattedResult
+          : getFallbackResponseData({
+              code: 404,
+              status: "No traffic data",
+            }),
     };
   }
 
@@ -317,7 +324,7 @@ export class FacebookAdsManagerServerService {
               name,
               ad_checker_summary: {
                 code: 404,
-                message: ["No adsets found."],
+                message: ["No adsets found"],
               },
             },
           ]; // Assign the campaign name, if adsets is empty

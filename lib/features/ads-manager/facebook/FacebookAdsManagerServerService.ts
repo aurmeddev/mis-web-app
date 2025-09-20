@@ -143,6 +143,7 @@ export class FacebookAdsManagerServerService {
                 ? restOfAdsets.daily_budget / 100
                 : campaignDailyBudget / 100; // Use the campaign's daily budget as a fallback if the ad set's daily budget is not available.
               const targeting_countries = targeting?.geo_locations?.countries;
+              const hasTrafficData = insights?.data?.length > 0;
 
               return {
                 ...restOfAdsets,
@@ -154,8 +155,10 @@ export class FacebookAdsManagerServerService {
                     : `daily budget error`
                 }`,
                 ad_insights_summary: {
-                  code: 200,
-                  message: ["Everything is OK!"],
+                  code: hasTrafficData ? 200 : 404,
+                  message: hasTrafficData
+                    ? ["Everything is OK!"]
+                    : ["No traffic data"],
                 },
               };
             })

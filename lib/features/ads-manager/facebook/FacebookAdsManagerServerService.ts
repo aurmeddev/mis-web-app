@@ -19,15 +19,7 @@ export class FacebookAdsManagerServerService {
     },
     cache: "no-store",
   };
-  private companyTargetingCountries = [
-    "MY",
-    "SG",
-    "ID",
-    "KH",
-    "HK",
-    "TH",
-    "BD",
-  ];
+  private companyTargetingCountries = ["MY", "SG", "ID", "KH", "HK", "TH"];
   private maximumDailyBudget = 500;
   constructor(private config: MarketingApiAccessTokenConfigProps) {
     this.config = config;

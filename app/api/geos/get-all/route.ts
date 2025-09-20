@@ -1,5 +1,5 @@
-import { BrandsServerService } from "@/lib/features/brands/BrandsServerService";
-import { GetAllBrandsProps } from "@/lib/features/brands/type/BrandsProps";
+import { GeosServerService } from "@/lib/features/geos/GeosServerService";
+import { GetAllGeosProps } from "@/lib/features/geos/type/GeosProps";
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { SearchParamsManager } from "@/lib/utils/search-params/SearchParamsManager";
 import { NextResponse, NextRequest } from "next/server";
@@ -16,12 +16,12 @@ export const GET = async (request: NextRequest) => {
     );
   }
 
-  const params: GetAllBrandsProps = new SearchParamsManager().toObject(
+  const params: GetAllGeosProps = new SearchParamsManager().toObject(
     request.nextUrl.searchParams
   );
 
-  const brandsService = new BrandsServerService();
-  const { isSuccess, data, pagination, message } = await brandsService.getAll(
+  const geosService = new GeosServerService();
+  const { isSuccess, data, pagination, message } = await geosService.getAll(
     params
   );
 

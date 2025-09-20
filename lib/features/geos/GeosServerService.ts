@@ -2,12 +2,12 @@ import { ApiResponseProps, query } from "@/database/dbConnection";
 import { DatetimeUtils } from "@/lib/utils/date/DatetimeUtils";
 import { MySqlUtils } from "@/lib/utils/mysql/MySqlUtils";
 import { ObjectUtils } from "@/lib/utils/object/ObjectUtils";
-import { GetAllBrandsProps } from "./type/BrandsProps";
+import { GetAllGeosProps } from "./type/GeosProps";
 import { PaginationProps } from "@/lib/utils/pagination/type/PaginationProps";
 
-export class BrandsServerService {
+export class GeosServerService {
   async getAll(
-    params: GetAllBrandsProps
+    params: GetAllGeosProps
   ): Promise<ApiResponseProps & { pagination?: PaginationProps }> {
     const mysqlUtils = new MySqlUtils();
     const objUtils = new ObjectUtils();
@@ -18,7 +18,7 @@ export class BrandsServerService {
           ? 50
           : params.limit,
     });
-    const dbFieldColumns: Omit<GetAllBrandsProps, "page" | "limit"> = {};
+    const dbFieldColumns: Omit<GetAllGeosProps, "page" | "limit"> = {};
     if (params.status) {
       const statusValue = params.status.toLowerCase().trim();
       if (statusValue !== "active" && statusValue !== "inactive") {
@@ -49,7 +49,7 @@ export class BrandsServerService {
         : ""
     }`;
 
-    const queryString = `SELECT * FROM v_Brands ${conditionQuery} LIMIT ? OFFSET ?`;
+    const queryString = `SELECT * FROM v_Geos ${conditionQuery} LIMIT ? OFFSET ?`;
 
     let queryValues: string[] = paginationQuery.queryValues;
     const hasFilter = filterQuery?.queryValues?.length > 0;
@@ -80,7 +80,7 @@ export class BrandsServerService {
 
       // Get the total count of rows for pagination
       const rows: any = await query({
-        query: `SELECT COUNT(*) AS total_count FROM v_Brands ${conditionQuery}`,
+        query: `SELECT COUNT(*) AS total_count FROM v_Geos ${conditionQuery}`,
         values: hasFilter ? filterQuery.queryValues : [],
       });
       const totalRows: number = rows[0].total_count;
@@ -96,13 +96,6 @@ export class BrandsServerService {
       const formattedResponse = await Promise.all(
         response.map(async (item: any, index: number) => {
           const { created_at, ...rest } = item;
-
-          if (rest?.site_platform) {
-            const createdAt = rest.site_platform.created_at;
-            rest.site_platform.created_at = dateUtils.formatDateTime(
-              dateUtils.convertToUTC8(createdAt)
-            );
-          }
 
           return {
             ...rest,

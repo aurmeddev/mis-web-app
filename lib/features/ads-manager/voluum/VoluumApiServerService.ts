@@ -21,7 +21,7 @@ export class VoluumApiServerService {
   }
 
   async adInsights(params: {
-    // spend: string | number;
+    spend: number;
     adset_name: string;
     date_from: string;
     date_to: string;
@@ -69,11 +69,7 @@ export class VoluumApiServerService {
 
     if (!response.ok) {
       const error = await response.text();
-      try {
-        console.error(JSON.parse(error));
-      } catch (error) {
-        console.error(error);
-      }
+      console.error(error);
       return {
         isSuccess: false,
         message: error,
@@ -90,7 +86,10 @@ export class VoluumApiServerService {
       };
     }
 
-    const result = formatAdInsightsResponseData(rows);
+    const result = formatAdInsightsResponseData({
+      spend: params.spend,
+      row: rows,
+    });
     return {
       isSuccess: true,
       message: "Data has been fetched successfully!",
@@ -100,17 +99,21 @@ export class VoluumApiServerService {
 }
 
 type formatAdInsightsResponseDataProps = {
-  campaignName: number;
-  conversions: number;
-  customConversions11: number;
-  customConversions6: number;
-  customConversions7: number;
-  cv: number;
+  spend: number;
+  row: {
+    campaignName: number;
+    conversions: number;
+    customConversions11: number;
+    customConversions6: number;
+    customConversions7: number;
+    cv: number;
+  }[];
 };
 
 const formatAdInsightsResponseData = (
-  response: formatAdInsightsResponseDataProps[]
+  params: formatAdInsightsResponseDataProps
 ) => {
+  const { spend, row } = params;
   const defaultResponse = {
     campaignName: 0,
     conversions: 0,
@@ -122,8 +125,8 @@ const formatAdInsightsResponseData = (
 
   // Providing default values for missing keys.
   const formattedData = { ...defaultResponse };
-  if (response.length > 0) {
-    const firstItem = response[0];
+  if (row.length > 0) {
+    const firstItem = row[0];
     for (const key in formattedData) {
       if (firstItem.hasOwnProperty(key)) {
         const value = firstItem[key as keyof typeof firstItem];
@@ -150,13 +153,21 @@ const formatAdInsightsResponseData = (
   }
 
   return [finalResponse].map((keys) => {
-    const { v_conversions, v_registered, v_lead, ...rest } = keys;
+    const { v_conversions, v_registered, v_lead, v_ftd, ...rest } = keys;
+    const lead = v_registered !== 0 ? v_registered : v_lead;
     return {
       ...rest,
+      v_lead: lead,
+      v_ftd,
       v_campaign_status: "Everything is OK!",
-      v_cpl: 0,
-      v_cpa: 0,
-      v_lead: v_registered !== 0 ? v_registered : v_lead,
+      v_cpl: getCostPerEvent({
+        spend: spend,
+        value: lead,
+      }),
+      v_cpa: getCostPerEvent({
+        spend: spend,
+        value: v_ftd,
+      }),
     };
   });
 };
@@ -214,7 +225,7 @@ export const getCostPerEvent = (params: getCostPerEventProps) => {
     return 0;
   }
 
-  if (spend <= 0 || value <= 0) {
+  if (spend === 0 || value === 0) {
     return 0;
   }
 

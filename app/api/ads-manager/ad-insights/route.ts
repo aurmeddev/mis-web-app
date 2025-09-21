@@ -123,24 +123,13 @@ export const POST = async (request: NextRequest) => {
   const withVoluumAdInsights = formattedCampaigns.slice(); // Create a new array using slice method.
   for (const campaign of withVoluumAdInsights) {
     const { data } = await voluumApi.adInsights({
+      spend: campaign?.spend || 0,
       adset_name: campaign?.name,
       date_from: yesterday.from,
       date_to: yesterday.to,
     });
     for (const key of Object.keys({ ...data[0] })) {
       const value = data[0][key];
-      if (typeof value === "number" && key === "v_lead") {
-        campaign.v_cpl = getCostPerEvent({
-          spend: Number(campaign?.spend),
-          value: value,
-        });
-      }
-      if (typeof value === "number" && key === "v_ftd") {
-        campaign.v_cpa = getCostPerEvent({
-          spend: Number(campaign?.spend),
-          value: value,
-        });
-      }
       campaign[key] = value;
     }
   }

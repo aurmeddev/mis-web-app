@@ -81,14 +81,14 @@ export class VoluumApiServerService {
     if (rows.length === 0) {
       return {
         isSuccess: true,
-        message: "Data has been fetched successfully!",
+        message: "No data found.",
         data: handleCustomVoluumResponse({ status: "Archived" }),
       };
     }
 
     const result = formatAdInsightsResponseData({
       spend: params.spend,
-      row: rows,
+      data: rows,
     });
     return {
       isSuccess: true,
@@ -100,7 +100,7 @@ export class VoluumApiServerService {
 
 type formatAdInsightsResponseDataProps = {
   spend: number;
-  row: {
+  data: {
     campaignName: number;
     conversions: number;
     customConversions11: number;
@@ -113,7 +113,7 @@ type formatAdInsightsResponseDataProps = {
 const formatAdInsightsResponseData = (
   params: formatAdInsightsResponseDataProps
 ) => {
-  const { spend, row } = params;
+  const { spend, data } = params;
   const defaultResponse = {
     campaignName: 0,
     conversions: 0,
@@ -125,8 +125,8 @@ const formatAdInsightsResponseData = (
 
   // Providing default values for missing keys.
   const formattedData = { ...defaultResponse };
-  if (row.length > 0) {
-    const firstItem = row[0];
+  if (data.length > 0) {
+    const firstItem = data[0];
     for (const key in formattedData) {
       if (firstItem.hasOwnProperty(key)) {
         const value = firstItem[key as keyof typeof firstItem];
@@ -159,7 +159,6 @@ const formatAdInsightsResponseData = (
       ...rest,
       v_lead: lead,
       v_ftd,
-      v_campaign_status: "Everything is OK!",
       v_cpl: getCostPerEvent({
         spend: spend,
         value: lead,
@@ -168,6 +167,7 @@ const formatAdInsightsResponseData = (
         spend: spend,
         value: v_ftd,
       }),
+      v_campaign_status: "Everything is OK!",
     };
   });
 };

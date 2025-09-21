@@ -12,12 +12,7 @@ export const GET = async () => {
 
   if (!response.ok) {
     const error = await response.text();
-    try {
-      console.error(JSON.parse(error));
-    } catch (error) {
-      console.error(error);
-    }
-
+    console.error(error);
     return NextResponse.json(
       {
         isSuccess: false,

@@ -1,4 +1,3 @@
-import { AdData } from "@/components/ads-manager/ad-checker/AdCheckerContainer";
 import { Button } from "@/components/ui/button";
 import {
   Select,

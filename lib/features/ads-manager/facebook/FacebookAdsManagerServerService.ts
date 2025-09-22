@@ -21,6 +21,29 @@ export class FacebookAdsManagerServerService {
   };
   private companyTargetingCountries = ["MY", "SG", "ID", "KH", "HK", "TH"];
   private maximumDailyBudget = 500;
+  private getFallbackResponseData = (params: {
+    code: 404 | 500;
+    status: "Facebook server error" | "No traffic data" | "No adsets found";
+    adSummaryLabel: string;
+    props?: Record<string, any>;
+  }) => {
+    const { code, status, adSummaryLabel, props } = params;
+    const customProps = props || {};
+    return [
+      {
+        adsets: [
+          {
+            name: null,
+            [adSummaryLabel]: {
+              code: code,
+              message: [status],
+            },
+            ...customProps,
+          },
+        ],
+      },
+    ];
+  };
   constructor(private config: MarketingApiAccessTokenConfigProps) {
     this.config = config;
   }
@@ -81,27 +104,6 @@ export class FacebookAdsManagerServerService {
       use_account_attribution_setting: true,
     };
 
-    const getFallbackResponseData = (params: {
-      code: 404 | 500;
-      status: "Facebook server error" | "No traffic data" | "No adsets found";
-    }) => {
-      const { code, status } = params;
-      return [
-        {
-          adsets: [
-            {
-              name: null,
-              ad_insights_summary: {
-                code: code,
-                message: [status],
-              },
-              ...formatInsightsFields([]),
-            },
-          ],
-        },
-      ];
-    };
-
     if (isFilteringValid(filtering || [])) {
       searchParams.filtering = JSON.stringify(filtering);
     }
@@ -118,9 +120,11 @@ export class FacebookAdsManagerServerService {
       return {
         isSuccess: false,
         message: error.message,
-        data: getFallbackResponseData({
+        data: this.getFallbackResponseData({
           code: 500,
           status: "Facebook server error",
+          adSummaryLabel: "ad_insights_summary",
+          props: { ...formatInsightsFields([]) },
         }),
       };
     }
@@ -164,9 +168,11 @@ export class FacebookAdsManagerServerService {
             })
           );
         } else {
-          restOfProps.adsets = getFallbackResponseData({
+          restOfProps.adsets = this.getFallbackResponseData({
             code: 404,
             status: "No adsets found",
+            adSummaryLabel: "ad_insights_summary",
+            props: { ...formatInsightsFields([]) },
           });
         }
 
@@ -185,9 +191,11 @@ export class FacebookAdsManagerServerService {
       data:
         formattedResult.length > 0
           ? formattedResult
-          : getFallbackResponseData({
+          : this.getFallbackResponseData({
               code: 404,
               status: "No traffic data",
+              adSummaryLabel: "ad_insights_summary",
+              props: { ...formatInsightsFields([]) },
             }),
     };
   }
@@ -219,7 +227,11 @@ export class FacebookAdsManagerServerService {
       return {
         isSuccess: false,
         message: error.message,
-        data: [],
+        data: this.getFallbackResponseData({
+          code: 500,
+          status: "Facebook server error",
+          adSummaryLabel: "ad_checker_summary",
+        }),
       };
     }
 
@@ -322,15 +334,12 @@ export class FacebookAdsManagerServerService {
             })
           );
         } else {
-          restOfProps.adsets = [
-            {
-              name,
-              ad_checker_summary: {
-                code: 404,
-                message: ["No adsets found"],
-              },
-            },
-          ]; // Assign the campaign name, if adsets is empty
+          restOfProps.adsets = this.getFallbackResponseData({
+            code: 404,
+            status: "No adsets found",
+            adSummaryLabel: "ad_checker_summary",
+            props: { name },
+          }); // Assign the campaign name, if adsets is empty
         }
 
         return {
@@ -344,7 +353,15 @@ export class FacebookAdsManagerServerService {
         result.data.length > 0
           ? "Data fetched successfully."
           : "No data found.",
-      data: formattedResult || [],
+      data:
+        formattedResult.length > 0
+          ? formattedResult
+          : this.getFallbackResponseData({
+              code: 404,
+              status: "No traffic data",
+              adSummaryLabel: "ad_checker_summary",
+              props: { name: null },
+            }),
     };
   }
 

@@ -187,12 +187,15 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
     const fallbackLinks = [defaultLinks, defaultLinks, defaultLinks];
     const plainData = tableData.map((data: AdData) => {
       const {
-        links,
-        id,
+        ad_account,
+        account_status,
+        campaign_name,
+        daily_budget,
         disable_reason,
         effective_status,
-        account_status,
-        ...rest
+        links,
+        profile,
+        spend,
       } = data;
 
       const validLinks = links.length > 0 ? links : fallbackLinks;
@@ -203,20 +206,18 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
         }
       });
 
-      // Replace undefined values in rest with ""
-      const safeRest = Object.fromEntries(
-        Object.entries(rest).map(([k, v]) => [k, v === undefined ? "" : v])
-      );
       const delivery =
-        data.account_status == "ACTIVE"
-          ? data.effective_status
-          : data.account_status;
+        data.account_status == "ACTIVE" ? effective_status : account_status;
 
       return {
-        ...safeRest,
+        profile,
+        ad_account,
+        ad_checker_summary: data.ad_checker_summary.message.join(". "),
         delivery: delivery ? delivery : "",
         disable_reason,
-        ad_checker_summary: data.ad_checker_summary.message.join(". "),
+        campaign_name,
+        daily_budget,
+        spend,
         domain_name:
           data.domain_name.length > 0
             ? data.domain_name.map((d: { name: string }) => d.name).join(", ")
@@ -227,8 +228,14 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
       };
     });
 
+    const sanitizeObject = <T extends Record<string, any>>(obj: T): T =>
+      Object.fromEntries(
+        Object.entries(obj).map(([k, v]) => [k, v == null ? "" : v])
+      ) as T;
+
+    const sanitizedData = plainData.map(sanitizeObject);
     try {
-      const csv = await jsonCsvManager.convertJsonToCSV(plainData);
+      const csv = await jsonCsvManager.convertJsonToCSV(sanitizedData);
 
       const blob = new Blob([csv], { type: "text/csv" });
       const url = URL.createObjectURL(blob);

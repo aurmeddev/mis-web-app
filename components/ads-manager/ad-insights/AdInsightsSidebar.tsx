@@ -309,7 +309,7 @@ export function AdInsightsSidebar({
         onClick={onSubmit}
         disabled={progress !== 0 || isActionDisabled}
       >
-        Submit
+        Get Ad Insights
       </Button>
 
       {/* <div className="border mt-2 rounded p-4 text-sm">

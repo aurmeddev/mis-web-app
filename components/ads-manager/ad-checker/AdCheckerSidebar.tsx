@@ -236,14 +236,14 @@ export function AdCheckerSidebar({
         Run Ad Checker
       </Button>
 
-      {hasTableData && validatedProfiles.length > 0 && (
+      {hasTableData && (
         <div className="border rounded p-4 text-sm">
           <div className="font-semibold">Ad Checker Complete</div>
           <div className="text-muted-foreground">
             Your Ad Checker Summary Report is ready to download.
           </div>
 
-          <Button onClick={onExportData} className="mt-2 text-xs w-full">
+          <Button onClick={onExportData} className="cursor-pointer mt-2 w-full">
             Download
           </Button>
         </div>

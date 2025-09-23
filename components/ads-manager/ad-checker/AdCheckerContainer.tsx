@@ -217,7 +217,9 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
       return {
         profile,
         ad_account,
-        ad_checker_summary: data.ad_checker_summary.message.join(". "),
+        ad_checker_summary: `${data.ad_checker_summary.message.join(". ")} \n ${
+          data.ad_checker_summary.code == 500 ? "SUSPICIOUS" : ""
+        }`,
         delivery: delivery ? delivery : "",
         disable_reason,
         campaign_name,

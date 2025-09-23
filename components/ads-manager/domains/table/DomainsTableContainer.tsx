@@ -387,7 +387,20 @@ export function DomainsTableContainer({
   };
 
   useEffect(() => {
-    if (!importData?.length) return;
+    if (!importData?.length) {
+      toast.info("The CSV file is empty. Please add at least one domain.");
+      return;
+    }
+
+    const hasDomainNameProperty = importData.some(
+      (data) => "domain_name" in data
+    );
+    if (!hasDomainNameProperty) {
+      toast.info(
+        "The CSV file is invalid. Please make sure you are using the correct file format."
+      );
+      return;
+    }
 
     const uploadDomains = async () => {
       const filteredData = importData.filter((item) => item.domain_name);

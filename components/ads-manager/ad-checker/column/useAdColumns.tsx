@@ -16,7 +16,7 @@ export function useAdColumns(onViewCreatives: (adCreatives: any) => void) {
         accessorKey: "ad_account",
         header: "Ad Account",
         cell: ({ getValue }) => {
-          const cellValue = getValue<string>().toLocaleLowerCase();
+          const cellValue = getValue<string>();
           return <div className="whitespace-normal">{cellValue}</div>;
         },
         minSize: 150,
@@ -61,7 +61,7 @@ export function useAdColumns(onViewCreatives: (adCreatives: any) => void) {
         accessorKey: "account_status",
         header: "Account Status",
         cell: ({ getValue }) => {
-          const cellValue = getValue<string>().toLocaleLowerCase();
+          const cellValue = getValue<string>();
           const normalCase =
             cellValue.charAt(0).toUpperCase() +
             cellValue.substr(1, cellValue.length);

@@ -14,6 +14,7 @@ import { ProfileMarketingApiAccessToken } from "../ad-checker/AdCheckerContainer
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { CheckedState } from "@radix-ui/react-checkbox";
+import { Json2CsvManager } from "@/lib/utils/converter/Json2CsvManager";
 
 type Props = {
   brands: SelectOptions[];
@@ -77,6 +78,7 @@ export function AdInsightsContainer({
   const dateFromSearchParam = searchParams.date_from;
   const dateToSearchParam = searchParams.date_to;
   const fbAdsManagerService = new FacebookAdsManagerClientService();
+  const jsonCsvManager = new Json2CsvManager();
   const dateUtil = new DatetimeUtils();
 
   const [isActionDisabled, setIsActionDisabled] = useState(false);
@@ -275,6 +277,44 @@ export function AdInsightsContainer({
   const handleCheckedChange = (checked: CheckedState) => {
     setIsFilterShown(checked ? true : false);
   };
+
+  // const handleExportAdInsights = async () => {
+  //   const toBeExported = completedImportDetails.map((details: any) => {
+  //     const { id, lead, date_acquired, isValid, status, ...rest } = details;
+  //     return {
+  //       ...rest,
+  //       status: status ? "success" : "failed",
+  //     };
+  //   });
+  //   try {
+  //     const csv = await jsonCsvManager.convertJsonToCSV(toBeExported);
+  //     const brand = importData[0]?.brand || "";
+  //     const geo = importData[0]?.geo || "";
+
+  //     const blob = new Blob([csv], { type: "text/csv" });
+  //     const url = URL.createObjectURL(blob);
+
+  //     const todayDate = new Date().toLocaleDateString("en-US", {
+  //       year: "numeric",
+  //       month: "2-digit",
+  //       day: "2-digit",
+  //     });
+
+  //     const a = document.createElement("a");
+  //     a.href = url;
+  //     a.download = `imported-data-${brand}-${geo}-${todayDate.replaceAll(
+  //       "/",
+  //       "-"
+  //     )}.csv`;
+  //     document.body.appendChild(a);
+  //     a.click();
+  //     document.body.removeChild(a);
+
+  //     URL.revokeObjectURL(url);
+  //   } catch (err) {
+  //     console.error("Error converting JSON to CSV:", err);
+  //   }
+  // }
 
   return (
     <div className="min-h-[calc(100dvh-7rem)] p-6 pr-0">

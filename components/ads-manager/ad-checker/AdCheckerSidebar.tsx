@@ -1,6 +1,6 @@
 "use client";
 import { useDebouncedCallback } from "use-debounce";
-import { ChangeEvent, startTransition, useEffect, useState } from "react";
+import { ChangeEvent, startTransition, useState } from "react";
 import { Button } from "../../ui/button";
 import { Badge } from "../../ui/badge";
 import { Input } from "../../ui/input";
@@ -8,13 +8,14 @@ import { Trash2, X } from "lucide-react";
 import { ApProfilesService } from "@/lib/features/ap-profiles/ApProfilesService";
 import { Progress } from "../../ui/progress";
 import { ProfileMarketingApiAccessToken } from "./AdCheckerContainer";
-import { FacebookAdsManagerServerService } from "@/lib/features/ads-manager/facebook/FacebookAdsManagerServerService";
 import { FacebookAdsManagerClientService } from "@/lib/features/ads-manager/facebook/FacebookAdsManagerClientService";
 import { toast } from "sonner";
 import { GlobalTooltip } from "../../shared/tooltip/GlobalTooltip";
 
 type Props = {
+  hasTableData: boolean;
   isActionDisabled: boolean;
+  onExportData: () => void;
   onSubmit: () => void;
   onSetValidatedProfiles: (
     data: ProfileMarketingApiAccessToken[],
@@ -24,13 +25,14 @@ type Props = {
 };
 
 export function AdCheckerSidebar({
+  hasTableData,
   isActionDisabled,
+  onExportData,
   onSubmit,
   onSetValidatedProfiles,
   validatedProfiles,
 }: Props) {
   const profilesService = new ApProfilesService();
-  const [extractedProfiles, setExtractedProfiles] = useState<string[]>([]);
   const [addedProfiles, setAddedProfiles] = useState<string[]>([]);
   const [progress, setProgress] = useState<number>(0);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -143,7 +145,7 @@ export function AdCheckerSidebar({
   );
 
   return (
-    <div className="flex flex-col space-y-2 w-[30%]">
+    <div className="border-r flex flex-col pr-4 space-y-2 lg:w-[35%] w-[30%]">
       <div className="border relative rounded">
         {validatedProfiles.length >= 1 && (
           <div className="flex flex-wrap gap-2 p-2 w-full">
@@ -231,8 +233,21 @@ export function AdCheckerSidebar({
         onClick={onSubmit}
         disabled={progress !== 0 || isActionDisabled}
       >
-        Submit
+        Run Ad Checker
       </Button>
+
+      {hasTableData && validatedProfiles.length > 0 && (
+        <div className="border rounded p-4 text-sm">
+          <div className="font-semibold">Ad Checker Complete</div>
+          <div className="text-muted-foreground">
+            Your Ad Checker Summary Report is ready to download.
+          </div>
+
+          <Button onClick={onExportData} className="mt-2 text-xs w-full">
+            Download
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,20 +1,11 @@
 "use client";
 import {
   ColumnSizingState,
-  flexRender,
   getCoreRowModel,
   getPaginationRowModel,
   useReactTable,
   VisibilityState,
 } from "@tanstack/react-table";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { AdData } from "../AdCheckerContainer";
 import { useAdColumns } from "../column/useAdColumns";
 import { useState } from "react";

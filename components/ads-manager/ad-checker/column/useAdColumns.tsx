@@ -179,9 +179,18 @@ export function useAdColumns(onViewCreatives: (adCreatives: any) => void) {
       {
         accessorKey: "links",
         header: "Ad Creatives",
-        cell: ({ getValue }) => {
+        cell: ({ getValue, row }) => {
           const adCreatives = getValue<Record<string, any>>();
+          const spend = Number(row.getValue("spend"));
+
           if (adCreatives.length == 0) {
+            if (spend > 0) {
+              return (
+                <div className="text-wrap text-xs text-center text-muted-foreground">
+                  Unable to get Ad Creatives
+                </div>
+              );
+            }
             return (
               <div className="text-xs text-center text-muted-foreground">
                 No Ad Creatives

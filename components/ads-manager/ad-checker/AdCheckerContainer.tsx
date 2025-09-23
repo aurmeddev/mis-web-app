@@ -2,11 +2,11 @@
 import { GetAllFbAccountsProps } from "@/lib/features/fb-accounts/type/FbAccountsProps";
 import { AdCheckerSidebar } from "./AdCheckerSidebar";
 import { AdCheckerTable } from "./table/AdCheckerTable";
-import { startTransition, useEffect, useState } from "react";
+import { startTransition, useState } from "react";
 import { FacebookAdsManagerClientService } from "@/lib/features/ads-manager/facebook/FacebookAdsManagerClientService";
-import { toast } from "sonner";
 import { AdCreativesDialog } from "./dialog/AdCreativesDialog";
 import { AdCheckerProgressDialog } from "./dialog/AdCheckerProgressDialog";
+import { Json2CsvManager } from "@/lib/utils/converter/Json2CsvManager";
 
 type Props = {
   searchParams: { page: number; limit: number } & GetAllFbAccountsProps;
@@ -30,11 +30,13 @@ export type AdData = {
   campaign_name: string;
   daily_budget: string | number;
   domain_name: any;
-  links: Record<string, any>;
+  links: AdLinks[];
   targeting_geo: string[];
   spend: string | number;
   ad_checker_summary: Record<string, any>;
 };
+
+type AdLinks = { image: string; message: string; title: string; url: string };
 
 export type AdCreatives = {
   image: string;
@@ -45,7 +47,7 @@ export type AdCreatives = {
 
 export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
   const fbAdsManagerService = new FacebookAdsManagerClientService();
-
+  const jsonCsvManager = new Json2CsvManager();
   const [isActionDisabled, setIsActionDisabled] = useState(false);
   const [validatedProfiles, setValidatedProfiles] = useState<
     ProfileMarketingApiAccessToken[]
@@ -58,11 +60,7 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
   const [adCheckerProgress, setAdCheckerProgress] = useState(0);
   const [profile, setProfile] = useState<string>("");
 
-  useEffect(() => {
-    if (!isDialogOpen) {
-    } else {
-    }
-  }, [isDialogOpen]);
+  const hasTableData = tableData.length > 0;
 
   const handleAdCreativesDialogOpen = (open: boolean) => {
     setIsDialogOpen(open);
@@ -184,6 +182,75 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
     setAdCreativeData(adCreatives);
   };
 
+  const handleExportAdInsights = async () => {
+    const defaultLinks = { image: "", message: "", title: "", url: "" };
+    const fallbackLinks = [defaultLinks, defaultLinks, defaultLinks];
+    const plainData = tableData.map((data: AdData) => {
+      const {
+        links,
+        id,
+        disable_reason,
+        effective_status,
+        account_status,
+        ...rest
+      } = data;
+
+      const validLinks = links.length > 0 ? links : fallbackLinks;
+      const linksResult: Record<string, string> = {};
+      validLinks.forEach((link: AdLinks, idx: number) => {
+        for (const key in link) {
+          linksResult[`${key}${idx + 1}`] = link[key as keyof AdLinks];
+        }
+      });
+
+      // Replace undefined values in rest with ""
+      const safeRest = Object.fromEntries(
+        Object.entries(rest).map(([k, v]) => [k, v === undefined ? "" : v])
+      );
+      const delivery =
+        data.account_status == "ACTIVE"
+          ? data.effective_status
+          : data.account_status;
+
+      return {
+        ...safeRest,
+        delivery: delivery ? delivery : "",
+        disable_reason,
+        ad_checker_summary: data.ad_checker_summary.message.join(". "),
+        domain_name:
+          data.domain_name.length > 0
+            ? data.domain_name.map((d: { name: string }) => d.name).join(", ")
+            : "",
+        targeting_geo:
+          data.targeting_geo.length > 0 ? data.targeting_geo.join(", ") : "",
+        ...linksResult,
+      };
+    });
+
+    try {
+      const csv = await jsonCsvManager.convertJsonToCSV(plainData);
+
+      const blob = new Blob([csv], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const todayDate = new Date().toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      });
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `exported-data-${todayDate.replaceAll("/", "-")}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Error converting JSON to CSV:", err);
+    }
+  };
+
   return (
     <div className="min-h-[calc(100dvh-7rem)] p-6 pr-0">
       <div>
@@ -209,7 +276,9 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
 
       <div className="flex gap-4 min-h-[calc(100dvh-12rem)] mt-4 pr-4">
         <AdCheckerSidebar
+          hasTableData={hasTableData}
           isActionDisabled={isActionDisabled}
+          onExportData={handleExportAdInsights}
           onSubmit={handleSubmit}
           onSetValidatedProfiles={handleSetValidatedProfiles}
           validatedProfiles={validatedProfiles}

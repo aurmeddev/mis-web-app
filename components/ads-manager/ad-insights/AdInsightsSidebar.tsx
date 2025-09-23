@@ -311,6 +311,17 @@ export function AdInsightsSidebar({
       >
         Submit
       </Button>
+
+      {/* <div className="border mt-2 rounded p-4 text-sm">
+        <div className="font-semibold">Download Available</div>
+        <div className="text-muted-foreground">
+          Your data export is finished. Click to download.
+        </div>
+
+        <Button className="cursor-pointer mt-2 text-xs w-full">
+          Performance Analysis Report Data
+        </Button>
+      </div> */}
     </div>
   );
 }

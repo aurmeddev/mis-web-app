@@ -148,7 +148,7 @@ export function AdCheckerSidebar({
     <div className="border-r flex flex-col pr-4 space-y-2 lg:w-[35%] w-[30%]">
       <div className="border relative rounded">
         {validatedProfiles.length >= 1 && (
-          <div className="flex flex-wrap gap-2 p-2 w-full">
+          <div className="flex flex-wrap gap-2 max-h-[300px] overflow-y-auto p-2 w-full">
             {validatedProfiles.map((data, idx) => {
               if (!data.canRequest) {
                 return (

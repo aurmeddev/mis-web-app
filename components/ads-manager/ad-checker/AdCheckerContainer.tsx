@@ -161,8 +161,8 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
       }
 
       const combinedAdData = [...invalidProfiles, ...adData];
-      const sortedAdData: any = combinedAdData.sort(
-        (a, b) => b.ad_checker_summary.code - a.ad_checker_summary.code
+      const sortedAdData: AdData[] = combinedAdData.sort(
+        (a, b) => b.ad_checker_summary?.code - a.ad_checker_summary?.code
       );
 
       setTableData((prevState) => [...prevState, ...sortedAdData]);

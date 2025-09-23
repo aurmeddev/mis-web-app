@@ -198,7 +198,11 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
         spend,
       } = data;
 
-      const validLinks = links.length > 0 ? links : fallbackLinks;
+      // fill default links if the links is only less than 3
+      const linksAdded = Array(3 - links.length).fill(defaultLinks);
+      // spread the filled links if the links is only less than 3
+      const checkedLinks = links.length < 3 ? [...links, ...linksAdded] : links;
+      const validLinks = links.length > 0 ? checkedLinks : fallbackLinks;
       const linksResult: Record<string, string> = {};
       validLinks.forEach((link: AdLinks, idx: number) => {
         for (const key in link) {

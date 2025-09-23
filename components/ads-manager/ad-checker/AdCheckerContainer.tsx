@@ -202,7 +202,8 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
       const linksResult: Record<string, string> = {};
       validLinks.forEach((link: AdLinks, idx: number) => {
         for (const key in link) {
-          linksResult[`${key}${idx + 1}`] = link[key as keyof AdLinks];
+          const linkValue = link[key as keyof AdLinks];
+          linksResult[`${key}${idx + 1}`] = linkValue ? linkValue : "";
         }
       });
 

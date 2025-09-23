@@ -60,7 +60,7 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
   const [adCheckerProgress, setAdCheckerProgress] = useState(0);
   const [profile, setProfile] = useState<string>("");
 
-  const hasTableData = tableData.length > 0;
+  const hasTableData = tableData.length > 0 && adCheckerProgress == 100;
 
   const handleAdCreativesDialogOpen = (open: boolean) => {
     setIsDialogOpen(open);

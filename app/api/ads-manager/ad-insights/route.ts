@@ -91,7 +91,12 @@ export const POST = async (request: NextRequest) => {
       {
         isSuccess: false,
         message: message,
-        data: [],
+        data: graphApi.getFallbackResponseData({
+          code: 500,
+          status: "Facebook server error",
+          adSummaryLabel: "ad_insights_summary",
+          props: { ...graphApi.formatInsightsFields([]) },
+        }),
       },
       { status: 500 }
     );

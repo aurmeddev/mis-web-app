@@ -83,7 +83,11 @@ export const POST = async (request: NextRequest) => {
       {
         isSuccess: false,
         message: message,
-        data: [],
+        data: graphApi.getFallbackResponseData({
+          code: 500,
+          status: "Facebook server error",
+          adSummaryLabel: "ad_checker_summary",
+        }),
       },
       { status: 500 }
     );

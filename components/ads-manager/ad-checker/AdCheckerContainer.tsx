@@ -88,83 +88,169 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
     }
   };
 
+  // const handleSubmitRequest = async () => {
+  //   setIsAdCheckerProgressDialogOpen(true);
+  //   setAdCheckerProgress(0);
+
+  //   for (const profile of validatedProfiles) {
+  //     const invalidProfiles: AdData[] = [];
+  //     if (!profile.accessToken || !profile.canRequest) {
+  //       invalidProfiles.push({
+  //         id: 0,
+  //         profile: profile.profile,
+  //         ad_account: "",
+  //         account_status: "",
+  //         effective_status: "",
+  //         disable_reason: "",
+  //         campaign_name: "",
+  //         daily_budget: "",
+  //         domain_name: [],
+  //         spend: "",
+  //         links: [],
+  //         ad_checker_summary: { code: 400, message: profile.status },
+  //         targeting_geo: [],
+  //       });
+  //     }
+
+  //     let adData: AdData[] = [];
+  //     if (profile.canRequest) {
+  //       setProfile(profile.profile);
+  //       const { data } = await fbAdsManagerService.adChecker({
+  //         access_token: profile.accessToken.trim(),
+  //       });
+
+  //       const divisor = (100 / validatedProfiles.length).toFixed();
+  //       setAdCheckerProgress((prev) => {
+  //         const currentProgress = (prev += Number(divisor));
+  //         return currentProgress >= 99 ? 100 : currentProgress;
+  //       });
+
+  //       adData = data.map((ad) => {
+  //         const links: AdCreatives[] =
+  //           ad?.adcreatives?.map((creative: Record<string, any>) => ({
+  //             image: creative.image_url,
+  //             title: creative.title,
+  //             message: creative.message,
+  //             url: creative.call_to_action?.value?.link ?? "",
+  //           })) ?? [];
+
+  //         return {
+  //           id: Number(ad.id) || 0,
+  //           profile: profile.profile,
+  //           ad_account: ad.ad_account_name || "",
+  //           effective_status: ad.effective_status,
+  //           account_status: ad.account_status,
+  //           disable_reason: ad.disable_reason,
+  //           campaign_name: ad.name || "",
+  //           daily_budget: ad.daily_budget,
+  //           domain_name: ad.domain || [],
+  //           spend: ad.spend || 0,
+  //           links,
+  //           ad_checker_summary: ad.ad_checker_summary,
+  //           targeting_geo: ad.targeting_countries || [],
+  //         };
+  //       });
+  //     } else {
+  //       const divisor = (100 / validatedProfiles.length).toFixed();
+  //       setAdCheckerProgress((prev) => {
+  //         const currentProgress = (prev += Number(divisor));
+  //         return currentProgress >= 99 ? 100 : currentProgress;
+  //       });
+  //     }
+
+  //     const combinedAdData = [...invalidProfiles, ...adData];
+  //     const sortedAdData: AdData[] = combinedAdData.sort(
+  //       (a, b) => b.ad_checker_summary?.code - a.ad_checker_summary?.code
+  //     );
+
+  //     setTableData((prevState) => [...prevState, ...sortedAdData]);
+  //   }
+  //   setIsExportReady(true);
+  //   setIsActionDisabled(false);
+  //   setIsAdCheckerProgressDialogOpen(false);
+  // };
+
   const handleSubmitRequest = async () => {
     setIsAdCheckerProgressDialogOpen(true);
     setAdCheckerProgress(0);
 
-    for (const profile of validatedProfiles) {
-      const invalidProfiles: AdData[] = [];
-      if (!profile.accessToken || !profile.canRequest) {
-        invalidProfiles.push({
-          id: 0,
-          profile: profile.profile,
-          ad_account: "",
-          account_status: "",
-          effective_status: "",
-          disable_reason: "",
-          campaign_name: "",
-          daily_budget: "",
-          domain_name: [],
-          spend: "",
-          links: [],
-          ad_checker_summary: { code: 400, message: profile.status },
-          targeting_geo: [],
-        });
-      }
+    const divisor = 100 / validatedProfiles.length;
 
-      let adData: AdData[] = [];
-      if (profile.canRequest) {
-        setProfile(profile.profile);
-        const { data } = await fbAdsManagerService.adChecker({
-          access_token: profile.accessToken.trim(),
-        });
+    await Promise.allSettled(
+      validatedProfiles.map(async (profile) => {
+        const invalidProfiles: AdData[] = [];
 
-        const divisor = (100 / validatedProfiles.length).toFixed();
-        setAdCheckerProgress((prev) => {
-          const currentProgress = (prev += Number(divisor));
-          return currentProgress >= 99 ? 100 : currentProgress;
-        });
-
-        adData = data.map((ad) => {
-          const links: AdCreatives[] =
-            ad?.adcreatives?.map((creative: Record<string, any>) => ({
-              image: creative.image_url,
-              title: creative.title,
-              message: creative.message,
-              url: creative.call_to_action?.value?.link ?? "",
-            })) ?? [];
-
-          return {
-            id: Number(ad.id) || 0,
+        if (!profile.accessToken || !profile.canRequest) {
+          invalidProfiles.push({
+            id: 0,
             profile: profile.profile,
-            ad_account: ad.ad_account_name || "",
-            effective_status: ad.effective_status,
-            account_status: ad.account_status,
-            disable_reason: ad.disable_reason,
-            campaign_name: ad.name || "",
-            daily_budget: ad.daily_budget,
-            domain_name: ad.domain || [],
-            spend: ad.spend || 0,
-            links,
-            ad_checker_summary: ad.ad_checker_summary,
-            targeting_geo: ad.targeting_countries || [],
-          };
-        });
-      } else {
-        const divisor = (100 / validatedProfiles.length).toFixed();
-        setAdCheckerProgress((prev) => {
-          const currentProgress = (prev += Number(divisor));
-          return currentProgress >= 99 ? 100 : currentProgress;
-        });
-      }
+            ad_account: "",
+            account_status: "",
+            effective_status: "",
+            disable_reason: "",
+            campaign_name: "",
+            daily_budget: "",
+            domain_name: [],
+            spend: "",
+            links: [],
+            ad_checker_summary: { code: 400, message: profile.status },
+            targeting_geo: [],
+          });
 
-      const combinedAdData = [...invalidProfiles, ...adData];
-      const sortedAdData: AdData[] = combinedAdData.sort(
-        (a, b) => b.ad_checker_summary?.code - a.ad_checker_summary?.code
-      );
+          setTableData((prev) => [...prev, ...invalidProfiles]);
 
-      setTableData((prevState) => [...prevState, ...sortedAdData]);
-    }
+          // update progress
+          setAdCheckerProgress((prev) => Math.min(100, prev + divisor));
+          return;
+        }
+
+        try {
+          setProfile(profile.profile);
+
+          const { data } = await fbAdsManagerService.adChecker({
+            access_token: profile.accessToken.trim(),
+          });
+
+          const adData: AdData[] = data.map((ad) => {
+            const links: AdCreatives[] =
+              ad?.adcreatives?.map((creative: Record<string, any>) => ({
+                image: creative.image_url,
+                title: creative.title,
+                message: creative.message,
+                url: creative.call_to_action?.value?.link ?? "",
+              })) ?? [];
+
+            return {
+              id: Number(ad.id) || 0,
+              profile: profile.profile,
+              ad_account: ad.ad_account_name || "",
+              effective_status: ad.effective_status,
+              account_status: ad.account_status,
+              disable_reason: ad.disable_reason,
+              campaign_name: ad.name || "",
+              daily_budget: ad.daily_budget,
+              domain_name: ad.domain || [],
+              spend: ad.spend || 0,
+              links,
+              ad_checker_summary: ad.ad_checker_summary,
+              targeting_geo: ad.targeting_countries || [],
+            };
+          });
+
+          const sortedAdData = adData.sort(
+            (a, b) => b.ad_checker_summary?.code - a.ad_checker_summary?.code
+          );
+
+          setTableData((prev) => [...prev, ...sortedAdData]);
+        } catch (error) {
+          console.error("AdChecker error:", error);
+        } finally {
+          // update progress after each profile finishes (success or fail)
+          setAdCheckerProgress((prev) => Math.min(100, prev + divisor));
+        }
+      })
+    );
+
     setIsExportReady(true);
     setIsActionDisabled(false);
     setIsAdCheckerProgressDialogOpen(false);
@@ -248,7 +334,6 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
       ) as T;
 
     const sanitizedData = plainData.map(sanitizeObject);
-    console.log("sanitizedData ", sanitizedData);
     try {
       const csv = await jsonCsvManager.convertJsonToCSV(sanitizedData);
 
@@ -293,7 +378,7 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
         handleOpen={handleAdCheckerProgressDialogOpen}
         profile={profile}
         profilesLength={validatedProfiles.length}
-        progress={adCheckerProgress}
+        progress={Number(adCheckerProgress.toFixed())}
       />
 
       <div className="flex gap-4 h-[calc(100dvh-12rem)] mt-4 pr-4">

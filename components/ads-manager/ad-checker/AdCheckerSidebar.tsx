@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import { GlobalTooltip } from "../../shared/tooltip/GlobalTooltip";
 
 type Props = {
-  hasTableData: boolean;
+  isExportReady: boolean;
   isActionDisabled: boolean;
   onExportData: () => void;
   onSubmit: () => void;
@@ -25,7 +25,7 @@ type Props = {
 };
 
 export function AdCheckerSidebar({
-  hasTableData,
+  isExportReady,
   isActionDisabled,
   onExportData,
   onSubmit,
@@ -236,7 +236,7 @@ export function AdCheckerSidebar({
         Run Ad Checker
       </Button>
 
-      {hasTableData && (
+      {isExportReady && (
         <div className="border rounded p-4 text-sm">
           <div className="font-semibold">Ad Checker Complete</div>
           <div className="text-muted-foreground">

@@ -197,9 +197,13 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
         spend,
       } = data;
 
+      //get the highest length of links
+      const maxLength = Math.max(...tableData.map((link) => link.links.length));
       // fill default links if the links is only less than 3
       const linksAdded =
-        links?.length > 0 ? Array(3 - links.length).fill(defaultLinks) : [];
+        links?.length > 0
+          ? Array(maxLength - links.length).fill(defaultLinks)
+          : [];
       // spread the filled links if the links is only less than 3
       const checkedLinks = links.length < 3 ? [...links, ...linksAdded] : links;
       const validLinks = links.length > 0 ? checkedLinks : fallbackLinks;

@@ -213,24 +213,27 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
 
       const delivery =
         data.account_status == "ACTIVE" ? effective_status : account_status;
+      const adCheckerSummary = data.ad_checker_summary
+        ? `${data.ad_checker_summary.message.join(". ")} \n ${
+            data.ad_checker_summary.code == 500 ? "SUSPICIOUS" : ""
+          }`
+        : "";
 
       return {
         profile,
         ad_account,
-        ad_checker_summary: `${data.ad_checker_summary.message.join(". ")} \n ${
-          data.ad_checker_summary.code == 500 ? "SUSPICIOUS" : ""
-        }`,
+        ad_checker_summary: adCheckerSummary,
         delivery: delivery ? delivery : "",
         disable_reason,
         campaign_name,
         daily_budget,
         spend,
         domain_name:
-          data.domain_name.length > 0
+          data.domain_name?.length > 0
             ? data.domain_name.map((d: { name: string }) => d.name).join(", ")
             : "",
         targeting_geo:
-          data.targeting_geo.length > 0 ? data.targeting_geo.join(", ") : "",
+          data.targeting_geo?.length > 0 ? data.targeting_geo.join(", ") : "",
         ...linksResult,
       };
     });
@@ -288,7 +291,7 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
         progress={adCheckerProgress}
       />
 
-      <div className="flex gap-4 max-h-[calc(100dvh-12rem)] mt-4 pr-4">
+      <div className="flex gap-4 h-[calc(100dvh-12rem)] mt-4 pr-4">
         <AdCheckerSidebar
           hasTableData={hasTableData}
           isActionDisabled={isActionDisabled}

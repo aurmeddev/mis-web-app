@@ -26,31 +26,39 @@ export function useAdColumns(onViewCreatives: (adCreatives: any) => void) {
         header: "Ad Checker Summary",
         cell: ({ getValue }) => {
           const cellValue = getValue<any>();
-          const isInternaServerError = cellValue.code === 500;
-          const isAdCheckerSummaryOk = cellValue.code === 200;
-          const isAdCheckerSummaryNoAdset = cellValue.code === 404;
-          const isAdCheckerSummaryProfileIssue = cellValue.code === 400;
+
+          if (!cellValue || !("code" in cellValue)) return "";
+          const isInternaServerError = cellValue?.code === 500;
+          const isAdCheckerSummaryOk = cellValue?.code === 200;
+          const isAdCheckerSummaryNoAdset = cellValue?.code === 404;
+          const isAdCheckerSummaryProfileIssue = cellValue?.code === 400;
           return (
             <div className="whitespace-normal">
               <ul>
-                {cellValue.message.map((adCheckerSummary: any, idx: number) => (
-                  <li key={idx}>
-                    {isAdCheckerSummaryOk ? (
-                      <Badge className="bg-green-500">{adCheckerSummary}</Badge>
-                    ) : isAdCheckerSummaryNoAdset ? (
-                      <Badge variant={"secondary"}>{adCheckerSummary}</Badge>
-                    ) : isAdCheckerSummaryProfileIssue ? (
-                      <Badge variant={"destructive"}>{adCheckerSummary}</Badge>
-                    ) : (
-                      <>- {adCheckerSummary} </>
-                    )}
-                    {isInternaServerError && (
-                      <Badge className="uppercase" variant={"destructive"}>
-                        Suspicious
-                      </Badge>
-                    )}
-                  </li>
-                ))}
+                {cellValue?.message.map(
+                  (adCheckerSummary: any, idx: number) => (
+                    <li key={idx}>
+                      {isAdCheckerSummaryOk ? (
+                        <Badge className="bg-green-500">
+                          {adCheckerSummary}
+                        </Badge>
+                      ) : isAdCheckerSummaryNoAdset ? (
+                        <Badge variant={"secondary"}>{adCheckerSummary}</Badge>
+                      ) : isAdCheckerSummaryProfileIssue ? (
+                        <Badge variant={"destructive"}>
+                          {adCheckerSummary}
+                        </Badge>
+                      ) : (
+                        <>- {adCheckerSummary} </>
+                      )}
+                      {isInternaServerError && (
+                        <Badge className="uppercase" variant={"destructive"}>
+                          Suspicious
+                        </Badge>
+                      )}
+                    </li>
+                  )
+                )}
               </ul>
             </div>
           );
@@ -120,7 +128,7 @@ export function useAdColumns(onViewCreatives: (adCreatives: any) => void) {
         cell: ({ getValue, row }) => {
           const adCheckerSummary: { code: number } =
             row.getValue("ad_checker_summary");
-          if (adCheckerSummary.code == 404) {
+          if (adCheckerSummary?.code == 404 || !adCheckerSummary) {
             return "";
           }
           const cellValue = getValue<string | number>();
@@ -142,7 +150,7 @@ export function useAdColumns(onViewCreatives: (adCreatives: any) => void) {
 
           const adCheckerSummary: { code: number } =
             row.getValue("ad_checker_summary");
-          if (adCheckerSummary.code == 404) {
+          if (adCheckerSummary?.code == 404 || !adCheckerSummary) {
             return "";
           }
 

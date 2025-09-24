@@ -21,12 +21,16 @@ export class FacebookAdsManagerServerService {
   };
   private companyTargetingCountries = ["MY", "SG", "ID", "KH", "HK", "TH"];
   private maximumDailyBudget = 500;
-  private getFallbackResponseData = (params: {
+  constructor(private config: MarketingApiAccessTokenConfigProps) {
+    this.config = config;
+  }
+
+  getFallbackResponseData(params: {
     code: 404 | 500;
     status: "Facebook server error" | "No traffic data" | "No adsets found";
     adSummaryLabel: string;
     props?: Record<string, any>;
-  }) => {
+  }) {
     const { code, status, adSummaryLabel, props } = params;
     const customProps = props || {};
     return [
@@ -43,10 +47,65 @@ export class FacebookAdsManagerServerService {
         ],
       },
     ];
-  };
-  constructor(private config: MarketingApiAccessTokenConfigProps) {
-    this.config = config;
   }
+  formatInsightsFields(insights: any) {
+    const defaultInsightFields = {
+      reach: 0,
+      impressions: 0,
+      cpm: 0,
+      spend: 0,
+      frequency: 0,
+      cost_per_inline_link_click: 0,
+      cpc: 0,
+      ctr: 0,
+      inline_link_click_ctr: 0,
+    };
+    const events = {
+      lead: 0,
+      purchase: 0,
+      link_click: 0,
+    };
+    if (insights?.data?.length > 0) {
+      const { actions, date_start, date_stop, ...rest } = {
+        ...insights.data[0],
+      };
+
+      if (actions?.length > 0) {
+        const result = actions.filter(
+          (key: any) =>
+            key.action_type === "lead" ||
+            key.action_type === "purchase" ||
+            key.action_type === "link_click"
+        );
+
+        if (result.length > 0) {
+          for (const item of result) {
+            if (events.hasOwnProperty(item.action_type)) {
+              const value = Number(item.value) || 0;
+              events[item.action_type as keyof typeof events] = value;
+            }
+          }
+        }
+      }
+
+      for (const key in rest) {
+        if (defaultInsightFields.hasOwnProperty(key)) {
+          const value = Number(rest[key]) || 0;
+          defaultInsightFields[key as keyof typeof defaultInsightFields] =
+            value;
+        }
+      }
+
+      return { account_currency: "USD", ...defaultInsightFields, ...events };
+    }
+
+    return {
+      account_currency: "USD",
+      ...defaultInsightFields,
+      ...events,
+    };
+  }
+
   async getAdAccounts(): Promise<ApiResponseProps> {
     const searchParams: any = {
       access_token: this.config.access_token,
@@ -124,7 +183,7 @@ export class FacebookAdsManagerServerService {
           code: 500,
           status: "Facebook server error",
           adSummaryLabel: "ad_insights_summary",
-          props: { ...formatInsightsFields([]) },
+          props: { ...this.formatInsightsFields([]) },
         }),
       };
     }
@@ -151,7 +210,7 @@ export class FacebookAdsManagerServerService {
 
               return {
                 ...restOfAdsets,
-                ...formatInsightsFields(insights),
+                ...this.formatInsightsFields(insights),
                 targeting_countries: targeting_countries,
                 daily_budget: `${
                   convertedToUsd
@@ -172,7 +231,7 @@ export class FacebookAdsManagerServerService {
             code: 404,
             status: "No adsets found",
             adSummaryLabel: "ad_insights_summary",
-            props: { ...formatInsightsFields([]) },
+            props: { ...this.formatInsightsFields([]) },
           });
         }
 
@@ -195,7 +254,7 @@ export class FacebookAdsManagerServerService {
               code: 404,
               status: "No traffic data",
               adSummaryLabel: "ad_insights_summary",
-              props: { ...formatInsightsFields([]) },
+              props: { ...this.formatInsightsFields([]) },
             }),
     };
   }
@@ -500,60 +559,6 @@ export const formatCampaigns = (data: any) => {
   });
 
   return [...spreadAdAccount, ...adAccountHasNoAdsets];
-};
-const formatInsightsFields = (insights: any) => {
-  const defaultInsightFields = {
-    reach: 0,
-    impressions: 0,
-    cpm: 0,
-    spend: 0,
-    frequency: 0,
-    cost_per_inline_link_click: 0,
-    cpc: 0,
-    ctr: 0,
-    inline_link_click_ctr: 0,
-  };
-  const events = {
-    lead: 0,
-    purchase: 0,
-    link_click: 0,
-  };
-  if (insights?.data?.length > 0) {
-    const { actions, date_start, date_stop, ...rest } = { ...insights.data[0] };
-
-    if (actions?.length > 0) {
-      const result = actions.filter(
-        (key: any) =>
-          key.action_type === "lead" ||
-          key.action_type === "purchase" ||
-          key.action_type === "link_click"
-      );
-
-      if (result.length > 0) {
-        for (const item of result) {
-          if (events.hasOwnProperty(item.action_type)) {
-            const value = Number(item.value) || 0;
-            events[item.action_type as keyof typeof events] = value;
-          }
-        }
-      }
-    }
-
-    for (const key in rest) {
-      if (defaultInsightFields.hasOwnProperty(key)) {
-        const value = Number(rest[key]) || 0;
-        defaultInsightFields[key as keyof typeof defaultInsightFields] = value;
-      }
-    }
-
-    return { account_currency: "USD", ...defaultInsightFields, ...events };
-  }
-
-  return {
-    account_currency: "USD",
-    ...defaultInsightFields,
-    ...events,
-  };
 };
 
 const validateDomain = async ({ domain }: { domain: string[] }) => {

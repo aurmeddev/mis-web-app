@@ -6,17 +6,25 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { cn } from "@/lib/utils";
 import { flexRender, Table as TableType } from "@tanstack/react-table";
 
 type Props = {
   className?: string;
   table: TableType<any>;
+  isHeaderSticky?: boolean;
 };
 
-export function TableWithResizableHeader({ className, table }: Props) {
+export function TableWithResizableHeader({
+  className,
+  isHeaderSticky,
+  table,
+}: Props) {
   return (
     <Table className={className} style={{ width: table.getTotalSize() }}>
-      <TableHeader className="bg-muted">
+      <TableHeader
+        className={cn("bg-muted", isHeaderSticky ? "sticky top-0" : "")}
+      >
         {table.getHeaderGroups().map((headerGroup) => (
           <TableRow key={headerGroup.id}>
             {headerGroup.headers.map((header) => (

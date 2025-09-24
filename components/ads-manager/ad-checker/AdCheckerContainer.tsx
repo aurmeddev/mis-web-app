@@ -288,7 +288,7 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
         progress={adCheckerProgress}
       />
 
-      <div className="flex gap-4 min-h-[calc(100dvh-12rem)] mt-4 pr-4">
+      <div className="flex gap-4 max-h-[calc(100dvh-12rem)] mt-4 pr-4">
         <AdCheckerSidebar
           hasTableData={hasTableData}
           isActionDisabled={isActionDisabled}

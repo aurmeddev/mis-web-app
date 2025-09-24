@@ -49,7 +49,11 @@ export function AdCheckerTable({ onViewCreatives, tableData }: Props) {
   return (
     <div className="flex flex-col overflow-auto w-full">
       <div className="border overflow-auto rounded w-full">
-        <TableWithResizableHeader className="text-xs" table={table} />
+        <TableWithResizableHeader
+          className="text-xs"
+          isHeaderSticky={true}
+          table={table}
+        />
       </div>
       {tableData.length ? (
         <Pagination table={table} tableDataLength={tableData.length} />

@@ -59,9 +59,7 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
     useState(false);
   const [adCheckerProgress, setAdCheckerProgress] = useState(0);
   const [profile, setProfile] = useState<string>("");
-
-  const hasTableData = tableData.length > 0 && adCheckerProgress == 100;
-
+  const [isExportReady, setIsExportReady] = useState(false);
   const handleAdCreativesDialogOpen = (open: boolean) => {
     setIsDialogOpen(open);
     if (!open) {
@@ -167,6 +165,7 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
 
       setTableData((prevState) => [...prevState, ...sortedAdData]);
     }
+    setIsExportReady(true);
     setIsActionDisabled(false);
     setIsAdCheckerProgressDialogOpen(false);
   };
@@ -293,7 +292,7 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
 
       <div className="flex gap-4 h-[calc(100dvh-12rem)] mt-4 pr-4">
         <AdCheckerSidebar
-          hasTableData={hasTableData}
+          isExportReady={isExportReady}
           isActionDisabled={isActionDisabled}
           onExportData={handleExportAdInsights}
           onSubmit={handleSubmit}

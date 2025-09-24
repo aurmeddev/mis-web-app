@@ -198,7 +198,8 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
       } = data;
 
       // fill default links if the links is only less than 3
-      const linksAdded = Array(3 - links.length).fill(defaultLinks);
+      const linksAdded =
+        links?.length > 0 ? Array(3 - links.length).fill(defaultLinks) : [];
       // spread the filled links if the links is only less than 3
       const checkedLinks = links.length < 3 ? [...links, ...linksAdded] : links;
       const validLinks = links.length > 0 ? checkedLinks : fallbackLinks;
@@ -213,8 +214,8 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
       const delivery =
         data.account_status == "ACTIVE" ? effective_status : account_status;
       const adCheckerSummary = data.ad_checker_summary
-        ? `${data.ad_checker_summary.message.join(". ")} \n ${
-            data.ad_checker_summary.code == 500 ? "SUSPICIOUS" : ""
+        ? `${data.ad_checker_summary.message.join(". ")} ${
+            data.ad_checker_summary.code == 500 ? "\n SUSPICIOUS" : ""
           }`
         : "";
 
@@ -243,6 +244,7 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
       ) as T;
 
     const sanitizedData = plainData.map(sanitizeObject);
+    console.log("sanitizedData ", sanitizedData);
     try {
       const csv = await jsonCsvManager.convertJsonToCSV(sanitizedData);
 

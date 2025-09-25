@@ -9,12 +9,12 @@ export async function query({
   values: string[];
 }) {
   const access: ConnectionOptions = {
-    host: process.env.NEXT_PUBLIC_DBHOST,
-    user: process.env.NEXT_PUBLIC_DBUSER,
-    password: process.env.NEXT_PUBLIC_DBPASS,
+    host: process.env.NEXT_DBHOST,
+    user: process.env.NEXT_DBUSER,
+    password: process.env.NEXT_DBPASS,
     database: isEnvProduction
-      ? process.env.NEXT_PUBLIC_DBNAME
-      : process.env.NEXT_PUBLIC_DEV_DBNAME,
+      ? process.env.NEXT_DBNAME
+      : process.env.NEXT_DEV_DBNAME,
   };
 
   const db = await mysql.createConnection(access);

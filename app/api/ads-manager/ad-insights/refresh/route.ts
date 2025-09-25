@@ -2,26 +2,23 @@ import {
   FacebookAdsManagerServerService,
   formatCampaigns,
 } from "@/lib/features/ads-manager/facebook/FacebookAdsManagerServerService";
-import {
-  getCostPerEvent,
-  VoluumApiServerService,
-} from "@/lib/features/ads-manager/voluum/VoluumApiServerService";
+import { VoluumApiServerService } from "@/lib/features/ads-manager/voluum/VoluumApiServerService";
 import { CryptoServerService } from "@/lib/features/security/cryptography/CryptoServerService";
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { addDays, format } from "date-fns";
 import { NextResponse, NextRequest } from "next/server";
 export const POST = async (request: NextRequest) => {
   // Check if the user session is valid before processing the request
-  // const session = await getSession();
-  // if (!session) {
-  //   return NextResponse.json(
-  //     {
-  //       isSuccess: false,
-  //       message: "Session expired or invalid",
-  //     },
-  //     { status: 403 }
-  //   );
-  // }
+  const session = await getSession();
+  if (!session) {
+    return NextResponse.json(
+      {
+        isSuccess: false,
+        message: "Session expired or invalid",
+      },
+      { status: 403 }
+    );
+  }
 
   let payload: {
     access_token: string;

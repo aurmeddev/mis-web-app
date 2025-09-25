@@ -48,6 +48,7 @@ export class VoluumApiServerService {
 
     const { isSuccess, data, message } = await this.getSessionToken();
     if (!isSuccess) {
+      console.error("Voluum session error", message);
       return {
         isSuccess,
         data: handleCustomVoluumResponse({ status: "Voluum server error" }),
@@ -68,8 +69,8 @@ export class VoluumApiServerService {
     );
 
     if (!response.ok) {
-      const error = await response.text();
-      console.error(error);
+      const error = await response.json();
+      console.error("Voluum server error", error);
       return {
         isSuccess: false,
         message: error,

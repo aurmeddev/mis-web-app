@@ -37,6 +37,28 @@ export class FacebookAdsManagerClientService {
     return await response.json();
   }
 
+  async adCheckerRefresh(
+    params: adCheckerProps & { ad_account_id: string }
+  ): Promise<ApiResponseProps> {
+    const objUtil = new ObjectUtils();
+    const payload = objUtil.removeInvalidKeys({
+      data: params,
+      isStrictMode: true,
+    });
+    const response = await fetch(
+      `${appBaseUrl}/api/ads-manager/ad-checker/refresh`,
+      {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      }
+    );
+
+    return await response.json();
+  }
+
   async adInsights(params: adInsightsProps): Promise<ApiResponseProps> {
     const objUtil = new ObjectUtils();
     const payload = objUtil.removeInvalidKeys({
@@ -50,6 +72,28 @@ export class FacebookAdsManagerClientService {
       },
       body: JSON.stringify(payload),
     });
+
+    return await response.json();
+  }
+
+  async adInsightsRefresh(
+    params: adInsightsProps & { ad_account_id: string }
+  ): Promise<ApiResponseProps> {
+    const objUtil = new ObjectUtils();
+    const payload = objUtil.removeInvalidKeys({
+      data: params,
+      isStrictMode: true,
+    });
+    const response = await fetch(
+      `${appBaseUrl}/api/ads-manager/ad-insights/refresh`,
+      {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      }
+    );
 
     return await response.json();
   }

@@ -100,14 +100,24 @@ export const POST = async (request: NextRequest) => {
   }
 
   const AdAccounts = [...data];
-  for (const ada of AdAccounts) {
-    const { data } = await graphApi.adInsights({
-      id: ada.id,
-      time_ranges: `[{"since":"${yesterday.from}","until":"${yesterday.to}"}]`,
-      filtering: payload.filtering || [],
-    });
-    ada.campaigns = data;
-  }
+  await Promise.allSettled(
+    AdAccounts.map(async (ada) => {
+      const { data } = await graphApi.adInsights({
+        id: ada.id,
+        time_ranges: `[{"since":"${yesterday.from}","until":"${yesterday.to}"}]`,
+        filtering: payload.filtering || [],
+      });
+      ada.campaigns = data;
+    })
+  );
+  // for (const ada of AdAccounts) {
+  //   const { data } = await graphApi.adInsights({
+  //     id: ada.id,
+  //     time_ranges: `[{"since":"${yesterday.from}","until":"${yesterday.to}"}]`,
+  //     filtering: payload.filtering || [],
+  //   });
+  //   ada.campaigns = data;
+  // }
 
   const formattedCampaigns = formatCampaigns(AdAccounts);
   if (!payload.isVoluumIncluded) {
@@ -123,18 +133,33 @@ export const POST = async (request: NextRequest) => {
 
   const voluumApi = new VoluumApiServerService();
   const withVoluumAdInsights = formattedCampaigns.slice(); // Create a new array using slice method.
-  for (const campaign of withVoluumAdInsights) {
-    const { data } = await voluumApi.adInsights({
-      spend: campaign?.spend || 0,
-      adset_name: campaign?.name,
-      date_from: yesterday.from,
-      date_to: yesterday.to,
-    });
-    for (const key of Object.keys({ ...data[0] })) {
-      const value = data[0][key];
-      campaign[key] = value;
-    }
-  }
+  await Promise.allSettled(
+    withVoluumAdInsights.map(async (campaign) => {
+      const { data } = await voluumApi.adInsights({
+        spend: campaign?.spend || 0,
+        adset_name: campaign?.name,
+        date_from: yesterday.from,
+        date_to: yesterday.to,
+      });
+      for (const key of Object.keys({ ...data[0] })) {
+        const value = data[0][key];
+        campaign[key] = value;
+      }
+    })
+  );
+
+  // for (const campaign of withVoluumAdInsights) {
+  //   const { data } = await voluumApi.adInsights({
+  //     spend: campaign?.spend || 0,
+  //     adset_name: campaign?.name,
+  //     date_from: yesterday.from,
+  //     date_to: yesterday.to,
+  //   });
+  //   for (const key of Object.keys({ ...data[0] })) {
+  //     const value = data[0][key];
+  //     campaign[key] = value;
+  //   }
+  // }
 
   return NextResponse.json(
     {

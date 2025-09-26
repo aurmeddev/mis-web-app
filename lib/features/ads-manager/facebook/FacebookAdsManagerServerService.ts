@@ -7,6 +7,7 @@ import {
 import { ApiResponseProps } from "@/database/dbConnection";
 import { DomainManagerServerService } from "../../domains/DomainManagerServerService";
 import { DatetimeUtils } from "@/lib/utils/date/DatetimeUtils";
+import { format, parseISO } from "date-fns";
 
 type ResultProps = {
   data: any[];
@@ -385,8 +386,8 @@ export class FacebookAdsManagerServerService {
                 ? { code: 200, message: ["Everything is OK!"] } // Everything is OK!
                 : { code: 500, message: flag_message }; // Flag suspicious
 
-              const created_at = dateUtils.formatDateOnly(created_time) || "";
-              const updated_at = dateUtils.formatDateOnly(updated_time) || "";
+              const created_at = formatDate(created_time) || "";
+              const updated_at = formatDate(updated_time) || "";
               return {
                 ...restOfAdsets,
                 created_at: created_at,
@@ -711,6 +712,16 @@ const validateTargetingCountries = (params: {
   const result = adCheckerSummary.filter((value) => value.status !== "OK");
   const suspicious = result.length > 0;
   return suspicious ? "Suspicious geo-location targeting." : "OK";
+};
+
+const formatDate = (dateString: any) => {
+  // Step 1: Parse the ISO 8601 string into a JavaScript Date object.
+  // parseISO is designed to handle this exact format, including the timezone offset.
+  const date = parseISO(dateString);
+
+  // Step 2: Format the Date object to the desired 'yyyy-MM-dd' string.
+  // The 'MM' represents the month with a leading zero.
+  return format(date, "yyyy-MM-dd");
 };
 
 // import { createHmac } from "crypto";

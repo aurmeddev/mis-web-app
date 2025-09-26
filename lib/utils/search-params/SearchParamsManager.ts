@@ -98,7 +98,20 @@ export class SearchParamsManager {
   getDomainNameFromUrl(urlString: string) {
     try {
       const url = new URL(urlString);
-      return url.hostname;
+      const hostname = url.hostname;
+
+      // Split the hostname by the '.' character.
+      const parts = hostname.split(".");
+
+      // A simple check to see if there's a subdomain.
+      // If the length is greater than 2, it has a subdomain (e.g., 'www.example.com').
+      if (parts.length > 2) {
+        // Use slice(-2) to get the last two elements of the array (the root and TLD).
+        // Then, join them back together with a '.'.
+        return parts.slice(-2).join(".");
+      }
+
+      return hostname;
     } catch (error) {
       console.error("Invalid URL:", error);
       return null;

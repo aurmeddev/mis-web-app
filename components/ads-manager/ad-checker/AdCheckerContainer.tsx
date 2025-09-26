@@ -90,106 +90,20 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
     }
   };
 
-  // const batchAllSettled = async (
-  //   tasks: (() => Promise<any>)[],
-  //   batchSize = 50
-  // ) => {
-  //   const results: any[] = [];
+  const batchAllSettled = async (
+    tasks: (() => Promise<any>)[],
+    batchSize = 50
+  ) => {
+    const results: any[] = [];
 
-  //   for (let i = 0; i < tasks.length; i += batchSize) {
-  //     const batch = tasks.slice(i, i + batchSize).map((fn) => fn());
-  //     const settled = await Promise.allSettled(batch);
-  //     results.push(...settled);
-  //   }
+    for (let i = 0; i < tasks.length; i += batchSize) {
+      const batch = tasks.slice(i, i + batchSize).map((fn) => fn());
+      const settled = await Promise.allSettled(batch);
+      results.push(...settled);
+    }
 
-  //   return results;
-  // };
-
-  // const handleSubmitRequest = async () => {
-  //   setIsAdCheckerProgressDialogOpen(true);
-  //   setAdCheckerProgress(0);
-
-  //   const divisor = 100 / validatedProfiles.length;
-
-  //   // wrap each profile’s work into a task function
-  //   const tasks = validatedProfiles.map((profile) => async () => {
-  //     const invalidProfiles: AdData[] = [];
-
-  //     if (!profile.accessToken || !profile.canRequest) {
-  //       invalidProfiles.push({
-  //         id: 0,
-  //         profile: profile.profile,
-  //         ad_account: "",
-  //         account_status: "",
-  //         effective_status: "",
-  //         disable_reason: "",
-  //         campaign_name: "",
-  //         daily_budget: "",
-  //         domain_name: [],
-  //         spend: "",
-  //         links: [],
-  //         ad_checker_summary: { code: 400, message: profile.status },
-  //         targeting_geo: [],
-  //       });
-
-  //       setTableData((prev) => [...prev, ...invalidProfiles]);
-  //       setAdCheckerProgress((prev) => Math.min(100, prev + divisor));
-  //       return;
-  //     }
-
-  //     try {
-  //       setProfile(profile.profile);
-
-  //       const { data } = await fbAdsManagerService.adChecker({
-  //         access_token: profile.accessToken.trim(),
-  //       });
-
-  //       const adData: AdData[] = data.map((ad) => {
-  //         const links: AdCreatives[] =
-  //           ad?.adcreatives?.map((creative: Record<string, any>) => ({
-  //             image: creative.image_url,
-  //             title: creative.title,
-  //             message: creative.message,
-  //             url: creative.call_to_action?.value?.link ?? "",
-  //           })) ?? [];
-
-  //         return {
-  //           id: Number(ad.id) || 0,
-  //           profile: profile.profile,
-  //           ad_account: ad.ad_account_name || "",
-  //           effective_status: ad.effective_status,
-  //           account_status: ad.account_status,
-  //           disable_reason: ad.disable_reason,
-  //           campaign_name: ad.name || "",
-  //           created_at: ad.created_at || "",
-  //           daily_budget: ad.daily_budget,
-  //           domain_name: ad.domain || [],
-  //           spend: ad.spend || 0,
-  //           links,
-  //           ad_checker_summary: ad.ad_checker_summary,
-  //           targeting_geo: ad.targeting_countries || [],
-  //         };
-  //       });
-
-  //       const sortedAdData = adData.sort(
-  //         (a, b) => b.ad_checker_summary?.code - a.ad_checker_summary?.code
-  //       );
-
-  //       setTableData((prev) => [...prev, ...sortedAdData]);
-  //     } catch (error) {
-  //       console.error("AdChecker error:", error);
-  //     } finally {
-  //       setAdCheckerProgress((prev) => Math.min(100, prev + divisor));
-  //     }
-  //   });
-
-  //   // run in batches of 20
-  //   await batchAllSettled(tasks, 50);
-
-  //   setIsExportReady(true);
-  //   setIsActionDisabled(false);
-  //   setIsAdCheckerProgressDialogOpen(false);
-  // };
+    return results;
+  };
 
   const handleSubmitRequest = async () => {
     setIsAdCheckerProgressDialogOpen(true);
@@ -197,113 +111,199 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
 
     const divisor = 100 / validatedProfiles.length;
 
-    await Promise.allSettled(
-      validatedProfiles.map(async (profile) => {
-        const invalidProfiles: AdData[] = [];
+    // wrap each profile’s work into a task function
+    const tasks = validatedProfiles.map((profile) => async () => {
+      const invalidProfiles: AdData[] = [];
 
-        if (!profile.accessToken || !profile.canRequest) {
-          invalidProfiles.push({
-            id: 0,
+      if (!profile.accessToken || !profile.canRequest) {
+        invalidProfiles.push({
+          id: 0,
+          profile: profile.profile,
+          ad_account: "",
+          account_status: "",
+          effective_status: "",
+          disable_reason: "",
+          campaign_name: "",
+          daily_budget: "",
+          domain_name: [],
+          spend: "",
+          links: [],
+          ad_checker_summary: { code: 400, message: profile.status },
+          targeting_geo: [],
+        });
+
+        setTableData((prev) => [...prev, ...invalidProfiles]);
+        setAdCheckerProgress((prev) => Math.min(100, prev + divisor));
+        return;
+      }
+
+      try {
+        setProfile(profile.profile);
+
+        const { data } = await fbAdsManagerService.adChecker({
+          access_token: profile.accessToken.trim(),
+        });
+
+        const adData: AdData[] = data.map((ad) => {
+          const links: AdCreatives[] =
+            ad?.adcreatives?.map((creative: Record<string, any>) => ({
+              image: creative.image_url,
+              title: creative.title,
+              message: creative.message,
+              url: creative.call_to_action?.value?.link ?? "",
+            })) ?? [];
+
+          return {
+            id: Number(ad.id) || 0,
             profile: profile.profile,
-            ad_account: "",
-            account_status: "",
-            effective_status: "",
-            disable_reason: "",
-            campaign_name: "",
-            daily_budget: "",
-            domain_name: [],
-            spend: "",
-            links: [],
-            ad_checker_summary: { code: 400, message: profile.status },
-            targeting_geo: [],
-          });
+            ad_account: ad.ad_account_name || "",
+            effective_status: ad.effective_status,
+            account_status: ad.account_status,
+            disable_reason: ad.disable_reason,
+            campaign_name: ad.name || "",
+            created_at: ad.created_at || "",
+            daily_budget: ad.daily_budget,
+            domain_name: ad.domain || [],
+            spend: ad.spend || 0,
+            links,
+            ad_checker_summary: ad.ad_checker_summary,
+            targeting_geo: ad.targeting_countries || [],
+          };
+        });
 
-          setTableData((prev) => [...prev, ...invalidProfiles]);
+        const sortedAdData = adData.sort(
+          (a, b) => b.ad_checker_summary?.code - a.ad_checker_summary?.code
+        );
 
-          // update progress
-          setAdCheckerProgress((prev) => Math.min(100, prev + divisor));
-          return;
-        }
+        setTableData((prev) => [...prev, ...sortedAdData]);
+      } catch (error) {
+        console.error("AdChecker error:", error);
+      } finally {
+        setAdCheckerProgress((prev) => Math.min(100, prev + divisor));
+      }
+    });
 
-        try {
-          setProfile(profile.profile);
+    // run in batches of 50
+    await batchAllSettled(tasks, 50);
 
-          const { data } = await fbAdsManagerService.adChecker({
-            access_token: profile.accessToken.trim(),
-          });
-          const adData: AdData[] = data.map((ad) => {
-            const links: AdCreatives[] =
-              ad?.adcreatives?.map((creative: Record<string, any>) => ({
-                image: creative.image_url,
-                title: creative.title,
-                message: creative.message,
-                url: creative.call_to_action?.value?.link ?? "",
-              })) ?? [];
-
-            return {
-              id: Number(ad.id) || 0,
-              profile: profile.profile,
-              ad_account: ad.ad_account_name || "",
-              effective_status: ad.effective_status,
-              account_status: ad.account_status,
-              disable_reason: ad.disable_reason,
-              campaign_name: ad.name || "",
-              created_at: ad.created_at || "",
-              daily_budget: ad.daily_budget,
-              domain_name: ad.domain || [],
-              spend: ad.spend || 0,
-              links,
-              ad_checker_summary: ad.ad_checker_summary,
-              targeting_geo: ad.targeting_countries || [],
-            };
-          });
-
-          const sortedAdData = adData.sort(
-            (a, b) => b.ad_checker_summary?.code - a.ad_checker_summary?.code
-          );
-
-          setTableData((prev) => [...prev, ...sortedAdData]);
-        } catch (error) {
-          console.error("AdChecker error:", error);
-        } finally {
-          // update progress after each profile finishes (success or fail)
-          setAdCheckerProgress((prev) => Math.min(100, prev + divisor));
-        }
-      })
-    );
-
-    //For refresh feature debugging
-    // const adData: AdData[] = staticData.map((ad) => {
-    //   const links: AdCreatives[] =
-    //     ad?.adcreatives?.map((creative: Record<string, any>) => ({
-    //       image: creative.image_url,
-    //       title: creative.title,
-    //       message: creative.message,
-    //       url: creative.call_to_action?.value?.link ?? "",
-    //     })) ?? [];
-
-    //   return {
-    //     id: ad.ad_account_id || 0,
-    //     profile: "PH-AP OXY 10903",
-    //     ad_account: ad.ad_account_name || "",
-    //     effective_status: ad.effective_status,
-    //     account_status: ad.account_status,
-    //     disable_reason: ad.disable_reason,
-    //     campaign_name: ad.name || "",
-    //     daily_budget: ad.daily_budget,
-    //     domain_name: ad.domain || [],
-    //     spend: ad.spend || 0,
-    //     links,
-    //     ad_checker_summary: ad.ad_checker_summary,
-    //     targeting_geo: ad.targeting_countries || [],
-    //   };
-    // });
-
-    // setTableData(adData);
     setIsExportReady(true);
     setIsActionDisabled(false);
     setIsAdCheckerProgressDialogOpen(false);
   };
+
+  // const handleSubmitRequest = async () => {
+  //   setIsAdCheckerProgressDialogOpen(true);
+  //   setAdCheckerProgress(0);
+
+  //   const divisor = 100 / validatedProfiles.length;
+
+  //   await Promise.allSettled(
+  //     validatedProfiles.map(async (profile) => {
+  //       const invalidProfiles: AdData[] = [];
+
+  //       if (!profile.accessToken || !profile.canRequest) {
+  //         invalidProfiles.push({
+  //           id: 0,
+  //           profile: profile.profile,
+  //           ad_account: "",
+  //           account_status: "",
+  //           effective_status: "",
+  //           disable_reason: "",
+  //           campaign_name: "",
+  //           daily_budget: "",
+  //           domain_name: [],
+  //           spend: "",
+  //           links: [],
+  //           ad_checker_summary: { code: 400, message: profile.status },
+  //           targeting_geo: [],
+  //         });
+
+  //         setTableData((prev) => [...prev, ...invalidProfiles]);
+
+  //         // update progress
+  //         setAdCheckerProgress((prev) => Math.min(100, prev + divisor));
+  //         return;
+  //       }
+
+  //       try {
+  //         setProfile(profile.profile);
+
+  //         const { data } = await fbAdsManagerService.adChecker({
+  //           access_token: profile.accessToken.trim(),
+  //         });
+  //         const adData: AdData[] = data.map((ad) => {
+  //           const links: AdCreatives[] =
+  //             ad?.adcreatives?.map((creative: Record<string, any>) => ({
+  //               image: creative.image_url,
+  //               title: creative.title,
+  //               message: creative.message,
+  //               url: creative.call_to_action?.value?.link ?? "",
+  //             })) ?? [];
+
+  //           return {
+  //             id: Number(ad.id) || 0,
+  //             profile: profile.profile,
+  //             ad_account: ad.ad_account_name || "",
+  //             effective_status: ad.effective_status,
+  //             account_status: ad.account_status,
+  //             disable_reason: ad.disable_reason,
+  //             campaign_name: ad.name || "",
+  //             created_at: ad.created_at || "",
+  //             daily_budget: ad.daily_budget,
+  //             domain_name: ad.domain || [],
+  //             spend: ad.spend || 0,
+  //             links,
+  //             ad_checker_summary: ad.ad_checker_summary,
+  //             targeting_geo: ad.targeting_countries || [],
+  //           };
+  //         });
+
+  //         const sortedAdData = adData.sort(
+  //           (a, b) => b.ad_checker_summary?.code - a.ad_checker_summary?.code
+  //         );
+
+  //         setTableData((prev) => [...prev, ...sortedAdData]);
+  //       } catch (error) {
+  //         console.error("AdChecker error:", error);
+  //       } finally {
+  //         // update progress after each profile finishes (success or fail)
+  //         setAdCheckerProgress((prev) => Math.min(100, prev + divisor));
+  //       }
+  //     })
+  //   );
+
+  //   //For refresh feature debugging
+  //   // const adData: AdData[] = staticData.map((ad) => {
+  //   //   const links: AdCreatives[] =
+  //   //     ad?.adcreatives?.map((creative: Record<string, any>) => ({
+  //   //       image: creative.image_url,
+  //   //       title: creative.title,
+  //   //       message: creative.message,
+  //   //       url: creative.call_to_action?.value?.link ?? "",
+  //   //     })) ?? [];
+
+  //   //   return {
+  //   //     id: ad.ad_account_id || 0,
+  //   //     profile: "PH-AP OXY 10903",
+  //   //     ad_account: ad.ad_account_name || "",
+  //   //     effective_status: ad.effective_status,
+  //   //     account_status: ad.account_status,
+  //   //     disable_reason: ad.disable_reason,
+  //   //     campaign_name: ad.name || "",
+  //   //     daily_budget: ad.daily_budget,
+  //   //     domain_name: ad.domain || [],
+  //   //     spend: ad.spend || 0,
+  //   //     links,
+  //   //     ad_checker_summary: ad.ad_checker_summary,
+  //   //     targeting_geo: ad.targeting_countries || [],
+  //   //   };
+  //   // });
+
+  //   // setTableData(adData);
+  //   setIsExportReady(true);
+  //   setIsActionDisabled(false);
+  //   setIsAdCheckerProgressDialogOpen(false);
+  // };
 
   const handleSubmit = async () => {
     setIsActionDisabled(true);

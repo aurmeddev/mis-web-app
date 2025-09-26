@@ -22,6 +22,7 @@ export type ProfileMarketingApiAccessToken = {
 
 export type AdData = {
   id: string | number;
+  created_at?: string;
   profile: string;
   ad_account: string;
   effective_status: string;
@@ -146,6 +147,7 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
               account_status: ad.account_status,
               disable_reason: ad.disable_reason,
               campaign_name: ad.name || "",
+              created_at: ad.created_at || "",
               daily_budget: ad.daily_budget,
               domain_name: ad.domain || [],
               spend: ad.spend || 0,
@@ -193,6 +195,7 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
         ad_account,
         account_status,
         campaign_name,
+        created_at,
         daily_budget,
         disable_reason,
         effective_status,
@@ -226,6 +229,7 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
             data.ad_checker_summary.code == 500 ? "\n SUSPICIOUS" : ""
           }`
         : "";
+      const hasDateCreated = "created_at" in data;
 
       return {
         profile,
@@ -234,6 +238,7 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
         delivery: delivery ? delivery : "",
         disable_reason,
         campaign_name,
+        date_created: hasDateCreated ? created_at : "",
         daily_budget,
         spend,
         domain_name:

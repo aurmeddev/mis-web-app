@@ -1,4 +1,4 @@
-import { parse, isValid, format } from "date-fns";
+import { format, parseISO } from "date-fns";
 type DateItem = {
   date: string;
   [key: string]: any;
@@ -26,15 +26,14 @@ export class DatetimeUtils {
     return utc8Date;
   }
 
-  formatDateOnly(datetime: any) {
-    // Create a new Date object for UTC+8
-    const newDate = new Date(datetime);
-    // Format the UTC+8 date as YYYY-MM-DD
-    const year = newDate.getFullYear();
-    const month = String(newDate.getMonth() + 1).padStart(2, "0");
-    const day = String(newDate.getDate()).padStart(2, "0");
+  formatDateOnly(dateString: any) {
+    // Step 1: Parse the ISO 8601 string into a JavaScript Date object.
+    // parseISO is designed to handle this exact format, including the timezone offset.
+    const date = parseISO(dateString);
 
-    return `${year}-${month}-${day}`;
+    // Step 2: Format the Date object to the desired 'yyyy-MM-dd' string.
+    // The 'MM' represents the month with a leading zero.
+    return format(date, "yyyy-MM-dd");
   }
 
   formatDateTime(datetime: any) {

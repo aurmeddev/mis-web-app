@@ -184,7 +184,7 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
     });
 
     // run in batches of 50
-    await batchAllSettled(tasks, 50);
+    await batchAllSettled(tasks, 100);
 
     setIsExportReady(true);
     setIsActionDisabled(false);

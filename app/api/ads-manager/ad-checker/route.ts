@@ -93,24 +93,23 @@ export const POST = async (request: NextRequest) => {
     );
   }
 
+  // await Promise.allSettled(
+  //   AdAccounts.map(async (ada) => {
+  //     const { data } = await graphApi.adChecker({
+  //       id: ada.id,
+  //       time_ranges: `[{"since":"${yesterdayAndToday.from}","until":"${yesterdayAndToday.to}"}]`,
+  //     });
+  //     ada.campaigns = data;
+  //   })
+  // );
   const AdAccounts = [...data];
-  await Promise.allSettled(
-    AdAccounts.map(async (ada) => {
-      const { data } = await graphApi.adChecker({
-        id: ada.id,
-        time_ranges: `[{"since":"${yesterdayAndToday.from}","until":"${yesterdayAndToday.to}"}]`,
-      });
-      ada.campaigns = data;
-    })
-  );
-
-  // for (const ada of AdAccounts) {
-  //   const { data } = await graphApi.adChecker({
-  //     id: ada.id,
-  //     time_ranges: `[{"since":"${yesterdayAndToday.from}","until":"${yesterdayAndToday.to}"}]`,
-  //   });
-  //   ada.campaigns = data;
-  // }
+  for (const ada of AdAccounts) {
+    const { data } = await graphApi.adChecker({
+      id: ada.id,
+      time_ranges: `[{"since":"${yesterdayAndToday.from}","until":"${yesterdayAndToday.to}"}]`,
+    });
+    ada.campaigns = data;
+  }
 
   return NextResponse.json(
     {

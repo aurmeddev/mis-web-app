@@ -152,13 +152,9 @@ export function AdCheckerSidebar({
   const getAccessToken = async (profiles: string[]) => {
     const results: ProfileMarketingApiAccessToken[] = [];
 
-    const divisor = (100 / profiles.length).toFixed();
+    const divisor = 100 / profiles.length;
 
     for (const profile of profiles) {
-      setProgress((prev) => {
-        const currentProgress = (prev += Number(divisor));
-        return currentProgress >= 99 ? 100 : currentProgress;
-      });
       const { data, message } = await profilesService.find({
         method: "find-one",
         searchKeyword: profile,
@@ -188,7 +184,7 @@ export function AdCheckerSidebar({
         canRequest = false;
         status.push(message);
       }
-
+      setProgress((prev) => Math.min(100, prev + divisor));
       results.push({ profile, accessToken, status, canRequest });
     }
 

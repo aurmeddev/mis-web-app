@@ -118,7 +118,7 @@ export function useAdColumns(
           const filteredReason =
             disableReason.toLocaleLowerCase() !== "none" ? disableReason : "";
           const effectStatus = getValue<string>();
-          if ("effective_status" in row.original) return "";
+          if (!("effective_status" in row.original)) return "";
           if (accountStatus == "ACTIVE") {
             return <div>{effectStatus}</div>;
           }

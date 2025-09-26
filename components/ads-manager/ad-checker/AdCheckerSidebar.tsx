@@ -55,10 +55,6 @@ export function AdCheckerSidebar({
       }
 
       setAddedProfiles(destructuredProfiles);
-      // setExtractedProfiles((prevState) => [
-      //   ...prevState,
-      //   ...destructuredProfiles,
-      // ]);
       setIsProcessing(true);
       const profileMarketingApiAccessToken = await getAccessToken(
         destructuredProfiles
@@ -90,6 +86,81 @@ export function AdCheckerSidebar({
       // setExtractedProfiles([]);
       onSetValidatedProfiles([], true);
     }
+  };
+
+  const batchAllSettled = async (
+    tasks: (() => Promise<any>)[],
+    batchSize = 50
+  ) => {
+    const results: any[] = [];
+
+    for (let i = 0; i < tasks.length; i += batchSize) {
+      const batch = tasks.slice(i, i + batchSize).map((fn) => fn());
+      const settled = await Promise.allSettled(batch);
+      results.push(...settled);
+    }
+
+    return results;
+  };
+
+  const getAccessToken = async (profiles: string[]) => {
+    const divisor = 100 / profiles.length;
+
+    // wrap each profile check into a task function
+    const tasks = profiles.map((profile) => async () => {
+      const { data, message } = await profilesService.find({
+        method: "find-one",
+        searchKeyword: profile,
+      });
+
+      let accessToken: string = "";
+      let canRequest = true;
+      const status: string[] = [];
+
+      if (data.length > 0) {
+        accessToken = data[0]?.fb_account.marketing_api_access_token || null;
+        if (accessToken) {
+          const adsManagerApi = new FacebookAdsManagerClientService();
+          const { isSuccess, data, message } =
+            await adsManagerApi.accessTokenDebugger({
+              access_token: accessToken,
+            });
+
+          if (!isSuccess) {
+            status.push(data[0].status);
+            canRequest = false;
+          }
+        } else {
+          canRequest = false;
+          status.push("Missing access token");
+        }
+      } else {
+        canRequest = false;
+        status.push(message);
+      }
+
+      setProgress((prev) => Math.min(100, prev + divisor));
+
+      return { profile, accessToken, status, canRequest };
+    });
+
+    // Run in batches of 20
+    const settledResults = await batchAllSettled(tasks, 20);
+
+    const results: any[] = settledResults.map((res) =>
+      res.status === "fulfilled"
+        ? res.value
+        : {
+            profile: "",
+            accessToken: null,
+            status: [String(res.reason)],
+            canRequest: false,
+          }
+    );
+
+    startTransition(() => setProgress(0));
+
+    return results;
   };
 
   // const getAccessToken = async (profiles: string[]) => {
@@ -149,49 +220,49 @@ export function AdCheckerSidebar({
   //   return results;
   // };
 
-  const getAccessToken = async (profiles: string[]) => {
-    const results: ProfileMarketingApiAccessToken[] = [];
+  // const getAccessToken = async (profiles: string[]) => {
+  //   const results: ProfileMarketingApiAccessToken[] = [];
 
-    const divisor = 100 / profiles.length;
+  //   const divisor = 100 / profiles.length;
 
-    for (const profile of profiles) {
-      const { data, message } = await profilesService.find({
-        method: "find-one",
-        searchKeyword: profile,
-      });
+  //   for (const profile of profiles) {
+  //     const { data, message } = await profilesService.find({
+  //       method: "find-one",
+  //       searchKeyword: profile,
+  //     });
 
-      let accessToken = null;
-      let canRequest = true;
-      const status = [];
-      if (data.length > 0) {
-        accessToken = data[0]?.fb_account.marketing_api_access_token || null;
-        if (accessToken) {
-          const adsManagerApi = new FacebookAdsManagerClientService();
-          const { isSuccess, data, message } =
-            await adsManagerApi.accessTokenDebugger({
-              access_token: accessToken,
-            });
+  //     let accessToken = null;
+  //     let canRequest = true;
+  //     const status = [];
+  //     if (data.length > 0) {
+  //       accessToken = data[0]?.fb_account.marketing_api_access_token || null;
+  //       if (accessToken) {
+  //         const adsManagerApi = new FacebookAdsManagerClientService();
+  //         const { isSuccess, data, message } =
+  //           await adsManagerApi.accessTokenDebugger({
+  //             access_token: accessToken,
+  //           });
 
-          if (!isSuccess) {
-            status.push(data[0].status);
-            canRequest = false;
-          }
-        } else {
-          canRequest = false;
-          status.push("Missing access token");
-        }
-      } else {
-        canRequest = false;
-        status.push(message);
-      }
-      setProgress((prev) => Math.min(100, prev + divisor));
-      results.push({ profile, accessToken, status, canRequest });
-    }
+  //         if (!isSuccess) {
+  //           status.push(data[0].status);
+  //           canRequest = false;
+  //         }
+  //       } else {
+  //         canRequest = false;
+  //         status.push("Missing access token");
+  //       }
+  //     } else {
+  //       canRequest = false;
+  //       status.push(message);
+  //     }
+  //     setProgress((prev) => Math.min(100, prev + divisor));
+  //     results.push({ profile, accessToken, status, canRequest });
+  //   }
 
-    startTransition(() => setProgress(0));
+  //   startTransition(() => setProgress(0));
 
-    return results;
-  };
+  //   return results;
+  // };
 
   const currentProgressPosition = getPositionFromPercentage(
     progress,

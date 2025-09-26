@@ -61,6 +61,7 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
   const [adCheckerProgress, setAdCheckerProgress] = useState(0);
   const [profile, setProfile] = useState<string>("");
   const [isExportReady, setIsExportReady] = useState(false);
+
   const handleAdCreativesDialogOpen = (open: boolean) => {
     setIsDialogOpen(open);
     if (!open) {
@@ -88,6 +89,107 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
       });
     }
   };
+
+  // const batchAllSettled = async (
+  //   tasks: (() => Promise<any>)[],
+  //   batchSize = 50
+  // ) => {
+  //   const results: any[] = [];
+
+  //   for (let i = 0; i < tasks.length; i += batchSize) {
+  //     const batch = tasks.slice(i, i + batchSize).map((fn) => fn());
+  //     const settled = await Promise.allSettled(batch);
+  //     results.push(...settled);
+  //   }
+
+  //   return results;
+  // };
+
+  // const handleSubmitRequest = async () => {
+  //   setIsAdCheckerProgressDialogOpen(true);
+  //   setAdCheckerProgress(0);
+
+  //   const divisor = 100 / validatedProfiles.length;
+
+  //   // wrap each profile’s work into a task function
+  //   const tasks = validatedProfiles.map((profile) => async () => {
+  //     const invalidProfiles: AdData[] = [];
+
+  //     if (!profile.accessToken || !profile.canRequest) {
+  //       invalidProfiles.push({
+  //         id: 0,
+  //         profile: profile.profile,
+  //         ad_account: "",
+  //         account_status: "",
+  //         effective_status: "",
+  //         disable_reason: "",
+  //         campaign_name: "",
+  //         daily_budget: "",
+  //         domain_name: [],
+  //         spend: "",
+  //         links: [],
+  //         ad_checker_summary: { code: 400, message: profile.status },
+  //         targeting_geo: [],
+  //       });
+
+  //       setTableData((prev) => [...prev, ...invalidProfiles]);
+  //       setAdCheckerProgress((prev) => Math.min(100, prev + divisor));
+  //       return;
+  //     }
+
+  //     try {
+  //       setProfile(profile.profile);
+
+  //       const { data } = await fbAdsManagerService.adChecker({
+  //         access_token: profile.accessToken.trim(),
+  //       });
+
+  //       const adData: AdData[] = data.map((ad) => {
+  //         const links: AdCreatives[] =
+  //           ad?.adcreatives?.map((creative: Record<string, any>) => ({
+  //             image: creative.image_url,
+  //             title: creative.title,
+  //             message: creative.message,
+  //             url: creative.call_to_action?.value?.link ?? "",
+  //           })) ?? [];
+
+  //         return {
+  //           id: Number(ad.id) || 0,
+  //           profile: profile.profile,
+  //           ad_account: ad.ad_account_name || "",
+  //           effective_status: ad.effective_status,
+  //           account_status: ad.account_status,
+  //           disable_reason: ad.disable_reason,
+  //           campaign_name: ad.name || "",
+  //           created_at: ad.created_at || "",
+  //           daily_budget: ad.daily_budget,
+  //           domain_name: ad.domain || [],
+  //           spend: ad.spend || 0,
+  //           links,
+  //           ad_checker_summary: ad.ad_checker_summary,
+  //           targeting_geo: ad.targeting_countries || [],
+  //         };
+  //       });
+
+  //       const sortedAdData = adData.sort(
+  //         (a, b) => b.ad_checker_summary?.code - a.ad_checker_summary?.code
+  //       );
+
+  //       setTableData((prev) => [...prev, ...sortedAdData]);
+  //     } catch (error) {
+  //       console.error("AdChecker error:", error);
+  //     } finally {
+  //       setAdCheckerProgress((prev) => Math.min(100, prev + divisor));
+  //     }
+  //   });
+
+  //   // run in batches of 20
+  //   await batchAllSettled(tasks, 50);
+
+  //   setIsExportReady(true);
+  //   setIsActionDisabled(false);
+  //   setIsAdCheckerProgressDialogOpen(false);
+  // };
 
   const handleSubmitRequest = async () => {
     setIsAdCheckerProgressDialogOpen(true);
@@ -129,7 +231,6 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
           const { data } = await fbAdsManagerService.adChecker({
             access_token: profile.accessToken.trim(),
           });
-
           const adData: AdData[] = data.map((ad) => {
             const links: AdCreatives[] =
               ad?.adcreatives?.map((creative: Record<string, any>) => ({
@@ -171,6 +272,34 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
       })
     );
 
+    //For refresh feature debugging
+    // const adData: AdData[] = staticData.map((ad) => {
+    //   const links: AdCreatives[] =
+    //     ad?.adcreatives?.map((creative: Record<string, any>) => ({
+    //       image: creative.image_url,
+    //       title: creative.title,
+    //       message: creative.message,
+    //       url: creative.call_to_action?.value?.link ?? "",
+    //     })) ?? [];
+
+    //   return {
+    //     id: ad.ad_account_id || 0,
+    //     profile: "PH-AP OXY 10903",
+    //     ad_account: ad.ad_account_name || "",
+    //     effective_status: ad.effective_status,
+    //     account_status: ad.account_status,
+    //     disable_reason: ad.disable_reason,
+    //     campaign_name: ad.name || "",
+    //     daily_budget: ad.daily_budget,
+    //     domain_name: ad.domain || [],
+    //     spend: ad.spend || 0,
+    //     links,
+    //     ad_checker_summary: ad.ad_checker_summary,
+    //     targeting_geo: ad.targeting_countries || [],
+    //   };
+    // });
+
+    // setTableData(adData);
     setIsExportReady(true);
     setIsActionDisabled(false);
     setIsAdCheckerProgressDialogOpen(false);
@@ -180,6 +309,55 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
     setIsActionDisabled(true);
     setTableData([]);
     handleSubmitRequest();
+  };
+
+  const handleRefresh = async () => {
+    const fbServerErrorData = tableData
+      .filter((data) =>
+        data.ad_checker_summary?.message.includes("Facebook server error")
+      )
+      .map((errorData) => {
+        const accessToken = validatedProfiles.find(
+          (profile) => profile.profile == errorData.profile
+        )?.accessToken;
+        return {
+          ...errorData,
+          access_token: errorData.id != 0 ? undefined : accessToken,
+        };
+      });
+    console.log("fbServerErrorData ", fbServerErrorData);
+    // await Promise.allSettled(
+    //   fbServerErrorData.map(async (errorData) => {
+    //     const { data } = await fbAdsManagerService.adChecker({
+    //       access_token: String(errorData.access_token).trim(),
+    //     });
+    //     const adData: AdData[] = data.map((ad) => {
+    //       const links: AdCreatives[] =
+    //         ad?.adcreatives?.map((creative: Record<string, any>) => ({
+    //           image: creative.image_url,
+    //           title: creative.title,
+    //           message: creative.message,
+    //           url: creative.call_to_action?.value?.link ?? "",
+    //         })) ?? [];
+    //       return {
+    //         id: Number(ad.id) || 0,
+    //         profile: profile.profile,
+    //         ad_account: ad.ad_account_name || "",
+    //         effective_status: ad.effective_status,
+    //         account_status: ad.account_status,
+    //         disable_reason: ad.disable_reason,
+    //         campaign_name: ad.name || "",
+    //         daily_budget: ad.daily_budget,
+    //         domain_name: ad.domain || [],
+    //         spend: ad.spend || 0,
+    //         links,
+    //         ad_checker_summary: ad.ad_checker_summary,
+    //         targeting_geo: ad.targeting_countries || [],
+    //       };
+    //     });
+    //   })
+    // );
+    // const {} = await fbAdsManagerService.adCheckerRefresh({ })
   };
 
   const handleViewCreatives = (adCreatives: AdCreatives[]) => {
@@ -314,8 +492,9 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
           validatedProfiles={validatedProfiles}
         />
         <AdCheckerTable
-          tableData={tableData}
+          onRefresh={handleRefresh}
           onViewCreatives={handleViewCreatives}
+          tableData={tableData}
         />
       </div>
     </div>

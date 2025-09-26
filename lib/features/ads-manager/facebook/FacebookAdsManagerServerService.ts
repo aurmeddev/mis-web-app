@@ -6,6 +6,7 @@ import {
 } from "./type/FacebookMarketingApiProps";
 import { ApiResponseProps } from "@/database/dbConnection";
 import { DomainManagerServerService } from "../../domains/DomainManagerServerService";
+import { DatetimeUtils } from "@/lib/utils/date/DatetimeUtils";
 
 type ResultProps = {
   data: any[];
@@ -271,7 +272,7 @@ export class FacebookAdsManagerServerService {
     const searchParams: any = {
       access_token: this.config.access_token,
       use_account_attribution_setting: true,
-      fields: `name,daily_budget,adsets{name,daily_budget,effective_status,targeting{geo_locations{countries}},insights.time_ranges(${time_ranges}){spend},adcreatives{object_story_spec{video_data}}}`,
+      fields: `name,daily_budget,adsets{name,created_time,updated_time,daily_budget,effective_status,targeting{geo_locations{countries}},insights.time_ranges(${time_ranges}){spend},adcreatives{object_story_spec{video_data}}}`,
     };
 
     const searchQueryParams = new SearchParamsManager().append(searchParams);
@@ -294,6 +295,7 @@ export class FacebookAdsManagerServerService {
       };
     }
 
+    const dateUtils = new DatetimeUtils();
     const result: ResultProps = await response.json();
     const formattedResult = await Promise.all(
       result.data.map(async (prop) => {
@@ -303,8 +305,14 @@ export class FacebookAdsManagerServerService {
         if (hasAdsets) {
           restOfProps.adsets = await Promise.all(
             adsets.data.map(async (adset: any) => {
-              const { adcreatives, insights, targeting, ...restOfAdsets } =
-                adset;
+              const {
+                created_time,
+                updated_time,
+                adcreatives,
+                insights,
+                targeting,
+                ...restOfAdsets
+              } = adset;
               restOfAdsets.effective_status =
                 restOfAdsets.effective_status.includes("PAUSED")
                   ? "PAUSED"
@@ -376,8 +384,13 @@ export class FacebookAdsManagerServerService {
               ).every((value) => value === "OK")
                 ? { code: 200, message: ["Everything is OK!"] } // Everything is OK!
                 : { code: 500, message: flag_message }; // Flag suspicious
+
+              const created_at = dateUtils.formatDateOnly(created_time) || "";
+              const updated_at = dateUtils.formatDateOnly(updated_time) || "";
               return {
                 ...restOfAdsets,
+                created_at: created_at,
+                updated_at: updated_at,
                 targeting_countries: targeting_countries,
                 spend:
                   insights?.data.length > 0

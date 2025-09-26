@@ -15,12 +15,18 @@ import { TableWithResizableHeader } from "@/components/shared/table/with-resizab
 type Props = {
   tableData: AdData[];
   onViewCreatives: (adCreatives: any) => void;
+  onRefresh: () => void;
 };
 
-export function AdCheckerTable({ onViewCreatives, tableData }: Props) {
-  const columns = useAdColumns(onViewCreatives);
+export function AdCheckerTable({
+  onRefresh,
+  onViewCreatives,
+  tableData,
+}: Props) {
+  const columns = useAdColumns(onViewCreatives, onRefresh);
   const [colSizing, setColSizing] = useState<ColumnSizingState>({});
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
+    id: false,
     disable_reason: false,
     account_status: false,
   });

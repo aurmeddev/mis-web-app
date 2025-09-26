@@ -3,14 +3,33 @@ import { Badge } from "@/components/ui/badge";
 import { ColumnDef } from "@tanstack/react-table";
 import { AdData } from "../AdCheckerContainer";
 import { AdCheckerAction } from "../action/AdCheckerAction";
+import { RefreshCcw } from "lucide-react";
 
-export function useAdColumns(onViewCreatives: (adCreatives: any) => void) {
+export function useAdColumns(
+  onViewCreatives: (adCreatives: any) => void,
+  onRefresh: () => void
+) {
   const adColumns: ColumnDef<AdData>[] = useMemo(
     () => [
       {
-        accessorKey: "profile",
-        header: "Profile",
+        accessorKey: "id",
+        header: "Identification",
         size: 80,
+      },
+      {
+        accessorKey: "profile",
+        header: () => {
+          return (
+            <div className="flex items-center justify-between relative">
+              <div>Profile</div>
+              {/* <Badge onClick={onRefresh} className="cursor-pointer text-xs">
+                <RefreshCcw />
+                Refresh
+              </Badge> */}
+            </div>
+          );
+        },
+        minSize: 150,
       },
       {
         accessorKey: "ad_account",
@@ -99,6 +118,7 @@ export function useAdColumns(onViewCreatives: (adCreatives: any) => void) {
           const filteredReason =
             disableReason.toLocaleLowerCase() !== "none" ? disableReason : "";
           const effectStatus = getValue<string>();
+          if ("effective_status" in row.original) return "";
           if (accountStatus == "ACTIVE") {
             return <div>{effectStatus}</div>;
           }

@@ -7,7 +7,7 @@ import { FacebookAdsManagerClientService } from "@/lib/features/ads-manager/face
 import { AdCreativesDialog } from "./dialog/AdCreativesDialog";
 import { AdCheckerProgressDialog } from "./dialog/AdCheckerProgressDialog";
 import { Json2CsvManager } from "@/lib/utils/converter/Json2CsvManager";
-import { staticData } from "./data";
+// import { staticData } from "./data";
 
 type Props = {
   searchParams: { page: number; limit: number } & GetAllFbAccountsProps;

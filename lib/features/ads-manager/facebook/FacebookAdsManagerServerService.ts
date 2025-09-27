@@ -6,7 +6,6 @@ import {
 } from "./type/FacebookMarketingApiProps";
 import { ApiResponseProps } from "@/database/dbConnection";
 import { DomainManagerServerService } from "../../domains/DomainManagerServerService";
-import { DatetimeUtils } from "@/lib/utils/date/DatetimeUtils";
 import { format, parseISO } from "date-fns";
 
 type ResultProps = {
@@ -273,7 +272,7 @@ export class FacebookAdsManagerServerService {
     const searchParams: any = {
       access_token: this.config.access_token,
       use_account_attribution_setting: true,
-      fields: `name,daily_budget,adsets{name,created_time,updated_time,daily_budget,effective_status,targeting{geo_locations{countries}},insights.time_ranges(${time_ranges}){spend},adcreatives{object_story_spec{video_data}}}`,
+      fields: `name,daily_budget,adsets{id,name,created_time,updated_time,daily_budget,effective_status,targeting{geo_locations{countries}},insights.time_ranges(${time_ranges}){spend},adcreatives{object_story_spec{video_data}}}`,
     };
 
     const searchQueryParams = new SearchParamsManager().append(searchParams);
@@ -296,11 +295,10 @@ export class FacebookAdsManagerServerService {
       };
     }
 
-    const dateUtils = new DatetimeUtils();
     const result: ResultProps = await response.json();
     const formattedResult = await Promise.all(
       result.data.map(async (prop) => {
-        const { id, adsets, name, daily_budget, ...restOfProps } = prop;
+        const { adsets, name, daily_budget, ...restOfProps } = prop;
         const campaignDailyBudget = daily_budget;
         const hasAdsets = adsets?.data.length > 0;
         if (hasAdsets) {

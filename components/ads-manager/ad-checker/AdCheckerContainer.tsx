@@ -7,6 +7,7 @@ import { FacebookAdsManagerClientService } from "@/lib/features/ads-manager/face
 import { AdCreativesDialog } from "./dialog/AdCreativesDialog";
 import { AdCheckerProgressDialog } from "./dialog/AdCheckerProgressDialog";
 import { Json2CsvManager } from "@/lib/utils/converter/Json2CsvManager";
+// import { staticData } from "./data";
 
 type Props = {
   searchParams: { page: number; limit: number } & GetAllFbAccountsProps;
@@ -22,6 +23,7 @@ export type ProfileMarketingApiAccessToken = {
 
 export type AdData = {
   id: string | number;
+  ad_account_id: string;
   created_at?: string;
   profile: string;
   ad_account: string;
@@ -118,6 +120,7 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
       if (!profile.accessToken || !profile.canRequest) {
         invalidProfiles.push({
           id: 0,
+          ad_account_id: "",
           profile: profile.profile,
           ad_account: "",
           account_status: "",
@@ -155,6 +158,7 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
 
           return {
             id: Number(ad.id) || 0,
+            ad_account_id: ad.ad_account_id || 0,
             profile: profile.profile,
             ad_account: ad.ad_account_name || "",
             effective_status: ad.effective_status,
@@ -184,7 +188,37 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
     });
 
     // run in batches of 50
-    await batchAllSettled(tasks, 100);
+    await batchAllSettled(tasks, 50);
+
+    // For refresh feature debugging
+    // const adData: AdData[] = staticData.map((ad, idx) => {
+    //   const links: AdCreatives[] =
+    //     ad?.adcreatives?.map((creative: Record<string, any>) => ({
+    //       image: creative.image_url,
+    //       title: creative.title,
+    //       message: creative.message,
+    //       url: creative.call_to_action?.value?.link ?? "",
+    //     })) ?? [];
+
+    //   return {
+    //     id: idx + 1,
+    //     ad_account_id: ad.ad_account_id || 0,
+    //     profile: "PH-AP OXY 09254", //PH-AP OXY 10903
+    //     ad_account: ad.ad_account_name || "",
+    //     effective_status: ad.effective_status,
+    //     account_status: ad.account_status,
+    //     disable_reason: ad.disable_reason,
+    //     campaign_name: ad.name || "",
+    //     daily_budget: ad.daily_budget,
+    //     domain_name: ad.domain || [],
+    //     spend: ad.spend || 0,
+    //     links,
+    //     ad_checker_summary: ad.ad_checker_summary,
+    //     targeting_geo: ad.targeting_countries || [],
+    //   };
+    // });
+
+    // setTableData(adData);
 
     setIsExportReady(true);
     setIsActionDisabled(false);
@@ -322,41 +356,56 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
         )?.accessToken;
         return {
           ...errorData,
-          access_token: errorData.id != 0 ? undefined : accessToken,
+          access_token: accessToken,
         };
       });
-    console.log("fbServerErrorData ", fbServerErrorData);
-    // await Promise.allSettled(
-    //   fbServerErrorData.map(async (errorData) => {
-    //     const { data } = await fbAdsManagerService.adChecker({
-    //       access_token: String(errorData.access_token).trim(),
-    //     });
-    //     const adData: AdData[] = data.map((ad) => {
-    //       const links: AdCreatives[] =
-    //         ad?.adcreatives?.map((creative: Record<string, any>) => ({
-    //           image: creative.image_url,
-    //           title: creative.title,
-    //           message: creative.message,
-    //           url: creative.call_to_action?.value?.link ?? "",
-    //         })) ?? [];
-    //       return {
-    //         id: Number(ad.id) || 0,
-    //         profile: profile.profile,
-    //         ad_account: ad.ad_account_name || "",
-    //         effective_status: ad.effective_status,
-    //         account_status: ad.account_status,
-    //         disable_reason: ad.disable_reason,
-    //         campaign_name: ad.name || "",
-    //         daily_budget: ad.daily_budget,
-    //         domain_name: ad.domain || [],
-    //         spend: ad.spend || 0,
-    //         links,
-    //         ad_checker_summary: ad.ad_checker_summary,
-    //         targeting_geo: ad.targeting_countries || [],
-    //       };
-    //     });
-    //   })
-    // );
+    // console.log("fbServerErrorData ", fbServerErrorData);
+    await Promise.allSettled(
+      fbServerErrorData.map(async (errorData) => {
+        const accessToken = String(errorData.access_token).trim();
+        const response = !errorData.ad_account_id
+          ? await fbAdsManagerService.adChecker({
+              access_token: accessToken,
+            })
+          : await fbAdsManagerService.adCheckerRefresh({
+              ad_account_id: errorData.ad_account_id,
+              access_token: accessToken,
+            });
+        // const { data } = await fbAdsManagerService.adChecker({
+        //   access_token: String(errorData.access_token).trim(),
+        // });
+        const { data } = response;
+
+        const adData: AdData[] = data.map((ad) => {
+          const links: AdCreatives[] =
+            ad?.adcreatives?.map((creative: Record<string, any>) => ({
+              image: creative.image_url,
+              title: creative.title,
+              message: creative.message,
+              url: creative.call_to_action?.value?.link ?? "",
+            })) ?? [];
+
+          return {
+            id: Number(ad.id) || 0,
+            ad_account_id: ad.ad_account_id || 0,
+            profile: errorData.profile,
+            ad_account: ad.ad_account_name || "",
+            effective_status: ad.effective_status,
+            account_status: ad.account_status,
+            disable_reason: ad.disable_reason,
+            campaign_name: ad.name || "",
+            daily_budget: ad.daily_budget,
+            domain_name: ad.domain || [],
+            spend: ad.spend || 0,
+            links,
+            ad_checker_summary: ad.ad_checker_summary,
+            targeting_geo: ad.targeting_countries || [],
+          };
+        });
+
+        console.log("adData ", adData);
+      })
+    );
     // const {} = await fbAdsManagerService.adCheckerRefresh({ })
   };
 

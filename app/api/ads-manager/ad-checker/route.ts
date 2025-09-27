@@ -8,16 +8,16 @@ import { addDays, format } from "date-fns";
 import { NextResponse, NextRequest } from "next/server";
 export const POST = async (request: NextRequest) => {
   // Check if the user session is valid before processing the request
-  // const session = await getSession();
-  // if (!session) {
-  //   return NextResponse.json(
-  //     {
-  //       isSuccess: false,
-  //       message: "Session expired or invalid",
-  //     },
-  //     { status: 403 }
-  //   );
-  // }
+  const session = await getSession();
+  if (!session) {
+    return NextResponse.json(
+      {
+        isSuccess: false,
+        message: "Session expired or invalid",
+      },
+      { status: 403 }
+    );
+  }
 
   let payload: {
     access_token: string;

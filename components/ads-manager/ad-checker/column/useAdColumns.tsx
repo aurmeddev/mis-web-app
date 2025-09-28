@@ -1,14 +1,34 @@
 import { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { ColumnDef } from "@tanstack/react-table";
-import { AdData } from "../AdCheckerContainer";
+import { AdData, RefreshStates } from "../AdCheckerContainer";
 import { AdCheckerAction } from "../action/AdCheckerAction";
-import { RefreshCcw } from "lucide-react";
+import { ProfileHeader } from "./header/ProfileHeader";
 
-export function useAdColumns(
-  onViewCreatives: (adCreatives: any) => void,
-  onRefresh: () => void
-) {
+type Props = {
+  onViewCreatives: (adCreatives: any) => void;
+  onRefresh: () => void;
+  hasServerErrorData?: boolean;
+  refreshStates: RefreshStates;
+};
+
+export function useAdColumns({
+  refreshStates,
+  onViewCreatives,
+  onRefresh,
+  hasServerErrorData,
+}: Props) {
+  const profileHeader = useMemo(
+    () => (
+      <ProfileHeader
+        hasServerErrorData={hasServerErrorData}
+        onRefresh={onRefresh}
+        refreshStates={refreshStates}
+      />
+    ),
+    [hasServerErrorData, onRefresh, refreshStates]
+  );
+
   const adColumns: ColumnDef<AdData>[] = useMemo(
     () => [
       {
@@ -18,17 +38,7 @@ export function useAdColumns(
       },
       {
         accessorKey: "profile",
-        header: () => {
-          return (
-            <div className="flex items-center justify-between relative">
-              <div>Profile</div>
-              {/* <Badge onClick={onRefresh} className="cursor-pointer text-xs">
-                <RefreshCcw />
-                Refresh
-              </Badge> */}
-            </div>
-          );
-        },
+        header: () => profileHeader,
         minSize: 150,
       },
       {
@@ -234,7 +244,7 @@ export function useAdColumns(
         size: 150,
       },
     ],
-    [onViewCreatives]
+    [onViewCreatives, onRefresh, hasServerErrorData]
   );
 
   return adColumns;

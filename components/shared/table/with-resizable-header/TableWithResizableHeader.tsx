@@ -11,13 +11,15 @@ import { flexRender, Table as TableType } from "@tanstack/react-table";
 
 type Props = {
   className?: string;
-  table: TableType<any>;
   isHeaderSticky?: boolean;
+  loadingRowIndexes?: Set<number>;
+  table: TableType<any>;
 };
 
 export function TableWithResizableHeader({
   className,
   isHeaderSticky,
+  loadingRowIndexes,
   table,
 }: Props) {
   return (
@@ -50,22 +52,28 @@ export function TableWithResizableHeader({
         ))}
       </TableHeader>
       <TableBody>
-        {table.getRowModel().rows.map((row) => (
-          <TableRow key={row.id}>
-            {row.getVisibleCells().map((cell) => (
-              <TableCell
-                key={cell.id}
-                className="border-r"
-                style={{
-                  width: cell.column.getSize(),
-                  minWidth: cell.column.columnDef.minSize,
-                }}
-              >
-                {flexRender(cell.column.columnDef.cell, cell.getContext())}
-              </TableCell>
-            ))}
-          </TableRow>
-        ))}
+        {table.getRowModel().rows.map((row) => {
+          const isLoading = loadingRowIndexes?.has(row.index);
+          return (
+            <TableRow
+              key={row.id}
+              className={cn(isLoading ? "animate-pulse bg-muted/50" : "")}
+            >
+              {row.getVisibleCells().map((cell) => (
+                <TableCell
+                  key={cell.id}
+                  className="border-r"
+                  style={{
+                    width: cell.column.getSize(),
+                    minWidth: cell.column.columnDef.minSize,
+                  }}
+                >
+                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                </TableCell>
+              ))}
+            </TableRow>
+          );
+        })}
       </TableBody>
     </Table>
   );

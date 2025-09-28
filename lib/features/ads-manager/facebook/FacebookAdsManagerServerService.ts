@@ -123,6 +123,8 @@ export class FacebookAdsManagerServerService {
 
     if (!response.ok) {
       const { error } = await response.json();
+      console.log("error ad account level");
+      console.log("access_token", this.config.access_token);
       console.error(error);
       return {
         isSuccess: false,
@@ -283,6 +285,9 @@ export class FacebookAdsManagerServerService {
 
     if (!response.ok) {
       const { error } = await response.json();
+      console.log("error campaign level", this.config.access_token);
+      console.log("access_token", this.config.access_token);
+      console.log("ad account id", id);
       console.error(error);
       return {
         isSuccess: false,

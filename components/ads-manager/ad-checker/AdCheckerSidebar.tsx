@@ -11,6 +11,7 @@ import { ProfileMarketingApiAccessToken } from "./AdCheckerContainer";
 import { FacebookAdsManagerClientService } from "@/lib/features/ads-manager/facebook/FacebookAdsManagerClientService";
 import { toast } from "sonner";
 import { GlobalTooltip } from "../../shared/tooltip/GlobalTooltip";
+import { cn } from "@/lib/utils";
 
 type Props = {
   isExportReady: boolean;
@@ -54,8 +55,8 @@ export function AdCheckerSidebar({
         return;
       }
 
-      setAddedProfiles(destructuredProfiles);
       setIsProcessing(true);
+      setAddedProfiles(destructuredProfiles);
       const profileMarketingApiAccessToken = await getAccessToken(
         destructuredProfiles
       );
@@ -270,109 +271,121 @@ export function AdCheckerSidebar({
   );
 
   return (
-    <div className="border-r flex flex-col pr-4 space-y-2 lg:w-[35%] w-[30%]">
-      <div className="border relative rounded">
-        {validatedProfiles.length >= 1 && (
-          <div className="flex flex-wrap gap-2 max-h-[300px] overflow-y-auto p-2 w-full">
-            {validatedProfiles.map((data, idx) => {
-              if (!data.canRequest) {
-                return (
-                  <GlobalTooltip key={idx} tooltipText={data.status[0]}>
-                    <Badge
-                      className="flex relative"
-                      variant={!data.canRequest ? "destructive" : "secondary"}
-                    >
-                      <div>{data.profile}</div>
-                      <span
-                        className="cursor-pointer"
-                        onClick={() =>
-                          handleRemoveProfile({ profileName: data.profile })
-                        }
+    <div className="border-r flex flex-col justify-between pr-4 lg:w-[35%] w-[30%]">
+      <div className="flex flex-col space-y-2 w-full">
+        <div className="border relative rounded">
+          {validatedProfiles.length >= 1 && (
+            <div className="flex flex-wrap gap-2 max-h-[300px] overflow-y-auto p-2 w-full">
+              {validatedProfiles.map((data, idx) => {
+                if (!data.canRequest) {
+                  return (
+                    <GlobalTooltip key={idx} tooltipText={data.status[0]}>
+                      <Badge
+                        className="flex relative"
+                        variant={!data.canRequest ? "destructive" : "secondary"}
                       >
-                        <X className="h-4 w-4" />
-                      </span>
-                    </Badge>
-                  </GlobalTooltip>
-                );
-              }
+                        <div>{data.profile}</div>
+                        <span
+                          className="cursor-pointer"
+                          onClick={() =>
+                            handleRemoveProfile({ profileName: data.profile })
+                          }
+                        >
+                          <X className="h-4 w-4" />
+                        </span>
+                      </Badge>
+                    </GlobalTooltip>
+                  );
+                }
 
-              return (
-                <Badge
-                  key={idx}
-                  className="flex relative"
-                  variant={!data.canRequest ? "destructive" : "secondary"}
-                >
-                  <div>{data.profile}</div>
-                  <span
-                    className="cursor-pointer"
-                    onClick={() =>
-                      handleRemoveProfile({ profileName: data.profile })
-                    }
+                return (
+                  <Badge
+                    key={idx}
+                    className="flex relative"
+                    variant={!data.canRequest ? "destructive" : "secondary"}
                   >
-                    <X className="h-4 w-4" />
-                  </span>
-                </Badge>
-              );
-            })}
-          </div>
-        )}
-
-        {isProcessing && (
-          <div className="bg-secondary p-2 relative w-full">
-            <div className="font-semibold mb-2 text-xs text-muted-foreground">
-              Processing profiles...
+                    <div>{data.profile}</div>
+                    <span
+                      className={cn(
+                        isActionDisabled
+                          ? "pointer-events-none"
+                          : "cursor-pointer"
+                      )}
+                      onClick={() =>
+                        handleRemoveProfile({ profileName: data.profile })
+                      }
+                    >
+                      <X className="h-4 w-4" />
+                    </span>
+                  </Badge>
+                );
+              })}
             </div>
-            <Progress value={progress} className="w-full" />
+          )}
 
-            <div className="flex font-semibold justify-between text-muted-foreground text-xs">
-              <div>
-                {currentProgressPosition}/{addedProfiles.length} profiles.
+          {isProcessing && (
+            <div className="bg-secondary p-2 relative w-full">
+              <div className="font-semibold mb-2 text-xs text-muted-foreground">
+                Processing profiles...
               </div>
-              <div>{progress.toFixed()}%</div>
+              <Progress value={progress} className="w-full" />
+
+              <div className="flex font-semibold justify-between text-muted-foreground text-xs">
+                <div>
+                  {currentProgressPosition}/{addedProfiles.length} profiles.
+                </div>
+                <div>{progress.toFixed()}%</div>
+              </div>
             </div>
+          )}
+
+          {!isProcessing && (
+            <Input
+              className="bg-transparent border-none focus-visible:ring-0 shadow-none outline-none placeholder:text-muted-foreground"
+              disabled={progress !== 0}
+              onChange={handleProfileChange}
+              name="profiles"
+              placeholder="Enter profile(s)"
+            />
+          )}
+
+          {validatedProfiles.length > 1 && !isProcessing && (
+            <Button
+              className="absolute bg-transparent bottom-0 cursor-pointer opacity-70 right-0 hover:opacity-100 hover:bg-transparent"
+              onClick={() => handleRemoveProfile({ removeAll: true })}
+              variant={"link"}
+            >
+              <Trash2 />
+            </Button>
+          )}
+        </div>
+        <Button
+          className="cursor-pointer w-full"
+          onClick={onSubmit}
+          disabled={progress !== 0 || isActionDisabled}
+        >
+          Run Ad Checker
+        </Button>
+      </div>
+      <div>
+        {isExportReady && (
+          <div className="border rounded p-4 text-sm">
+            <div className="font-semibold">Ad Checker Complete</div>
+            <div className="text-muted-foreground">
+              Your Ad Checker Summary Report is ready to download.
+            </div>
+
+            <Button
+              disabled={isActionDisabled}
+              onClick={onExportData}
+              className="cursor-pointer mt-2 w-full"
+              variant={"link"}
+            >
+              Download Ad Checker Summary Report
+            </Button>
           </div>
-        )}
-
-        {!isProcessing && (
-          <Input
-            className="bg-transparent border-none focus-visible:ring-0 shadow-none outline-none placeholder:text-muted-foreground"
-            disabled={progress !== 0}
-            onChange={handleProfileChange}
-            name="profiles"
-            placeholder="Enter profile(s)"
-          />
-        )}
-
-        {validatedProfiles.length > 1 && !isProcessing && (
-          <Button
-            className="absolute bg-transparent bottom-0 cursor-pointer opacity-70 right-0 hover:opacity-100 hover:bg-transparent"
-            onClick={() => handleRemoveProfile({ removeAll: true })}
-            variant={"link"}
-          >
-            <Trash2 />
-          </Button>
         )}
       </div>
-      <Button
-        className="cursor-pointer"
-        onClick={onSubmit}
-        disabled={progress !== 0 || isActionDisabled}
-      >
-        Run Ad Checker
-      </Button>
-
-      {isExportReady && (
-        <div className="border rounded p-4 text-sm">
-          <div className="font-semibold">Ad Checker Complete</div>
-          <div className="text-muted-foreground">
-            Your Ad Checker Summary Report is ready to download.
-          </div>
-
-          <Button onClick={onExportData} className="cursor-pointer mt-2 w-full">
-            Download
-          </Button>
-        </div>
-      )}
     </div>
   );
 }

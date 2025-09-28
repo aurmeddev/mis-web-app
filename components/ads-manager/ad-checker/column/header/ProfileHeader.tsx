@@ -4,12 +4,14 @@ import { RefreshCcw } from "lucide-react";
 import { RefreshStates } from "../../AdCheckerContainer";
 
 type Props = {
+  isSuperAdmin: boolean;
   hasServerErrorData?: boolean;
   onRefresh: () => void;
   refreshStates: RefreshStates;
 };
 
 export function ProfileHeader({
+  isSuperAdmin,
   hasServerErrorData,
   onRefresh,
   refreshStates,
@@ -17,7 +19,7 @@ export function ProfileHeader({
   return (
     <div className="flex items-center justify-between relative">
       <div>Profile</div>
-      {hasServerErrorData && (
+      {hasServerErrorData && isSuperAdmin && (
         <Badge
           onClick={onRefresh}
           className={cn(

@@ -6,6 +6,7 @@ import { AdCheckerAction } from "../action/AdCheckerAction";
 import { ProfileHeader } from "./header/ProfileHeader";
 
 type Props = {
+  isSuperAdmin: boolean;
   onViewCreatives: (adCreatives: any) => void;
   onRefresh: () => void;
   hasServerErrorData?: boolean;
@@ -13,6 +14,7 @@ type Props = {
 };
 
 export function useAdColumns({
+  isSuperAdmin,
   refreshStates,
   onViewCreatives,
   onRefresh,
@@ -21,6 +23,7 @@ export function useAdColumns({
   const profileHeader = useMemo(
     () => (
       <ProfileHeader
+        isSuperAdmin={isSuperAdmin}
         hasServerErrorData={hasServerErrorData}
         onRefresh={onRefresh}
         refreshStates={refreshStates}

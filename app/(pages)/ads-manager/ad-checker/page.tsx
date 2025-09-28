@@ -22,10 +22,9 @@ export default async function Page({ searchParams }: any) {
     status,
   };
 
-  const isSuperOrAdmin =
-    session.user.user_type_id === 1 || session.user.user_type_id === 2;
+  const isSuperAdmin = session.user.user_type_id === 1;
 
   return (
-    <AdCheckerContainer searchParams={params} isSuperOrAdmin={isSuperOrAdmin} />
+    <AdCheckerContainer searchParams={params} isSuperAdmin={isSuperAdmin} />
   );
 }

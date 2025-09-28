@@ -11,7 +11,7 @@ import { toast } from "sonner";
 
 type Props = {
   searchParams: { page: number; limit: number } & GetAllFbAccountsProps;
-  isSuperOrAdmin: boolean;
+  isSuperAdmin: boolean;
 };
 
 export type ProfileMarketingApiAccessToken = {
@@ -22,6 +22,7 @@ export type ProfileMarketingApiAccessToken = {
 };
 
 export type AdData = {
+  index?: number;
   id: string | number;
   ad_account_id: string;
   created_at?: string;
@@ -50,7 +51,7 @@ export type AdCreatives = {
   url: string;
 };
 
-export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
+export function AdCheckerContainer({ searchParams, isSuperAdmin }: Props) {
   const fbAdsManagerService = new FacebookAdsManagerClientService();
   const jsonCsvManager = new Json2CsvManager();
   const [isActionDisabled, setIsActionDisabled] = useState(false);
@@ -88,6 +89,9 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
     isRemove: boolean
   ) => {
     if (isRemove) {
+      if (data.length === 0) {
+        setIsExportReady(false);
+      }
       setValidatedProfiles(data);
     } else {
       setValidatedProfiles((prevState) => {
@@ -119,6 +123,7 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
 
     const divisor = 100 / validatedProfiles.length;
 
+    const fbServerErrorData: any[] = [];
     // wrap each profile’s work into a task function
     const tasks = validatedProfiles.map((profile) => async () => {
       const invalidProfiles: AdData[] = [];
@@ -188,14 +193,8 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
         const hasFacebookServerError = sortedAdData.some((item) =>
           item.ad_checker_summary.message.includes("Facebook server error")
         );
-
         if (hasFacebookServerError) {
-          toast.info(
-            "Facebook server error found. Pease click the Refresh button.",
-            {
-              duration: 10000,
-            }
-          );
+          fbServerErrorData.push(hasFacebookServerError);
         }
 
         setTableData((prev) => [...prev, ...sortedAdData]);
@@ -209,6 +208,16 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
     // run in batches of 50
     await batchAllSettled(tasks, 50);
 
+    const hasFacebookServerError = fbServerErrorData.length > 0;
+    if (hasFacebookServerError) {
+      toast.info(
+        "Facebook server error found. Pease click the Refresh button.",
+        {
+          duration: 10000,
+        }
+      );
+    }
+
     setIsExportReady(true);
     setIsActionDisabled(false);
     setIsAdCheckerProgressDialogOpen(false);
@@ -221,6 +230,7 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
   };
 
   const handleRefreshRequest = async () => {
+    setIsActionDisabled(true);
     setRefreshStates({ isRefreshing: true, canRefresh: false });
     const fbServerErrorData = tableData
       .filter((data) =>
@@ -239,7 +249,9 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
     await Promise.allSettled(
       fbServerErrorData.map(async (errorData) => {
         const accessToken = String(errorData.access_token).trim();
-        const response = !errorData.ad_account_id
+        const noAccountId = !errorData.ad_account_id;
+        //no ad acc id, ad acc name, no all
+        const response = noAccountId
           ? await fbAdsManagerService.adChecker({
               access_token: accessToken,
             })
@@ -248,39 +260,77 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
               access_token: accessToken,
             });
 
-        response.data.forEach((ad) => {
-          const links: AdCreatives[] =
-            ad?.adcreatives?.map((creative: Record<string, any>) => ({
-              image: creative.image_url,
-              title: creative.title,
-              message: creative.message,
-              url: creative.call_to_action?.value?.link ?? "",
-            })) ?? [];
+        if (noAccountId) {
+          const newAdData = response.data.map((ad) => {
+            const links: AdCreatives[] =
+              ad?.adcreatives?.map((creative: Record<string, any>) => ({
+                image: creative.image_url,
+                title: creative.title,
+                message: creative.message,
+                url: creative.call_to_action?.value?.link ?? "",
+              })) ?? [];
 
-          const newAdData = {
-            id: Number(ad.id) || 0,
-            ad_account_id: ad.ad_account_id || 0,
-            profile: errorData.profile,
-            ad_account: ad.ad_account_name || "",
-            effective_status: ad.effective_status,
-            account_status: ad.account_status,
-            disable_reason: ad.disable_reason,
-            campaign_name: ad.name || "",
-            daily_budget: ad.daily_budget,
-            domain_name: ad.domain || [],
-            spend: ad.spend || 0,
-            links,
-            ad_checker_summary: ad.ad_checker_summary,
-            targeting_geo: ad.targeting_countries || [],
-          };
+            return {
+              id: Number(ad.id) || 0,
+              ad_account_id: ad.ad_account_id || 0,
+              profile: errorData.profile,
+              ad_account: ad.ad_account_name || "",
+              effective_status: ad.effective_status,
+              account_status: ad.account_status,
+              disable_reason: ad.disable_reason,
+              campaign_name: ad.name || "",
+              daily_budget: ad.daily_budget,
+              domain_name: ad.domain || [],
+              spend: ad.spend || 0,
+              links,
+              ad_checker_summary: ad.ad_checker_summary,
+              targeting_geo: ad.targeting_countries || [],
+            };
+          });
 
-          setTableData((prevState) => [
-            ...prevState.map((data) => (data.id == ad.id ? newAdData : data)),
-          ]);
-        });
+          setTableData((prevState) => {
+            const data = [...prevState];
+            data.splice(Number(errorData.index), 1);
+            return [...newAdData, ...data];
+          });
+        } else {
+          const refreshedData = response.data.map((ad) => {
+            const links: AdCreatives[] =
+              ad?.adcreatives?.map((creative: Record<string, any>) => ({
+                image: creative.image_url,
+                title: creative.title,
+                message: creative.message,
+                url: creative.call_to_action?.value?.link ?? "",
+              })) ?? [];
+
+            return {
+              id: Number(ad.id) || 0,
+              ad_account_id: ad.ad_account_id || 0,
+              profile: errorData.profile,
+              ad_account: ad.ad_account_name || "",
+              effective_status: ad.effective_status,
+              account_status: ad.account_status,
+              disable_reason: ad.disable_reason,
+              campaign_name: ad.name || "",
+              daily_budget: ad.daily_budget,
+              domain_name: ad.domain || [],
+              spend: ad.spend || 0,
+              links,
+              ad_checker_summary: ad.ad_checker_summary,
+              targeting_geo: ad.targeting_countries || [],
+            };
+          });
+
+          setTableData((prevState) => {
+            const data = [...prevState];
+            data.splice(Number(errorData.index), 1);
+            return [...refreshedData, ...data];
+          });
+        }
       })
     );
     setRefreshStates({ isRefreshing: false, canRefresh: true });
+    setIsActionDisabled(false);
   };
 
   const handleRefresh = async () => {
@@ -424,6 +474,7 @@ export function AdCheckerContainer({ searchParams, isSuperOrAdmin }: Props) {
           validatedProfiles={validatedProfiles}
         />
         <AdCheckerTable
+          isSuperAdmin={isSuperAdmin}
           refreshStates={refreshStates}
           onRefresh={handleRefresh}
           onViewCreatives={handleViewCreatives}

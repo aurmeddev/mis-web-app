@@ -91,14 +91,23 @@ export const POST = async (request: NextRequest) => {
     access_token: decryptedData.decryptedData,
   });
 
-  const AdAccounts: {
-    id: string;
-    campaigns?: any;
-  }[] = [
-    {
-      id: payload.ad_account_id,
-    },
-  ];
+  const { isSuccess, data, message } = await graphApi.getAdAccounts();
+  if (!isSuccess) {
+    return NextResponse.json(
+      {
+        isSuccess: false,
+        message: message,
+        data: graphApi.getFallbackResponseData({
+          code: 500,
+          status: "Facebook server error",
+          adSummaryLabel: "ad_checker_summary",
+        }),
+      },
+      { status: 500 }
+    );
+  }
+
+  const AdAccounts = data.filter((key) => key.id === payload.ad_account_id);
   for (const ada of AdAccounts) {
     const { data } = await graphApi.adChecker({
       id: ada.id,

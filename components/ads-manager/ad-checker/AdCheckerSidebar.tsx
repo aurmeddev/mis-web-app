@@ -352,6 +352,7 @@ export function AdCheckerSidebar({
           {validatedProfiles.length > 1 && !isProcessing && (
             <Button
               className="absolute bg-transparent bottom-0 cursor-pointer opacity-70 right-0 hover:opacity-100 hover:bg-transparent"
+              disabled={isActionDisabled}
               onClick={() => handleRemoveProfile({ removeAll: true })}
               variant={"link"}
             >

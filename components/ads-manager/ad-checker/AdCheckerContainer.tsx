@@ -191,7 +191,7 @@ export function AdCheckerContainer({ searchParams, isSuperAdmin }: Props) {
         );
 
         const hasFacebookServerError = sortedAdData.some((item) =>
-          item.ad_checker_summary.message.includes("Facebook server error")
+          item.ad_checker_summary?.message.includes("Facebook server error")
         );
         if (hasFacebookServerError) {
           fbServerErrorData.push(hasFacebookServerError);

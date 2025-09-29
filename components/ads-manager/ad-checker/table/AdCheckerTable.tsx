@@ -30,7 +30,7 @@ export function AdCheckerTable({
   const errorIndexes = useMemo(() => {
     return tableData
       .map((item, index) =>
-        item.ad_checker_summary.message.includes("Facebook server error")
+        item.ad_checker_summary?.message.includes("Facebook server error")
           ? index
           : -1
       )

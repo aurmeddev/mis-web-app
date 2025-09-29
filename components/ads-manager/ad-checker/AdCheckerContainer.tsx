@@ -250,7 +250,7 @@ export function AdCheckerContainer({ searchParams, isSuperAdmin }: Props) {
       fbServerErrorData.map(async (errorData) => {
         const accessToken = String(errorData.access_token).trim();
         const noAccountId = !errorData.ad_account_id;
-        //no ad acc id, ad acc name, no all
+
         const response = noAccountId
           ? await fbAdsManagerService.adChecker({
               access_token: accessToken,
@@ -260,73 +260,40 @@ export function AdCheckerContainer({ searchParams, isSuperAdmin }: Props) {
               access_token: accessToken,
             });
 
-        if (noAccountId) {
-          const newAdData = response.data.map((ad) => {
-            const links: AdCreatives[] =
-              ad?.adcreatives?.map((creative: Record<string, any>) => ({
-                image: creative.image_url,
-                title: creative.title,
-                message: creative.message,
-                url: creative.call_to_action?.value?.link ?? "",
-              })) ?? [];
+        const newData = response.data.map((ad) => {
+          const links: AdCreatives[] =
+            ad?.adcreatives?.map((creative: Record<string, any>) => ({
+              image: creative.image_url,
+              title: creative.title,
+              message: creative.message,
+              url: creative.call_to_action?.value?.link ?? "",
+            })) ?? [];
 
-            return {
-              id: Number(ad.id) || 0,
-              ad_account_id: ad.ad_account_id || 0,
-              profile: errorData.profile,
-              ad_account: ad.ad_account_name || "",
-              effective_status: ad.effective_status,
-              account_status: ad.account_status,
-              disable_reason: ad.disable_reason,
-              campaign_name: ad.name || "",
-              daily_budget: ad.daily_budget,
-              domain_name: ad.domain || [],
-              spend: ad.spend || 0,
-              links,
-              ad_checker_summary: ad.ad_checker_summary,
-              targeting_geo: ad.targeting_countries || [],
-            };
-          });
+          return {
+            id: Number(ad.id) || 0,
+            ad_account_id: ad.ad_account_id || 0,
+            profile: errorData.profile,
+            ad_account: ad.ad_account_name || "",
+            effective_status: ad.effective_status,
+            account_status: ad.account_status,
+            disable_reason: ad.disable_reason,
+            campaign_name: ad.name || "",
+            daily_budget: ad.daily_budget,
+            domain_name: ad.domain || [],
+            spend: ad.spend || 0,
+            links,
+            ad_checker_summary: ad.ad_checker_summary,
+            targeting_geo: ad.targeting_countries || [],
+          };
+        });
 
-          setTableData((prevState) => {
-            const data = [...prevState];
-            data.splice(Number(errorData.index), 1);
-            return [...newAdData, ...data];
-          });
-        } else {
-          const refreshedData = response.data.map((ad) => {
-            const links: AdCreatives[] =
-              ad?.adcreatives?.map((creative: Record<string, any>) => ({
-                image: creative.image_url,
-                title: creative.title,
-                message: creative.message,
-                url: creative.call_to_action?.value?.link ?? "",
-              })) ?? [];
-
-            return {
-              id: Number(ad.id) || 0,
-              ad_account_id: ad.ad_account_id || 0,
-              profile: errorData.profile,
-              ad_account: ad.ad_account_name || "",
-              effective_status: ad.effective_status,
-              account_status: ad.account_status,
-              disable_reason: ad.disable_reason,
-              campaign_name: ad.name || "",
-              daily_budget: ad.daily_budget,
-              domain_name: ad.domain || [],
-              spend: ad.spend || 0,
-              links,
-              ad_checker_summary: ad.ad_checker_summary,
-              targeting_geo: ad.targeting_countries || [],
-            };
-          });
-
-          setTableData((prevState) => {
-            const data = [...prevState];
-            data.splice(Number(errorData.index), 1);
-            return [...refreshedData, ...data];
-          });
-        }
+        setTableData((prevState) => {
+          const data = prevState.filter(
+            (d) =>
+              !d.ad_checker_summary?.message.includes("Facebook server error")
+          );
+          return [...data, ...newData];
+        });
       })
     );
     setRefreshStates({ isRefreshing: false, canRefresh: true });

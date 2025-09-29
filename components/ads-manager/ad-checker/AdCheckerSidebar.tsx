@@ -379,9 +379,8 @@ export function AdCheckerSidebar({
               disabled={isActionDisabled}
               onClick={onExportData}
               className="cursor-pointer mt-2 w-full"
-              variant={"link"}
             >
-              Download Ad Checker Summary Report
+              Download
             </Button>
           </div>
         )}

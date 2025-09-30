@@ -17,7 +17,7 @@ import { useDebouncedCallback } from "use-debounce";
 import { DomainManagerClientService } from "@/lib/features/domains/DomainManagerClientService";
 import { Pagination } from "@/components/shared/pagination/route-based/Pagination";
 import { PaginationProps } from "@/lib/utils/pagination/type/PaginationProps";
-import { ApiResponseProps } from "@/database/dbConnection";
+import { ApiResponseProps } from "@/database/query";
 import { ImportCSVFileInput } from "@/components/shared/import-csv/ImportCSVFileInput";
 import { DomainUtils } from "@/lib/utils/domain/DomainUtils";
 import { DownloadLocalFile } from "@/components/shared/download/DownloadLocalFile";

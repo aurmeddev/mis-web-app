@@ -8,7 +8,7 @@ import {
   UpdateUserIpWhitelistInfoParams,
   UpdateUserIpWhitelistStatusParams,
 } from "./type/UserIpWhitelistProps";
-import { ApiResponseProps } from "@/database/dbConnection";
+import { ApiResponseProps } from "@/database/query";
 export class UserIpWhitelistClientService {
   async post(params: PostUserIpWhitelistParams): Promise<ApiResponseProps> {
     const payload = params;

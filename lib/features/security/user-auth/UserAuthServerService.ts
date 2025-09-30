@@ -1,4 +1,4 @@
-import { query } from "@/database/dbConnection";
+import { query } from "@/database/query";
 import { cookies } from "next/headers";
 import { UserLoginParams, VerifyUserIpParams } from "./type/UserAuthProps";
 import { CryptoUtilsManager } from "../cryptography/util/CryptoUtilsManager";

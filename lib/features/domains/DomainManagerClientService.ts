@@ -6,7 +6,7 @@ import {
   ToggleDomainManagerServiceStatusProps,
   GetAllDomainManagerServiceProps,
 } from "./type/DomainManagerServiceProps";
-import { ApiResponseProps } from "@/database/dbConnection";
+import { ApiResponseProps } from "@/database/query";
 import { SearchParamsManager } from "@/lib/utils/search-params/SearchParamsManager";
 import { PaginationProps } from "@/lib/utils/pagination/type/PaginationProps";
 

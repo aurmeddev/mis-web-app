@@ -1,4 +1,4 @@
-import { ApiResponseProps, query } from "@/database/dbConnection";
+import { ApiResponseProps, query } from "@/database/query";
 import { PostUsersLogsProps } from "./type/UsersLogsProps";
 import { MySqlUtils } from "@/lib/utils/mysql/MySqlUtils";
 import { ObjectUtils } from "@/lib/utils/object/ObjectUtils";

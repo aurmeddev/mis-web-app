@@ -15,7 +15,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Pagination } from "@/components/shared/pagination/route-based/Pagination";
 import { SearchQuery } from "@/components/otp-generator/type";
 import { ApProfilesService } from "@/lib/features/ap-profiles/ApProfilesService";
-import { ApiResponseProps } from "@/database/dbConnection";
+import { ApiResponseProps } from "@/database/query";
 import { useDebouncedCallback } from "use-debounce";
 import { ApProfilesSearchResults } from "../search/ApProfilesSearchResults";
 import { SearchWrapper } from "../search/SearchWrapper";

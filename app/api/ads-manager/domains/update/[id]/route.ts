@@ -1,4 +1,4 @@
-import { query } from "@/database/dbConnection";
+import { query } from "@/database/query";
 import { DomainManagerServerService } from "@/lib/features/domains/DomainManagerServerService";
 import { UpdateDomainManagerServiceProps } from "@/lib/features/domains/type/DomainManagerServiceProps";
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";

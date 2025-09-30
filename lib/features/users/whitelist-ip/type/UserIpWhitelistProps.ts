@@ -1,4 +1,4 @@
-import { ApiResponseProps } from "@/database/dbConnection";
+import { ApiResponseProps } from "@/database/query";
 type PostUserIpWhitelistParams = {
   ip_address: string;
   name: string;

@@ -7,7 +7,7 @@ import {
   UpdateUserIpWhitelistInfoParams,
   UpdateUserIpWhitelistStatusParams,
 } from "./type/UserIpWhitelistProps";
-import { ApiResponseProps, query } from "@/database/dbConnection";
+import { ApiResponseProps, query } from "@/database/query";
 import { IpAddressUtil } from "./util/IpAddressUtil";
 import { PaginationProps } from "../../../utils/pagination/type/PaginationProps";
 export class UserIpWhitelistServerService {

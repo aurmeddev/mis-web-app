@@ -148,7 +148,7 @@ export function AdCheckerSidebar({
     });
 
     // Run in batches of 20
-    const settledResults = await batchAllSettled(tasks, 20);
+    const settledResults = await batchAllSettled(tasks, 50);
 
     const results: any[] = settledResults.map((res) =>
       res.status === "fulfilled"

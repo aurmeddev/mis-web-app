@@ -4,7 +4,7 @@ import {
   BaseFacebookAdsManagerServiceProps,
   MarketingApiAccessTokenConfigProps,
 } from "./type/FacebookMarketingApiProps";
-import { ApiResponseProps } from "@/database/dbConnection";
+import { ApiResponseProps } from "@/database/query";
 import { DomainManagerServerService } from "../../domains/DomainManagerServerService";
 import { format, parseISO } from "date-fns";
 

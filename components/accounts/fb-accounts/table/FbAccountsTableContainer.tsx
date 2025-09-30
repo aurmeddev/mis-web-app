@@ -15,7 +15,7 @@ import { FbAccountsDialog } from "../dialog/FbAccountsDialog";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Pagination } from "@/components/shared/pagination/route-based/Pagination";
 import { SearchQuery } from "@/components/otp-generator/type";
-import { ApiResponseProps } from "@/database/dbConnection";
+import { ApiResponseProps } from "@/database/query";
 import { useDebouncedCallback } from "use-debounce";
 import { PaginationProps } from "@/lib/utils/pagination/type/PaginationProps";
 import { FbAccountsService } from "@/lib/features/fb-accounts/FbAccountsService";

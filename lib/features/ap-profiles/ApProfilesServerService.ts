@@ -1,4 +1,4 @@
-import { ApiResponseProps, query } from "@/database/dbConnection";
+import { ApiResponseProps, query } from "@/database/query";
 import { FindApProfilesProps } from "./type/ApProfilesProps";
 import { SearchKeywordService } from "../search-keyword/SearchKeywordService";
 import { DatetimeUtils } from "@/lib/utils/date/DatetimeUtils";

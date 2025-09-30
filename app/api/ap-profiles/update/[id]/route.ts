@@ -1,4 +1,4 @@
-import { query } from "@/database/dbConnection";
+import { query } from "@/database/query";
 import { ApProfilesServerService } from "@/lib/features/ap-profiles/ApProfilesServerService";
 import { UpdateApProfilesProps } from "@/lib/features/ap-profiles/type/ApProfilesProps";
 import { FbAccountsServerService } from "@/lib/features/fb-accounts/FbAccountsServerService";

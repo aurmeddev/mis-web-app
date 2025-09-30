@@ -54,7 +54,7 @@ export type AdCreatives = {
 export function AdCheckerContainer({ searchParams, isSuperAdmin }: Props) {
   const fbAdsManagerService = new FacebookAdsManagerClientService();
   const jsonCsvManager = new Json2CsvManager();
-  const [isActionDisabled, setIsActionDisabled] = useState(false);
+  const [isActionDisabled, setIsActionDisabled] = useState(true);
   const [validatedProfiles, setValidatedProfiles] = useState<
     ProfileMarketingApiAccessToken[]
   >([]);
@@ -91,9 +91,11 @@ export function AdCheckerContainer({ searchParams, isSuperAdmin }: Props) {
     if (isRemove) {
       if (data.length === 0) {
         setIsExportReady(false);
+        setIsActionDisabled(true);
       }
       setValidatedProfiles(data);
     } else {
+      setIsActionDisabled(false);
       setValidatedProfiles((prevState) => {
         const merged = [...prevState, ...data];
         const map = new Map(merged.map((item) => [item.profile, item]));
@@ -224,6 +226,10 @@ export function AdCheckerContainer({ searchParams, isSuperAdmin }: Props) {
   };
 
   const handleSubmit = async () => {
+    if (validatedProfiles.length == 0) {
+      toast.error("Please enter profile(s)!");
+      return;
+    }
     setIsActionDisabled(true);
     setTableData([]);
     handleSubmitRequest();

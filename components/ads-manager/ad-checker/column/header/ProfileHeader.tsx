@@ -2,20 +2,20 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { RefreshCcw } from "lucide-react";
 import { RefreshStates } from "../../AdCheckerContainer";
+import { useAdCheckerContext } from "@/context/ad-checker/AdCheckerContext";
 
 type Props = {
-  isSuperAdmin: boolean;
   hasServerErrorData?: boolean;
   onRefresh: () => void;
   refreshStates: RefreshStates;
 };
 
 export function ProfileHeader({
-  isSuperAdmin,
   hasServerErrorData,
   onRefresh,
   refreshStates,
 }: Props) {
+  const { isSuperAdmin } = useAdCheckerContext();
   return (
     <div className="flex items-center justify-between relative">
       <div>Profile</div>

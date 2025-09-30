@@ -2,12 +2,13 @@
 import { GetAllFbAccountsProps } from "@/lib/features/fb-accounts/type/FbAccountsProps";
 import { AdCheckerSidebar } from "./AdCheckerSidebar";
 import { AdCheckerTable } from "./table/AdCheckerTable";
-import { startTransition, useState } from "react";
+import { startTransition, useEffect, useState } from "react";
 import { FacebookAdsManagerClientService } from "@/lib/features/ads-manager/facebook/FacebookAdsManagerClientService";
 import { AdCreativesDialog } from "./dialog/AdCreativesDialog";
 import { AdCheckerProgressDialog } from "./dialog/AdCheckerProgressDialog";
 import { Json2CsvManager } from "@/lib/utils/converter/Json2CsvManager";
 import { toast } from "sonner";
+import { useAdCheckerContext } from "@/context/ad-checker/AdCheckerContext";
 
 type Props = {
   searchParams: { page: number; limit: number } & GetAllFbAccountsProps;
@@ -52,6 +53,7 @@ export type AdCreatives = {
 };
 
 export function AdCheckerContainer({ searchParams, isSuperAdmin }: Props) {
+  const { setIsSuperAdmin } = useAdCheckerContext();
   const fbAdsManagerService = new FacebookAdsManagerClientService();
   const jsonCsvManager = new Json2CsvManager();
   const [isActionDisabled, setIsActionDisabled] = useState(true);
@@ -70,6 +72,10 @@ export function AdCheckerContainer({ searchParams, isSuperAdmin }: Props) {
     canRefresh: true,
     isRefreshing: false,
   });
+
+  useEffect(() => {
+    setIsSuperAdmin(isSuperAdmin);
+  }, [isSuperAdmin]);
 
   const handleAdCreativesDialogOpen = (open: boolean) => {
     setIsDialogOpen(open);
@@ -447,7 +453,6 @@ export function AdCheckerContainer({ searchParams, isSuperAdmin }: Props) {
           validatedProfiles={validatedProfiles}
         />
         <AdCheckerTable
-          isSuperAdmin={isSuperAdmin}
           refreshStates={refreshStates}
           onRefresh={handleRefresh}
           onViewCreatives={handleViewCreatives}

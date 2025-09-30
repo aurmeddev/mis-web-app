@@ -1,6 +1,7 @@
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { NotFound } from "@/components/not-found/not-found";
 import { AdCheckerContainer } from "@/components/ads-manager/ad-checker/AdCheckerContainer";
+import { AdCheckerProvider } from "@/context/ad-checker/AdCheckerContext";
 export default async function Page({ searchParams }: any) {
   const session = await getSession();
   const awaitedParams = await searchParams;
@@ -25,6 +26,8 @@ export default async function Page({ searchParams }: any) {
   const isSuperAdmin = session.user.user_type_id === 1;
 
   return (
-    <AdCheckerContainer searchParams={params} isSuperAdmin={isSuperAdmin} />
+    <AdCheckerProvider>
+      <AdCheckerContainer searchParams={params} isSuperAdmin={isSuperAdmin} />
+    </AdCheckerProvider>
   );
 }

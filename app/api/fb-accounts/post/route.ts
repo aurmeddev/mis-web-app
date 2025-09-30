@@ -1,4 +1,4 @@
-import { query } from "@/database/dbConnection";
+import { query } from "@/database/query";
 import { MySqlUtils } from "@/lib/utils/mysql/MySqlUtils";
 import { ObjectUtils } from "@/lib/utils/object/ObjectUtils";
 import { CryptoServerService } from "@/lib/features/security/cryptography/CryptoServerService";

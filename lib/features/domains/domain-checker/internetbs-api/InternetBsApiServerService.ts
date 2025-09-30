@@ -1,4 +1,4 @@
-import { ApiResponseProps } from "@/database/dbConnection";
+import { ApiResponseProps } from "@/database/query";
 import { SearchParamsManager } from "@/lib/utils/search-params/SearchParamsManager";
 export class InternetBsApiServerService {
   async getDomainInfo(params: { domain: string }): Promise<ApiResponseProps> {

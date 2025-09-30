@@ -1,4 +1,4 @@
-import { query } from "@/database/dbConnection";
+import { query } from "@/database/query";
 import { GetAllFbAccountsProps } from "@/lib/features/fb-accounts/type/FbAccountsProps";
 import { CryptoServerService } from "@/lib/features/security/cryptography/CryptoServerService";
 import { DatetimeUtils } from "@/lib/utils/date/DatetimeUtils";

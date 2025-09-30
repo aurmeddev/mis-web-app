@@ -1,5 +1,5 @@
 import { Profile } from "@/components/accounts/ap-profiles/type";
-import { ApiResponseProps } from "@/database/dbConnection";
+import { ApiResponseProps } from "@/database/query";
 
 type GeneratorBaseProps = {
   otp: string;

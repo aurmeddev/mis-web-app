@@ -2,7 +2,7 @@ import {
   FindDomainManagerServiceProps,
   PostDomainManagerServiceProps,
 } from "./type/DomainManagerServiceProps";
-import { ApiResponseProps, query } from "@/database/dbConnection";
+import { ApiResponseProps, query } from "@/database/query";
 import { MySqlUtils } from "@/lib/utils/mysql/MySqlUtils";
 import { DatetimeUtils } from "@/lib/utils/date/DatetimeUtils";
 import { getServerCurrentDatetime } from "@/app/api/ap-profiles/post/route";

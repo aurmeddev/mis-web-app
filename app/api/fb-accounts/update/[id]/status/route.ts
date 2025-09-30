@@ -1,4 +1,4 @@
-import { query } from "@/database/dbConnection";
+import { query } from "@/database/query";
 import { ToggleFbAccountQualityStatusProps } from "@/lib/features/fb-accounts/type/FbAccountsProps";
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { MySqlUtils } from "@/lib/utils/mysql/MySqlUtils";

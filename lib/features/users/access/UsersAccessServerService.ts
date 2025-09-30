@@ -1,4 +1,4 @@
-import { ApiResponseProps, query } from "@/database/dbConnection";
+import { ApiResponseProps, query } from "@/database/query";
 import {
   FindUsersAccessProps,
   PostUsersAccessProps,

@@ -1,4 +1,4 @@
-import { ApiResponseProps } from "@/database/dbConnection";
+import { ApiResponseProps } from "@/database/query";
 import { appBaseUrl } from "@/lib/base-url/appBaseUrl";
 import { ObjectUtils } from "@/lib/utils/object/ObjectUtils";
 import { BaseFacebookAdsManagerServiceProps } from "./type/FacebookMarketingApiProps";

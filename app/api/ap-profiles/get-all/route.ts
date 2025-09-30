@@ -1,4 +1,4 @@
-import { query } from "@/database/dbConnection";
+import { query } from "@/database/query";
 import { GetAllApProfilesProps } from "@/lib/features/ap-profiles/type/ApProfilesProps";
 import { CryptoServerService } from "@/lib/features/security/cryptography/CryptoServerService";
 import { DatetimeUtils } from "@/lib/utils/date/DatetimeUtils";

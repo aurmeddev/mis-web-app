@@ -1,4 +1,4 @@
-import { ApiResponseProps } from "@/database/dbConnection";
+import { ApiResponseProps } from "@/database/query";
 import { GetAllManageUsersProps } from "./type/ManageUsersProps";
 import { PaginationProps } from "@/lib/utils/pagination/type/PaginationProps";
 import { appBaseUrl } from "@/lib/base-url/appBaseUrl";

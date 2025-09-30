@@ -1,4 +1,4 @@
-import { ApiResponseProps } from "@/database/dbConnection";
+import { ApiResponseProps } from "@/database/query";
 import {
   FindFbAccountsProps,
   GetAllFbAccountsProps,

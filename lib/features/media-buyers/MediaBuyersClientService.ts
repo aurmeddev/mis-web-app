@@ -1,4 +1,4 @@
-import { ApiResponseProps } from "@/database/dbConnection";
+import { ApiResponseProps } from "@/database/query";
 import { GetAllMediaBuyersProps } from "./type/MediaBuyersProps";
 import { PaginationProps } from "@/lib/utils/pagination/type/PaginationProps";
 import { SearchParamsManager } from "@/lib/utils/search-params/SearchParamsManager";

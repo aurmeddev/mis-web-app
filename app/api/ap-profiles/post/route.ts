@@ -1,4 +1,4 @@
-import { query } from "@/database/dbConnection";
+import { query } from "@/database/query";
 import { PostApProfilesProps } from "@/lib/features/ap-profiles/type/ApProfilesProps";
 import { MySqlUtils } from "@/lib/utils/mysql/MySqlUtils";
 import { ObjectUtils } from "@/lib/utils/object/ObjectUtils";

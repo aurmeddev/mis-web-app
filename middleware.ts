@@ -1,13 +1,28 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { get } from "@vercel/edge-config";
+import { isEnvProduction } from "@/lib/env/isEnvProduction";
 
 export async function middleware(request: NextRequest) {
   const url = request.nextUrl;
   const isInMaintenanceMode = await get("isInMaintenanceMode");
 
-  // If NOT in maintenance mode, just allow everything
-  if (!isInMaintenanceMode) {
+  if (isInMaintenanceMode && isEnvProduction) {
+    const allowed = ["/api/auth/session-alive", "/api/auth/logout"];
+    // 🚧 Maintenance mode active
+    // Don’t block maintenance page, Next.js assets, or whitelisted routes
+    if (
+      url.pathname.startsWith("/maintenance") ||
+      url.pathname.startsWith("/_next") ||
+      allowed.some((route) => url.pathname.startsWith(route))
+    ) {
+      return NextResponse.next();
+    }
+
+    // Otherwise, rewrite everything to the maintenance page
+    return NextResponse.rewrite(new URL("/maintenance", request.url));
+  } else {
+    // If NOT in production, just allow everything
     if (url.pathname.startsWith("/api/auth/ip/get")) {
       const ip = (request.headers.get("x-forwarded-for") ?? "127.0.0.1").split(
         ","
@@ -21,20 +36,6 @@ export async function middleware(request: NextRequest) {
 
     return NextResponse.next();
   }
-
-  const allowed = ["/api/auth/session-alive", "/api/auth/logout"];
-  // 🚧 Maintenance mode active
-  // Don’t block maintenance page, Next.js assets, or whitelisted routes
-  if (
-    url.pathname.startsWith("/maintenance") ||
-    url.pathname.startsWith("/_next") ||
-    allowed.some((route) => url.pathname.startsWith(route))
-  ) {
-    return NextResponse.next();
-  }
-
-  // Otherwise, rewrite everything to the maintenance page
-  return NextResponse.rewrite(new URL("/maintenance", request.url));
 }
 
 // export const config = {

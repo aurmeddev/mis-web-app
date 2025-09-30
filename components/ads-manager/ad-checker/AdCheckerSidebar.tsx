@@ -46,17 +46,19 @@ export function AdCheckerSidebar({
       const splitProfiles = formatInputProfile(data);
       const distinctProfiles = new Set(splitProfiles);
       const destructuredProfiles = [...distinctProfiles];
+      const filteredDistinctProfiles = destructuredProfiles.filter(
+        (profile) => !validatedProfiles.some((vp) => vp.profile == profile)
+      );
 
       const hasCommon = validatedProfiles.some((item) =>
         destructuredProfiles.includes(item.profile)
       );
       if (hasCommon) {
-        toast.info("Duplicate profile(s) detected.");
-        return;
+        toast.info("Duplicate profile detected and removed.");
       }
 
       setIsProcessing(true);
-      setAddedProfiles(destructuredProfiles);
+      setAddedProfiles(filteredDistinctProfiles);
       const profileMarketingApiAccessToken = await getAccessToken(
         destructuredProfiles
       );
@@ -163,107 +165,6 @@ export function AdCheckerSidebar({
 
     return results;
   };
-
-  // const getAccessToken = async (profiles: string[]) => {
-  //   const divisor = 100 / profiles.length;
-
-  //   const promises = profiles.map(async (profile, _) => {
-  //     const { data, message } = await profilesService.find({
-  //       method: "find-one",
-  //       searchKeyword: profile,
-  //     });
-
-  //     let accessToken: string = "";
-  //     let canRequest = true;
-  //     const status: string[] = [];
-
-  //     if (data.length > 0) {
-  //       accessToken = data[0]?.fb_account.marketing_api_access_token || null;
-  //       if (accessToken) {
-  //         const adsManagerApi = new FacebookAdsManagerClientService();
-  //         const { isSuccess, data, message } =
-  //           await adsManagerApi.accessTokenDebugger({
-  //             access_token: accessToken,
-  //           });
-
-  //         if (!isSuccess) {
-  //           status.push(data[0].status);
-  //           canRequest = false;
-  //         }
-  //       } else {
-  //         canRequest = false;
-  //         status.push("Missing access token");
-  //       }
-  //     } else {
-  //       canRequest = false;
-  //       status.push(message);
-  //     }
-  //     setProgress((prev) => Math.min(100, prev + divisor));
-
-  //     return { profile, accessToken, status, canRequest };
-  //   });
-
-  //   const settledResults = await Promise.allSettled(promises);
-
-  //   const results: any[] = settledResults.map((res) =>
-  //     res.status === "fulfilled"
-  //       ? res.value
-  //       : {
-  //           profile: "",
-  //           accessToken: null,
-  //           status: [String(res.reason)],
-  //           canRequest: false,
-  //         }
-  //   );
-
-  //   startTransition(() => setProgress(0));
-
-  //   return results;
-  // };
-
-  // const getAccessToken = async (profiles: string[]) => {
-  //   const results: ProfileMarketingApiAccessToken[] = [];
-
-  //   const divisor = 100 / profiles.length;
-
-  //   for (const profile of profiles) {
-  //     const { data, message } = await profilesService.find({
-  //       method: "find-one",
-  //       searchKeyword: profile,
-  //     });
-
-  //     let accessToken = null;
-  //     let canRequest = true;
-  //     const status = [];
-  //     if (data.length > 0) {
-  //       accessToken = data[0]?.fb_account.marketing_api_access_token || null;
-  //       if (accessToken) {
-  //         const adsManagerApi = new FacebookAdsManagerClientService();
-  //         const { isSuccess, data, message } =
-  //           await adsManagerApi.accessTokenDebugger({
-  //             access_token: accessToken,
-  //           });
-
-  //         if (!isSuccess) {
-  //           status.push(data[0].status);
-  //           canRequest = false;
-  //         }
-  //       } else {
-  //         canRequest = false;
-  //         status.push("Missing access token");
-  //       }
-  //     } else {
-  //       canRequest = false;
-  //       status.push(message);
-  //     }
-  //     setProgress((prev) => Math.min(100, prev + divisor));
-  //     results.push({ profile, accessToken, status, canRequest });
-  //   }
-
-  //   startTransition(() => setProgress(0));
-
-  //   return results;
-  // };
 
   const currentProgressPosition = getPositionFromPercentage(
     progress,

@@ -13,7 +13,6 @@ import { Pagination } from "@/components/shared/pagination/tanstack/Pagination";
 import { TableWithResizableHeader } from "@/components/shared/table/with-resizable-header/TableWithResizableHeader";
 
 type Props = {
-  isSuperAdmin: boolean;
   refreshStates: RefreshStates;
   tableData: AdData[];
   onViewCreatives: (adCreatives: any) => void;
@@ -21,7 +20,6 @@ type Props = {
 };
 
 export function AdCheckerTable({
-  isSuperAdmin,
   refreshStates,
   onRefresh,
   onViewCreatives,
@@ -39,7 +37,6 @@ export function AdCheckerTable({
 
   const hasServerErrorData = errorIndexes.length > 0;
   const columns = useAdColumns({
-    isSuperAdmin,
     hasServerErrorData,
     onViewCreatives,
     onRefresh,

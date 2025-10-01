@@ -321,6 +321,10 @@ export function DomainsTableContainer({
   };
 
   const handleSetFileData = (json: any) => {
+    if (!json?.length) {
+      toast.info("The CSV file is empty. Please add at least one domain.");
+      return;
+    }
     setImportData(json);
   };
 
@@ -387,11 +391,7 @@ export function DomainsTableContainer({
   };
 
   useEffect(() => {
-    if (!importData?.length) {
-      toast.info("The CSV file is empty. Please add at least one domain.");
-      return;
-    }
-
+    if (!importData.length) return;
     const hasDomainNameProperty = importData.some(
       (data) => "domain_name" in data
     );

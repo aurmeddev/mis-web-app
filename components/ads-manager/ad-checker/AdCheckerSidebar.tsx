@@ -12,6 +12,9 @@ import { FacebookAdsManagerClientService } from "@/lib/features/ads-manager/face
 import { toast } from "sonner";
 import { GlobalTooltip } from "../../shared/tooltip/GlobalTooltip";
 import { cn } from "@/lib/utils";
+import { ValidatedProfilesList } from "../ValidatedProfilesList";
+import { PROFILE_BATCH } from "./constant";
+import { NetworkRequestUtils } from "@/lib/utils/network-request/NetworkRequestUtils";
 
 type Props = {
   isExportReady: boolean;
@@ -34,6 +37,7 @@ export function AdCheckerSidebar({
   validatedProfiles,
 }: Props) {
   const profilesService = new ApProfilesService();
+  const networkRequestUtils = new NetworkRequestUtils();
   const [addedProfiles, setAddedProfiles] = useState<string[]>([]);
   const [progress, setProgress] = useState<number>(0);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -91,21 +95,6 @@ export function AdCheckerSidebar({
     }
   };
 
-  const batchAllSettled = async (
-    tasks: (() => Promise<any>)[],
-    batchSize = 50
-  ) => {
-    const results: any[] = [];
-
-    for (let i = 0; i < tasks.length; i += batchSize) {
-      const batch = tasks.slice(i, i + batchSize).map((fn) => fn());
-      const settled = await Promise.allSettled(batch);
-      results.push(...settled);
-    }
-
-    return results;
-  };
-
   const getAccessToken = async (profiles: string[]) => {
     const divisor = 100 / profiles.length;
 
@@ -148,7 +137,10 @@ export function AdCheckerSidebar({
     });
 
     // Run in batches of 20
-    const settledResults = await batchAllSettled(tasks, 20);
+    const settledResults = await networkRequestUtils.batchAllSettled(
+      tasks,
+      PROFILE_BATCH
+    );
 
     const results: any[] = settledResults.map((res) =>
       res.status === "fulfilled"
@@ -175,54 +167,11 @@ export function AdCheckerSidebar({
     <div className="border-r flex flex-col justify-between pr-4 lg:w-[35%] w-[30%]">
       <div className="flex flex-col space-y-2 w-full">
         <div className="border relative rounded">
-          {validatedProfiles.length >= 1 && (
-            <div className="flex flex-wrap gap-2 max-h-[300px] overflow-y-auto p-2 w-full">
-              {validatedProfiles.map((data, idx) => {
-                if (!data.canRequest) {
-                  return (
-                    <GlobalTooltip key={idx} tooltipText={data.status[0]}>
-                      <Badge
-                        className="flex relative"
-                        variant={!data.canRequest ? "destructive" : "secondary"}
-                      >
-                        <div>{data.profile}</div>
-                        <span
-                          className="cursor-pointer"
-                          onClick={() =>
-                            handleRemoveProfile({ profileName: data.profile })
-                          }
-                        >
-                          <X className="h-4 w-4" />
-                        </span>
-                      </Badge>
-                    </GlobalTooltip>
-                  );
-                }
-
-                return (
-                  <Badge
-                    key={idx}
-                    className="flex relative"
-                    variant={!data.canRequest ? "destructive" : "secondary"}
-                  >
-                    <div>{data.profile}</div>
-                    <span
-                      className={cn(
-                        isActionDisabled
-                          ? "pointer-events-none"
-                          : "cursor-pointer"
-                      )}
-                      onClick={() =>
-                        handleRemoveProfile({ profileName: data.profile })
-                      }
-                    >
-                      <X className="h-4 w-4" />
-                    </span>
-                  </Badge>
-                );
-              })}
-            </div>
-          )}
+          <ValidatedProfilesList
+            handleRemoveProfile={handleRemoveProfile}
+            isActionDisabled={isActionDisabled}
+            validatedProfiles={validatedProfiles}
+          />
 
           {isProcessing && (
             <div className="bg-secondary p-2 relative w-full">

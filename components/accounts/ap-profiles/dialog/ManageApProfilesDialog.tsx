@@ -237,7 +237,7 @@ export function ManageApProfilesDialog({
           </div>
 
           <div className="grid gap-2">
-            <div className="text-sm">
+            <div className="font-[500] text-sm">
               {searchQuery.selectedResult ? "Assigned" : "Assign"} FB Account
             </div>
             <div className="relative w-full">
@@ -280,9 +280,7 @@ export function ManageApProfilesDialog({
           {hasAccessToMarketingApiAccessToken && searchQuery.selectedResult && (
             <>
               <div className="grid gap-2">
-                <Label className="font-normal" htmlFor="app_secret_key">
-                  App Secret Key
-                </Label>
+                <Label htmlFor="app_secret_key">App Secret Key</Label>
                 <Input
                   id="app_secret_key"
                   className="border h-8 px-2 py-1 rounded w-full"
@@ -294,10 +292,7 @@ export function ManageApProfilesDialog({
                 />
               </div>
               <div className="grid gap-2">
-                <Label
-                  className="font-normal"
-                  htmlFor="marketing_api_access_token"
-                >
+                <Label htmlFor="marketing_api_access_token">
                   Extended Access Token
                 </Label>
                 <Textarea
@@ -317,9 +312,7 @@ export function ManageApProfilesDialog({
           )}
 
           <div className="grid gap-2">
-            <Label className="font-normal" htmlFor="remarks">
-              Remarks
-            </Label>
+            <Label htmlFor="remarks">Remarks</Label>
             <Textarea
               id="remarks"
               className="border h-8 px-2 py-1 rounded w-full"
@@ -328,14 +321,6 @@ export function ManageApProfilesDialog({
               onChange={(e) => handleInputChange("remarks", e.target.value)}
             />
           </div>
-
-          {/* <div>
-            <StatusSelect
-              value={String(form.is_active) || "2"}
-              onChange={handleStatusChange}
-              isDisabled={isActionDisabled}
-            />
-          </div> */}
 
           <DialogFooter>
             <Button

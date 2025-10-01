@@ -21,6 +21,7 @@ import { GlobalSelect as SelectBudgetOptimization } from "@/components/shared/se
 import { GlobalComboBoxSelect as SelectMediaBuyer } from "@/components/shared/select/GlobalComboBoxSelect";
 import { SelectOptions } from "@/components/shared/select/type";
 import { ProfileMarketingApiAccessToken } from "../ad-checker/AdCheckerContainer";
+import { ValidatedProfilesList } from "../ValidatedProfilesList";
 
 type Props = {
   brands: SelectOptions[];
@@ -178,50 +179,11 @@ export function AdInsightsSidebar({
   return (
     <div className="border-r flex flex-col pr-4 space-y-2 lg:w-[35%] w-[30%]">
       <div className="border relative rounded">
-        {validatedProfiles.length >= 1 && (
-          <div className="flex flex-wrap gap-2 p-2 w-full">
-            {validatedProfiles.map((data, idx) => {
-              if (!data.canRequest) {
-                return (
-                  <GlobalTooltip key={idx} tooltipText={data.status[0]}>
-                    <Badge
-                      className="flex relative"
-                      variant={!data.canRequest ? "destructive" : "secondary"}
-                    >
-                      <div>{data.profile}</div>
-                      <span
-                        className="cursor-pointer"
-                        onClick={() =>
-                          handleRemoveProfile({ profileName: data.profile })
-                        }
-                      >
-                        <X className="h-4 w-4" />
-                      </span>
-                    </Badge>
-                  </GlobalTooltip>
-                );
-              }
-
-              return (
-                <Badge
-                  key={idx}
-                  className="flex relative"
-                  variant={!data.canRequest ? "destructive" : "secondary"}
-                >
-                  <div>{data.profile}</div>
-                  <span
-                    className="cursor-pointer"
-                    onClick={() =>
-                      handleRemoveProfile({ profileName: data.profile })
-                    }
-                  >
-                    <X className="h-4 w-4" />
-                  </span>
-                </Badge>
-              );
-            })}
-          </div>
-        )}
+        <ValidatedProfilesList
+          handleRemoveProfile={handleRemoveProfile}
+          isActionDisabled={isActionDisabled}
+          validatedProfiles={validatedProfiles}
+        />
 
         {isProcessing && (
           <div className="bg-secondary p-2 relative w-full">

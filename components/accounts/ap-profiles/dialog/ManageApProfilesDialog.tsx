@@ -214,6 +214,7 @@ export function ManageApProfilesDialog({
             <Label htmlFor="profile_name">Profile Name</Label>
             <div className="relative">
               <Input
+                id="profile_name"
                 autoFocus
                 className="border h-8 px-2 py-0 rounded w-full"
                 disabled={isActionDisabled}
@@ -236,7 +237,7 @@ export function ManageApProfilesDialog({
           </div>
 
           <div className="grid gap-2">
-            <div className="text-sm font-semibold">
+            <div className="text-sm">
               {searchQuery.selectedResult ? "Assigned" : "Assign"} FB Account
             </div>
             <div className="relative w-full">
@@ -279,8 +280,11 @@ export function ManageApProfilesDialog({
           {hasAccessToMarketingApiAccessToken && searchQuery.selectedResult && (
             <>
               <div className="grid gap-2">
-                <Label htmlFor="remarks">App Secret Key</Label>
+                <Label className="font-normal" htmlFor="app_secret_key">
+                  App Secret Key
+                </Label>
                 <Input
+                  id="app_secret_key"
                   className="border h-8 px-2 py-1 rounded w-full"
                   disabled={isActionDisabled}
                   value={form.app_secret_key || ""}
@@ -290,8 +294,14 @@ export function ManageApProfilesDialog({
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="access-token">Extended Access Token</Label>
+                <Label
+                  className="font-normal"
+                  htmlFor="marketing_api_access_token"
+                >
+                  Extended Access Token
+                </Label>
                 <Textarea
+                  id="marketing_api_access_token"
                   className="border h-8 px-2 py-1 rounded w-full"
                   disabled={isActionDisabled}
                   value={form.marketing_api_access_token || ""}
@@ -307,8 +317,11 @@ export function ManageApProfilesDialog({
           )}
 
           <div className="grid gap-2">
-            <Label htmlFor="remarks">Remarks</Label>
+            <Label className="font-normal" htmlFor="remarks">
+              Remarks
+            </Label>
             <Textarea
+              id="remarks"
               className="border h-8 px-2 py-1 rounded w-full"
               disabled={isActionDisabled}
               value={form.remarks || ""}

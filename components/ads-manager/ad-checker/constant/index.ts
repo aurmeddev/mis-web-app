@@ -1,0 +1,4 @@
+const PROFILE_BATCH = 20;
+const AD_CHECKER_BATCH = 50;
+
+export { PROFILE_BATCH, AD_CHECKER_BATCH };

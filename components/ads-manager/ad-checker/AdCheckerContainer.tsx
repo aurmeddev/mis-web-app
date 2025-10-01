@@ -9,6 +9,8 @@ import { AdCheckerProgressDialog } from "./dialog/AdCheckerProgressDialog";
 import { Json2CsvManager } from "@/lib/utils/converter/Json2CsvManager";
 import { toast } from "sonner";
 import { useAdCheckerContext } from "@/context/ad-checker/AdCheckerContext";
+import { AD_CHECKER_BATCH } from "./constant";
+import { NetworkRequestUtils } from "@/lib/utils/network-request/NetworkRequestUtils";
 
 type Props = {
   searchParams: { page: number; limit: number } & GetAllFbAccountsProps;
@@ -55,6 +57,7 @@ export type AdCreatives = {
 export function AdCheckerContainer({ searchParams, isSuperAdmin }: Props) {
   const { setIsSuperAdmin } = useAdCheckerContext();
   const fbAdsManagerService = new FacebookAdsManagerClientService();
+  const networkRequestUtils = new NetworkRequestUtils();
   const jsonCsvManager = new Json2CsvManager();
   const [isActionDisabled, setIsActionDisabled] = useState(true);
   const [validatedProfiles, setValidatedProfiles] = useState<
@@ -108,21 +111,6 @@ export function AdCheckerContainer({ searchParams, isSuperAdmin }: Props) {
         return Array.from(map.values());
       });
     }
-  };
-
-  const batchAllSettled = async (
-    tasks: (() => Promise<any>)[],
-    batchSize = 50
-  ) => {
-    const results: any[] = [];
-
-    for (let i = 0; i < tasks.length; i += batchSize) {
-      const batch = tasks.slice(i, i + batchSize).map((fn) => fn());
-      const settled = await Promise.allSettled(batch);
-      results.push(...settled);
-    }
-
-    return results;
   };
 
   const handleSubmitRequest = async () => {
@@ -214,7 +202,7 @@ export function AdCheckerContainer({ searchParams, isSuperAdmin }: Props) {
     });
 
     // run in batches of 50
-    await batchAllSettled(tasks, 50);
+    await networkRequestUtils.batchAllSettled(tasks, AD_CHECKER_BATCH);
 
     const hasFacebookServerError = fbServerErrorData.length > 0;
     if (hasFacebookServerError) {

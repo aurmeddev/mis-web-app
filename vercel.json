@@ -3,6 +3,10 @@
     {
       "path": "/api/cron-job/ad-checker",
       "schedule": "0 */2 * * *"
+    },
+    {
+      "path": "/api/cron-job/keep-tcp-alive",
+      "schedule": "*/3 * * * *"
     }
   ]
 }

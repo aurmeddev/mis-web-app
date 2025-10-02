@@ -1,21 +1,28 @@
 import { isEnvProduction } from "@/lib/env/isEnvProduction";
-import mysql, { ConnectionOptions } from "mysql2/promise";
+import mysql, { Pool, PoolOptions } from "mysql2/promise";
 
-const poolConfig: ConnectionOptions = {
-  host: process.env.NEXT_DBHOST,
+const poolConfig: PoolOptions = {
+  host: process.env.NEXT_MIS_DBHOST,
+  password: process.env.NEXT_MIS_DBPASS,
   user: process.env.NEXT_DBUSER,
-  password: process.env.NEXT_DBPASS,
   database: isEnvProduction
     ? process.env.NEXT_DBNAME
     : process.env.NEXT_DEV_DBNAME,
   waitForConnections: true,
-  connectionLimit: 50, // Use a much smaller, safer limit (e.g., 10-20)
-  maxIdle: 50, // Same as connectionLimit
-  idleTimeout: 60000,
+  connectionLimit: 20, // Use a much smaller, safer limit (e.g., 10-20)
+  maxIdle: 20, // Same as connectionLimit
+  idleTimeout: 25200000, // 7 hours (Slightly less than MySQL's default of 8 hours)
   queueLimit: 0,
   enableKeepAlive: true,
   keepAliveInitialDelay: 0,
 };
 
+// Ensure a single pool in dev / warm serverless
+declare global {
+  var MYSQL_POOL: Pool | undefined;
+}
+
 // Initialize the Connection Pool ONCE and export it.
-export const pool = mysql.createPool(poolConfig);
+export const pool: Pool = global.MYSQL_POOL ?? mysql.createPool(poolConfig);
+if (!global.MYSQL_POOL) global.MYSQL_POOL = pool;
+console.log("Database Pool initialized");

@@ -1,8 +1,8 @@
 {
   "crons": [
     {
-      "path": "/api/keep-tcp-alive",
-      "schedule": "*/3 * * * *"
+      "path": "/api/cron-job/ad-checker",
+      "schedule": "0 */2 * * *"
     }
   ]
 }

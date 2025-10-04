@@ -285,7 +285,7 @@ export class FacebookAdsManagerServerService {
 
     if (!response.ok) {
       const { error } = await response.json();
-      console.log("error campaign level", this.config.access_token);
+      console.log("error campaign level");
       console.log("access_token", this.config.access_token);
       console.log("ad account id", id);
       console.error(error);
@@ -466,6 +466,45 @@ export class FacebookAdsManagerServerService {
     return {
       isSuccess: true,
       message: "Access token is valid.",
+      data: [],
+    };
+  }
+
+  async updateAdDeliveryStatus(params: {
+    id: string;
+    status: "ACTIVE" | "PAUSED";
+  }) {
+    const { id, status } = params;
+    const searchParams: any = {
+      access_token: this.config.access_token,
+      status,
+    };
+    const searchQueryParams = new SearchParamsManager().append(searchParams);
+    const response = await fetch(
+      `${this.graphFbApiConfig.baseUrl}/${this.graphFbApiConfig.version}/${id}${searchQueryParams}`,
+      { method: "POST" }
+    );
+
+    if (!response.ok) {
+      const { error } = await response.json();
+      console.log("update delivery status error");
+      console.log("access_token", this.config.access_token);
+      console.log("id", id);
+      console.error(error);
+      return {
+        isSuccess: false,
+        message: error.message,
+        data: this.getFallbackResponseData({
+          code: 500,
+          status: "Facebook server error",
+          adSummaryLabel: "ad_checker_summary",
+        }),
+      };
+    }
+
+    return {
+      isSuccess: true,
+      message: "Ad delivery status updated successfully.",
       data: [],
     };
   }

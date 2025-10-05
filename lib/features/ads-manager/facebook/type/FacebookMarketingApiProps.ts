@@ -5,6 +5,10 @@ type BaseFacebookAdsManagerServiceProps = {
   filtering?: { field: string; operator: "CONTAIN"; value: string }[];
 };
 
+type UpdateDeliveryStatusProps = {
+  id: string; // Campaign ID or Ad Set ID
+  status?: "ACTIVE" | "PAUSED";
+};
 type MarketingApiAccessTokenConfigProps = Omit<
   BaseFacebookAdsManagerServiceProps,
   "time_ranges" | "filtering"
@@ -12,4 +16,5 @@ type MarketingApiAccessTokenConfigProps = Omit<
 export type {
   BaseFacebookAdsManagerServiceProps,
   MarketingApiAccessTokenConfigProps,
+  UpdateDeliveryStatusProps,
 };

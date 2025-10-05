@@ -1,7 +1,10 @@
 import { ApiResponseProps } from "@/database/query";
 import { appBaseUrl } from "@/lib/base-url/appBaseUrl";
 import { ObjectUtils } from "@/lib/utils/object/ObjectUtils";
-import { BaseFacebookAdsManagerServiceProps } from "./type/FacebookMarketingApiProps";
+import {
+  BaseFacebookAdsManagerServiceProps,
+  UpdateDeliveryStatusProps,
+} from "./type/FacebookMarketingApiProps";
 
 type adCheckerProps = Omit<
   BaseFacebookAdsManagerServiceProps,
@@ -114,6 +117,25 @@ export class FacebookAdsManagerClientService {
           "Content-type": "application/json",
         },
         body: JSON.stringify(payload),
+      }
+    );
+
+    return await response.json();
+  }
+
+  async updateDeliveryStatus(
+    params: UpdateDeliveryStatusProps & {
+      access_token: string;
+    }
+  ): Promise<ApiResponseProps> {
+    const response = await fetch(
+      `${appBaseUrl}/api/ads-manager/update-delivery-status`,
+      {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify(params),
       }
     );
 

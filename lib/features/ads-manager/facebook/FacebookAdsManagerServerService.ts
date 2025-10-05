@@ -3,6 +3,7 @@ import { GraphFacebookApiConfig } from "./config/GraphFacebookApiConfig";
 import {
   BaseFacebookAdsManagerServiceProps,
   MarketingApiAccessTokenConfigProps,
+  UpdateDeliveryStatusProps,
 } from "./type/FacebookMarketingApiProps";
 import { ApiResponseProps } from "@/database/query";
 import { DomainManagerServerService } from "../../domains/DomainManagerServerService";
@@ -200,19 +201,19 @@ export class FacebookAdsManagerServerService {
         if (hasAdsets) {
           restOfProps.adsets = await Promise.all(
             adsets.data.map(async (adset: any) => {
-              const { id, insights, targeting, ...restOfAdsets } = adset;
-              restOfAdsets.effective_status =
-                restOfAdsets.effective_status.includes("PAUSED")
+              const { id, insights, targeting, ...restOfAdsetsProps } = adset;
+              restOfAdsetsProps.effective_status =
+                restOfAdsetsProps.effective_status.includes("PAUSED")
                   ? "PAUSED"
-                  : restOfAdsets.effective_status;
-              const convertedToUsd = restOfAdsets.daily_budget
-                ? restOfAdsets.daily_budget / 100
+                  : restOfAdsetsProps.effective_status;
+              const convertedToUsd = restOfAdsetsProps.daily_budget
+                ? restOfAdsetsProps.daily_budget / 100
                 : campaignDailyBudget / 100; // Use the campaign's daily budget as a fallback if the ad set's daily budget is not available.
               const targeting_countries = targeting?.geo_locations?.countries;
               const hasTrafficData = insights?.data?.length > 0;
 
               return {
-                ...restOfAdsets,
+                ...restOfAdsetsProps,
                 ...this.formatInsightsFields(insights),
                 targeting_countries: targeting_countries,
                 daily_budget: `${
@@ -274,7 +275,7 @@ export class FacebookAdsManagerServerService {
     const searchParams: any = {
       access_token: this.config.access_token,
       use_account_attribution_setting: true,
-      fields: `name,daily_budget,adsets{id,name,created_time,updated_time,daily_budget,effective_status,targeting{geo_locations{countries}},insights.time_ranges(${time_ranges}){spend},adcreatives{object_story_spec{video_data}}}`,
+      fields: `id,name,daily_budget,effective_status,adsets{id,name,created_time,updated_time,daily_budget,effective_status,targeting{geo_locations{countries}},insights.time_ranges(${time_ranges}){spend},adcreatives{object_story_spec{video_data}}}`,
     };
 
     const searchQueryParams = new SearchParamsManager().append(searchParams);
@@ -303,11 +304,18 @@ export class FacebookAdsManagerServerService {
     const result: ResultProps = await response.json();
     const formattedResult = await Promise.all(
       result.data.map(async (prop) => {
-        const { adsets, name, daily_budget, ...restOfProps } = prop;
+        const { id, adsets, name, daily_budget, ...restOfCampaignProps } = prop;
+        const campaign_id = id;
         const campaignDailyBudget = daily_budget;
         const hasAdsets = adsets?.data.length > 0;
         if (hasAdsets) {
-          restOfProps.adsets = await Promise.all(
+          // let isCampaignDeliveryStatusPaused = false;
+          // const currentCampaignDeliveryStatus =
+          //   restOfCampaignProps.effective_status === "ACTIVE" ||
+          //   restOfCampaignProps.effective_status === "IN_PROCESS" ||
+          //   restOfCampaignProps.effective_status === "PENDING_REVIEW" ||
+          //   restOfCampaignProps.effective_status === "WITH_ISSUES";
+          restOfCampaignProps.adsets = await Promise.all(
             adsets.data.map(async (adset: any) => {
               const {
                 created_time,
@@ -315,12 +323,13 @@ export class FacebookAdsManagerServerService {
                 adcreatives,
                 insights,
                 targeting,
-                ...restOfAdsets
+                ...restOfAdsetsProps
               } = adset;
-              restOfAdsets.effective_status =
-                restOfAdsets.effective_status.includes("PAUSED")
+              restOfAdsetsProps.campaign_id = campaign_id; // Assign campaign_id to each adset
+              restOfAdsetsProps.effective_status =
+                restOfAdsetsProps.effective_status.includes("PAUSED")
                   ? "PAUSED"
-                  : restOfAdsets.effective_status;
+                  : restOfAdsetsProps.effective_status;
               const hasAdcreatives = adcreatives?.data.length > 0;
               if (hasAdcreatives) {
                 const domains: string[] = [];
@@ -344,20 +353,20 @@ export class FacebookAdsManagerServerService {
                 const domainValidationResult = await validateDomain({
                   domain: newSetOfDomains,
                 });
-                restOfAdsets.domain = domainValidationResult.domain;
-                restOfAdsets.ad_checker_status_details = {
-                  ...restOfAdsets.ad_checker_status_details,
+                restOfAdsetsProps.domain = domainValidationResult.domain;
+                restOfAdsetsProps.ad_checker_status_details = {
+                  ...restOfAdsetsProps.ad_checker_status_details,
                   domain_status: domainValidationResult.message,
                 };
-                restOfAdsets.adcreatives = adcreativesResult.filter(
+                restOfAdsetsProps.adcreatives = adcreativesResult.filter(
                   (creative) => creative !== undefined
                 );
               } else {
-                restOfAdsets.adcreatives = [];
+                restOfAdsetsProps.adcreatives = [];
               }
 
-              const convertedToUsd = restOfAdsets.daily_budget
-                ? restOfAdsets.daily_budget / 100
+              const convertedToUsd = restOfAdsetsProps.daily_budget
+                ? restOfAdsetsProps.daily_budget / 100
                 : campaignDailyBudget / 100; // Use the campaign's daily budget as a fallback if the ad set's daily budget is not available.
               const targeting_countries = targeting?.geo_locations?.countries;
               const remarks = validateTargetingCountries({
@@ -374,25 +383,52 @@ export class FacebookAdsManagerServerService {
                   ? `Exceeded ($${this.maximumDailyBudget}) daily budget amount.`
                   : "OK";
 
-              restOfAdsets.ad_checker_status_details = {
-                ...restOfAdsets.ad_checker_status_details,
+              restOfAdsetsProps.ad_checker_status_details = {
+                ...restOfAdsetsProps.ad_checker_status_details,
                 ...statuses,
               };
 
-              const flag_message = Object.values(
-                restOfAdsets.ad_checker_status_details
+              const found_suspicious = Object.values(
+                restOfAdsetsProps.ad_checker_status_details
               ).filter((value) => value !== "OK");
 
+              // if (
+              //   !isCampaignDeliveryStatusPaused &&
+              //   currentCampaignDeliveryStatus &&
+              //   found_suspicious.length > 0
+              // ) {
+              // // Pause the campaign if any suspicious activity is found.
+              // // Only pause if the campaign is currently ACTIVE/IN_PROCESS/PENDING_REVIEW/WITH_ISSUES
+              // const { isSuccess, message } = await this.updateDeliveryStatus({
+              //   id: campaign_id,
+              //   status: "PAUSED",
+              // });
+              // if (isSuccess) {
+              //   restOfCampaignProps.effective_status = "PAUSED";
+              //   restOfAdsetsProps.effective_status = "PAUSED";
+              //   isCampaignDeliveryStatusPaused = true;
+              //   restOfAdsetsProps.update_campaign_delivery_status = message;
+              // } else {
+              //   restOfAdsetsProps.update_campaign_delivery_status = message;
+              // }
+              // }
+
+              // Temporarily simulate Facebook server error for update delivery status
+              if (found_suspicious.length > 0) {
+                restOfAdsetsProps.update_campaign_delivery_status =
+                  "Facebook server error";
+              }
+
               const ad_checker_summary = Object.values(
-                restOfAdsets.ad_checker_status_details
+                restOfAdsetsProps.ad_checker_status_details
               ).every((value) => value === "OK")
                 ? { code: 200, message: ["Everything is OK!"] } // Everything is OK!
-                : { code: 500, message: flag_message }; // Flag suspicious
+                : { code: 500, message: found_suspicious };
 
               const created_at = formatDate(created_time) || "";
               const updated_at = formatDate(updated_time) || "";
               return {
-                ...restOfAdsets,
+                ...restOfAdsetsProps,
                 created_at: created_at,
                 updated_at: updated_at,
                 targeting_countries: targeting_countries,
@@ -410,7 +446,7 @@ export class FacebookAdsManagerServerService {
             })
           );
         } else {
-          restOfProps.adsets = this.getFallbackResponseData({
+          restOfCampaignProps.adsets = this.getFallbackResponseData({
             code: 404,
             status: "No adsets found",
             adSummaryLabel: "ad_checker_summary",
@@ -419,10 +455,11 @@ export class FacebookAdsManagerServerService {
         }
 
         return {
-          ...restOfProps,
+          ...restOfCampaignProps,
         };
       })
     );
+
     return {
       isSuccess: true,
       message:
@@ -470,10 +507,7 @@ export class FacebookAdsManagerServerService {
     };
   }
 
-  async updateAdDeliveryStatus(params: {
-    id: string;
-    status: "ACTIVE" | "PAUSED";
-  }) {
+  async updateDeliveryStatus(params: UpdateDeliveryStatusProps) {
     const { id, status } = params;
     const searchParams: any = {
       access_token: this.config.access_token,
@@ -493,18 +527,14 @@ export class FacebookAdsManagerServerService {
       console.error(error);
       return {
         isSuccess: false,
-        message: error.message,
-        data: this.getFallbackResponseData({
-          code: 500,
-          status: "Facebook server error",
-          adSummaryLabel: "ad_checker_summary",
-        }),
+        message: "Facebook server error",
+        data: [],
       };
     }
 
     return {
       isSuccess: true,
-      message: "Ad delivery status updated successfully.",
+      message: "Delivery status updated",
       data: [],
     };
   }

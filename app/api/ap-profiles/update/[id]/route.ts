@@ -447,6 +447,7 @@ const formatFbAccountInfo = (data: any) => {
       username,
       app_secret_key,
       marketing_api_access_token,
+      recruited_by,
     } = element;
     return {
       id,
@@ -454,6 +455,7 @@ const formatFbAccountInfo = (data: any) => {
       username,
       app_secret_key,
       marketing_api_access_token,
+      recruited_by,
     };
   });
 

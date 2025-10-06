@@ -136,6 +136,15 @@ export function ManageApProfilesTable({
                         {rowData.fb_account.username}
                       </div>
                     </div>
+
+                    <div className="flex gap-2 items-center">
+                      <div className="text-muted-foreground text-xs">
+                        Recruiter:
+                      </div>
+                      <div className="text-xs">
+                        {rowData.fb_account.recruited_by.full_name}
+                      </div>
+                    </div>
                   </div>
                 )}
               </TableCell>

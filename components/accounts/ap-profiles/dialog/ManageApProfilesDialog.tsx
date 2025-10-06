@@ -275,6 +275,11 @@ export function ManageApProfilesDialog({
                 }
               />
             </div>
+            {searchQuery.selectedResult && (
+              <div className="font-normal text-muted-foreground text-sm">
+                Recruiter: {searchQuery.selectedResult?.recruited_by.full_name}
+              </div>
+            )}
           </div>
 
           {hasAccessToMarketingApiAccessToken && searchQuery.selectedResult && (

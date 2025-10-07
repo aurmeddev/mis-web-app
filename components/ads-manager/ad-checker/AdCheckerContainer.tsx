@@ -433,7 +433,7 @@ export function AdCheckerContainer({ searchParams, isSuperAdmin }: Props) {
     setAdCreativeData(adCreatives);
   };
 
-  const handleExportAdInsights = async () => {
+  const handleExportAdChecker = async () => {
     const defaultLinks = { image: "", message: "", title: "", url: "" };
     const fallbackLinks = [defaultLinks, defaultLinks, defaultLinks];
     const plainData = tableData.map((data: AdData) => {
@@ -484,6 +484,7 @@ export function AdCheckerContainer({ searchParams, isSuperAdmin }: Props) {
         ad_checker_summary: adCheckerSummary,
         delivery: delivery ? delivery : "",
         disable_reason,
+        update_campaign_delivery_status,
         campaign_name,
         date_created: hasDateCreated ? created_at : "",
         daily_budget,
@@ -495,7 +496,6 @@ export function AdCheckerContainer({ searchParams, isSuperAdmin }: Props) {
         targeting_geo:
           data.targeting_geo?.length > 0 ? data.targeting_geo.join(", ") : "",
         ...linksResult,
-        update_campaign_delivery_status,
       };
     });
 
@@ -556,7 +556,7 @@ export function AdCheckerContainer({ searchParams, isSuperAdmin }: Props) {
         <AdCheckerSidebar
           isExportReady={isExportReady}
           isActionDisabled={isActionDisabled}
-          onExportData={handleExportAdInsights}
+          onExportData={handleExportAdChecker}
           onSubmit={handleSubmit}
           onSetValidatedProfiles={handleSetValidatedProfiles}
           validatedProfiles={validatedProfiles}

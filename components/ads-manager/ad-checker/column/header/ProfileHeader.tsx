@@ -5,13 +5,13 @@ import { RefreshStates } from "../../AdCheckerContainer";
 import { useAdCheckerContext } from "@/context/ad-checker/AdCheckerContext";
 
 type Props = {
-  hasServerErrorData?: boolean;
+  hasAdCheckerSummaryFBServerError?: boolean;
   onRefresh: () => void;
   refreshStates: RefreshStates;
 };
 
 export function ProfileHeader({
-  hasServerErrorData,
+  hasAdCheckerSummaryFBServerError,
   onRefresh,
   refreshStates,
 }: Props) {
@@ -19,7 +19,7 @@ export function ProfileHeader({
   return (
     <div className="flex items-center justify-between relative">
       <div>Profile</div>
-      {hasServerErrorData && isSuperAdmin && (
+      {hasAdCheckerSummaryFBServerError && isSuperAdmin && (
         <Badge
           onClick={onRefresh}
           className={cn(

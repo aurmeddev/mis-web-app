@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { useAdCheckerContext } from "@/context/ad-checker/AdCheckerContext";
 import { AD_CHECKER_BATCH } from "./constant";
 import { NetworkRequestUtils } from "@/lib/utils/network-request/NetworkRequestUtils";
+import { CloudAlert, Info } from "lucide-react";
 
 type Props = {
   searchParams: { page: number; limit: number } & GetAllFbAccountsProps;
@@ -28,6 +29,7 @@ export type AdData = {
   index?: number;
   id: string | number;
   ad_account_id: string;
+  campaign_id?: string;
   created_at?: string;
   profile: string;
   ad_account: string;
@@ -41,11 +43,17 @@ export type AdData = {
   targeting_geo: string[];
   spend: string | number;
   ad_checker_summary: Record<string, any>;
+  update_campaign_delivery_status?: string;
 };
 
 type AdLinks = { image: string; message: string; title: string; url: string };
 
 export type RefreshStates = { canRefresh: boolean; isRefreshing: boolean };
+export type PauseStates = {
+  canPause: boolean;
+  isPausing: boolean;
+  isCountingDown: boolean;
+};
 
 export type AdCreatives = {
   image: string;
@@ -74,6 +82,11 @@ export function AdCheckerContainer({ searchParams, isSuperAdmin }: Props) {
   const [refreshStates, setRefreshStates] = useState<RefreshStates>({
     canRefresh: true,
     isRefreshing: false,
+  });
+  const [pauseStates, setPauseStates] = useState<PauseStates>({
+    canPause: true,
+    isPausing: false,
+    isCountingDown: false,
   });
 
   useEffect(() => {
@@ -113,13 +126,98 @@ export function AdCheckerContainer({ searchParams, isSuperAdmin }: Props) {
     }
   };
 
+  const handlePauseSuspiciousCampaign = async () => {
+    const filteredSuspiciousCamps = tableData.filter(
+      (data) => data.update_campaign_delivery_status == "Facebook server error"
+    );
+
+    const uniqueCamps = Array.from(
+      new Map(
+        filteredSuspiciousCamps
+          .filter((d) => d.campaign_id)
+          .map((item) => [item.campaign_id, item])
+      ).values()
+    );
+
+    setPauseStates((prevState) => ({
+      ...prevState,
+      isPausing: true,
+      canPause: false,
+    }));
+    const tokenMap = new Map(
+      validatedProfiles.map((p) => [p.profile, p.accessToken])
+    );
+
+    const errorCatcher = [];
+    const tasks = uniqueCamps.map((camp) => async () => {
+      const accessToken = tokenMap.get(camp.profile);
+
+      // // simulate
+      // await new Promise((resolve) => setTimeout(resolve, 2000));
+      // // simulate
+      // errorCatcher.push(camp.profile);
+      const { isSuccess, message } =
+        await fbAdsManagerService.updateDeliveryStatus({
+          access_token: String(accessToken),
+          id: String(camp.campaign_id),
+          status: "PAUSED",
+        });
+
+      if (!isSuccess) {
+        errorCatcher.push(camp.profile);
+        return;
+      }
+
+      setTableData((prev) => {
+        return prev.map((adData) =>
+          adData.campaign_id == camp.campaign_id
+            ? {
+                ...adData,
+                update_campaign_delivery_status: message,
+                effective_status: "PAUSED",
+              }
+            : adData
+        );
+      });
+    });
+
+    await networkRequestUtils.batchAllSettled(tasks, AD_CHECKER_BATCH);
+    const hasErrorCatched = errorCatcher.length > 0;
+    if (hasErrorCatched) {
+      toast.error(
+        "Failed delivery status update found. Pease click the Retry button.",
+        {
+          duration: 10000,
+          icon: <Info className="text-red-500" />,
+        }
+      );
+    }
+
+    setPauseStates({
+      isPausing: false,
+      canPause: !hasErrorCatched, //can pause if no error found
+      isCountingDown: hasErrorCatched, //start retry countdown when an error occurs
+    });
+  };
+
+  const handlePauseStatesChange = (isCountdownDone: boolean) => {
+    startTransition(() => {
+      setPauseStates((prev) => ({
+        ...prev,
+        canPause: true,
+        isCountingDown: !isCountdownDone,
+      }));
+    });
+  };
+
   const handleSubmitRequest = async () => {
     setIsAdCheckerProgressDialogOpen(true);
     setAdCheckerProgress(0);
 
     const divisor = 100 / validatedProfiles.length;
 
-    const fbServerErrorData: any[] = [];
+    const adCheckerSummaryFBServerErrorData: any[] = [];
+    const updateCampDeliveryStatusErrorData = [];
     // wrap each profile’s work into a task function
     const tasks = validatedProfiles.map((profile) => async () => {
       const invalidProfiles: AdData[] = [];
@@ -168,6 +266,7 @@ export function AdCheckerContainer({ searchParams, isSuperAdmin }: Props) {
             ad_account_id: ad.ad_account_id || 0,
             profile: profile.profile,
             ad_account: ad.ad_account_name || "",
+            campaign_id: ad.campaign_id,
             effective_status: ad.effective_status,
             account_status: ad.account_status,
             disable_reason: ad.disable_reason,
@@ -179,6 +278,7 @@ export function AdCheckerContainer({ searchParams, isSuperAdmin }: Props) {
             links,
             ad_checker_summary: ad.ad_checker_summary,
             targeting_geo: ad.targeting_countries || [],
+            update_campaign_delivery_status: ad.update_campaign_delivery_status,
           };
         });
 
@@ -186,11 +286,23 @@ export function AdCheckerContainer({ searchParams, isSuperAdmin }: Props) {
           (a, b) => b.ad_checker_summary?.code - a.ad_checker_summary?.code
         );
 
-        const hasFacebookServerError = sortedAdData.some((item) =>
+        const hasAdCheckerSummaryFBServerError = sortedAdData.some((item) =>
           item.ad_checker_summary?.message.includes("Facebook server error")
         );
-        if (hasFacebookServerError) {
-          fbServerErrorData.push(hasFacebookServerError);
+        if (hasAdCheckerSummaryFBServerError) {
+          adCheckerSummaryFBServerErrorData.push(
+            hasAdCheckerSummaryFBServerError
+          );
+        }
+
+        const hasUpdateCampDeliveryStatusError = sortedAdData.some(
+          (item) =>
+            item.update_campaign_delivery_status == "Facebook server error"
+        );
+        if (hasUpdateCampDeliveryStatusError) {
+          updateCampDeliveryStatusErrorData.push(
+            hasUpdateCampDeliveryStatusError
+          );
         }
 
         setTableData((prev) => [...prev, ...sortedAdData]);
@@ -204,12 +316,23 @@ export function AdCheckerContainer({ searchParams, isSuperAdmin }: Props) {
     // run in batches of 50
     await networkRequestUtils.batchAllSettled(tasks, AD_CHECKER_BATCH);
 
-    const hasFacebookServerError = fbServerErrorData.length > 0;
-    if (hasFacebookServerError) {
+    const hasAdCheckerSummaryFBServerError =
+      adCheckerSummaryFBServerErrorData.length > 0;
+    if (hasAdCheckerSummaryFBServerError) {
       toast.info(
         "Facebook server error found. Pease click the Refresh button.",
         {
           duration: 10000,
+        }
+      );
+    }
+
+    if (updateCampDeliveryStatusErrorData.length > 0) {
+      toast.error(
+        "Failed delivery status update found. Pease click the Retry button.",
+        {
+          duration: 10000,
+          icon: <Info className="text-red-500" />,
         }
       );
     }
@@ -329,6 +452,7 @@ export function AdCheckerContainer({ searchParams, isSuperAdmin }: Props) {
         links,
         profile,
         spend,
+        update_campaign_delivery_status,
       } = data;
 
       //get the highest length of links
@@ -375,6 +499,7 @@ export function AdCheckerContainer({ searchParams, isSuperAdmin }: Props) {
         targeting_geo:
           data.targeting_geo?.length > 0 ? data.targeting_geo.join(", ") : "",
         ...linksResult,
+        update_campaign_delivery_status,
       };
     });
 
@@ -441,10 +566,13 @@ export function AdCheckerContainer({ searchParams, isSuperAdmin }: Props) {
           validatedProfiles={validatedProfiles}
         />
         <AdCheckerTable
-          refreshStates={refreshStates}
+          onPauseStatesChange={handlePauseStatesChange}
           onRefresh={handleRefresh}
           onViewCreatives={handleViewCreatives}
+          onPauseSusCamp={handlePauseSuspiciousCampaign}
           tableData={tableData}
+          refreshStates={refreshStates}
+          pauseStates={pauseStates}
         />
       </div>
     </div>

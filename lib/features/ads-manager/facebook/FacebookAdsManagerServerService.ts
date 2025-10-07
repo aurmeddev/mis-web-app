@@ -309,12 +309,12 @@ export class FacebookAdsManagerServerService {
         const campaignDailyBudget = daily_budget;
         const hasAdsets = adsets?.data.length > 0;
         if (hasAdsets) {
-          // let isCampaignDeliveryStatusPaused = false;
-          // const currentCampaignDeliveryStatus =
-          //   restOfCampaignProps.effective_status === "ACTIVE" ||
-          //   restOfCampaignProps.effective_status === "IN_PROCESS" ||
-          //   restOfCampaignProps.effective_status === "PENDING_REVIEW" ||
-          //   restOfCampaignProps.effective_status === "WITH_ISSUES";
+          let isCampaignDeliveryStatusPaused = false;
+          const currentCampaignDeliveryStatus =
+            restOfCampaignProps.effective_status === "ACTIVE" ||
+            restOfCampaignProps.effective_status === "IN_PROCESS" ||
+            restOfCampaignProps.effective_status === "PENDING_REVIEW" ||
+            restOfCampaignProps.effective_status === "WITH_ISSUES";
           restOfCampaignProps.adsets = await Promise.all(
             adsets.data.map(async (adset: any) => {
               const {
@@ -394,31 +394,25 @@ export class FacebookAdsManagerServerService {
                 restOfAdsetsProps.ad_checker_status_details
               ).filter((value) => value !== "OK");
 
-              // if (
-              //   !isCampaignDeliveryStatusPaused &&
-              //   currentCampaignDeliveryStatus &&
-              //   found_suspicious.length > 0
-              // ) {
-              // // Pause the campaign if any suspicious activity is found.
-              // // Only pause if the campaign is currently ACTIVE/IN_PROCESS/PENDING_REVIEW/WITH_ISSUES
-              // const { isSuccess, message } = await this.updateDeliveryStatus({
-              //   id: campaign_id,
-              //   status: "PAUSED",
-              // });
-              // if (isSuccess) {
-              //   restOfCampaignProps.effective_status = "PAUSED";
-              //   restOfAdsetsProps.effective_status = "PAUSED";
-              //   isCampaignDeliveryStatusPaused = true;
-              //   restOfAdsetsProps.update_campaign_delivery_status = message;
-              // } else {
-              //   restOfAdsetsProps.update_campaign_delivery_status = message;
-              // }
-              // }
-
-              // Temporarily simulate Facebook server error for update delivery status
-              if (found_suspicious.length > 0) {
-                restOfAdsetsProps.update_campaign_delivery_status =
-                  "Facebook server error";
+              if (
+                !isCampaignDeliveryStatusPaused &&
+                currentCampaignDeliveryStatus &&
+                found_suspicious.length > 0
+              ) {
+                // Pause the campaign if any suspicious activity is found.
+                // Only pause if the campaign is currently ACTIVE/IN_PROCESS/PENDING_REVIEW/WITH_ISSUES
+                const { isSuccess, message } = await this.updateDeliveryStatus({
+                  id: campaign_id,
+                  status: "PAUSED",
+                });
+                if (isSuccess) {
+                  restOfCampaignProps.effective_status = "PAUSED";
+                  restOfAdsetsProps.effective_status = "PAUSED";
+                  isCampaignDeliveryStatusPaused = true;
+                  restOfAdsetsProps.update_campaign_delivery_status = message;
+                } else {
+                  restOfAdsetsProps.update_campaign_delivery_status = message;
+                }
               }
 
               const ad_checker_summary = Object.values(

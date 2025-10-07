@@ -1,32 +1,44 @@
 import { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { ColumnDef } from "@tanstack/react-table";
-import { AdData, RefreshStates } from "../AdCheckerContainer";
+import { AdData, PauseStates, RefreshStates } from "../AdCheckerContainer";
 import { AdCheckerAction } from "../action/AdCheckerAction";
 import { ProfileHeader } from "./header/ProfileHeader";
+import { DeliveryHeader } from "./header/DeliveryHeader";
 
 type Props = {
+  onPauseStatesChange: (isCountdownDone: boolean) => void;
   onViewCreatives: (adCreatives: any) => void;
   onRefresh: () => void;
-  hasServerErrorData?: boolean;
+  onPauseSusCamp: () => void;
+  serverErrors: {
+    hasAdCheckerSummaryFBServerError: boolean;
+    hasUpdateCampDeliveryStatusError: boolean;
+  };
   refreshStates: RefreshStates;
+  pauseStates: PauseStates;
 };
 
 export function useAdColumns({
+  pauseStates,
   refreshStates,
+  onPauseStatesChange,
   onViewCreatives,
   onRefresh,
-  hasServerErrorData,
+  onPauseSusCamp,
+  serverErrors,
 }: Props) {
   const profileHeader = useMemo(
     () => (
       <ProfileHeader
-        hasServerErrorData={hasServerErrorData}
+        hasAdCheckerSummaryFBServerError={
+          serverErrors.hasAdCheckerSummaryFBServerError
+        }
         onRefresh={onRefresh}
         refreshStates={refreshStates}
       />
     ),
-    [hasServerErrorData, onRefresh, refreshStates]
+    [serverErrors, onRefresh, refreshStates]
   );
 
   const adColumns: ColumnDef<AdData>[] = useMemo(
@@ -51,16 +63,26 @@ export function useAdColumns({
         minSize: 150,
       },
       {
+        accessorKey: "update_campaign_delivery_status",
+        header: "Update Campaign Delivery Status",
+        cell: ({ getValue }) => {
+          const cellValue = getValue<string>();
+          return <div className="whitespace-normal">{cellValue}</div>;
+        },
+        minSize: 150,
+      },
+      {
         accessorKey: "ad_checker_summary",
         header: "Ad Checker Summary",
         cell: ({ getValue }) => {
           const cellValue = getValue<any>();
 
           if (!cellValue || !("code" in cellValue)) return "";
-          const isInternaServerError = cellValue?.code === 500;
+          const isInternalServerError = cellValue?.code === 500;
           const isAdCheckerSummaryOk = cellValue?.code === 200;
           const isAdCheckerSummaryNoAdset = cellValue?.code === 404;
           const isAdCheckerSummaryProfileIssue = cellValue?.code === 400;
+          const totalMessageLength = cellValue.message.length - 1;
           return (
             <div className="whitespace-normal">
               <ul>
@@ -78,9 +100,9 @@ export function useAdColumns({
                           {adCheckerSummary}
                         </Badge>
                       ) : (
-                        <>- {adCheckerSummary} </>
+                        <>• {adCheckerSummary} </>
                       )}
-                      {isInternaServerError && (
+                      {isInternalServerError && idx == totalMessageLength && (
                         <Badge className="uppercase" variant={"destructive"}>
                           Suspicious
                         </Badge>
@@ -121,16 +143,51 @@ export function useAdColumns({
       },
       {
         accessorKey: "effective_status",
-        header: "Delivery",
+        header: () => (
+          <DeliveryHeader
+            hasUpdateCampDeliveryStatusError={
+              serverErrors.hasUpdateCampDeliveryStatusError
+            }
+            onPauseStatesChange={onPauseStatesChange}
+            onPauseSusCamp={onPauseSusCamp}
+            pauseStates={pauseStates}
+          />
+        ),
         cell: ({ row, getValue }) => {
           const accountStatus = String(row.getValue("account_status"));
           const disableReason = String(row.getValue("disable_reason"));
+          const updateCampDeliveryStatus = String(
+            row.getValue("update_campaign_delivery_status") || ""
+          );
+          const isFacebookServerError =
+            updateCampDeliveryStatus == "Facebook server error";
           const filteredReason =
             disableReason.toLocaleLowerCase() !== "none" ? disableReason : "";
           const effectStatus = getValue<string>();
+
           if (!("effective_status" in row.original)) return "";
           if (accountStatus == "ACTIVE") {
-            return <div>{effectStatus}</div>;
+            return (
+              <div>
+                {isFacebookServerError ? (
+                  <div className="flex flex-col">
+                    {effectStatus}
+                    <Badge variant={"destructive"}>
+                      Failed delivery status update
+                    </Badge>
+                  </div>
+                ) : (
+                  <div className="flex flex-col">
+                    {effectStatus}
+                    {updateCampDeliveryStatus && (
+                      <Badge className="bg-green-500">
+                        {updateCampDeliveryStatus}
+                      </Badge>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
           }
           return (
             <div className="whitespace-normal">
@@ -244,7 +301,7 @@ export function useAdColumns({
         size: 150,
       },
     ],
-    [onViewCreatives, onRefresh, hasServerErrorData]
+    [onViewCreatives, onRefresh, serverErrors]
   );
 
   return adColumns;

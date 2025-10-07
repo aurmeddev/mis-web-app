@@ -6,26 +6,32 @@ import {
   useReactTable,
   VisibilityState,
 } from "@tanstack/react-table";
-import { AdData, RefreshStates } from "../AdCheckerContainer";
+import { AdData, PauseStates, RefreshStates } from "../AdCheckerContainer";
 import { useAdColumns } from "../column/useAdColumns";
 import { useMemo, useState } from "react";
 import { Pagination } from "@/components/shared/pagination/tanstack/Pagination";
 import { TableWithResizableHeader } from "@/components/shared/table/with-resizable-header/TableWithResizableHeader";
 
 type Props = {
+  pauseStates: PauseStates;
   refreshStates: RefreshStates;
   tableData: AdData[];
+  onPauseStatesChange: (isCountdownDone: boolean) => void;
   onViewCreatives: (adCreatives: any) => void;
   onRefresh: () => void;
+  onPauseSusCamp: () => void;
 };
 
 export function AdCheckerTable({
+  pauseStates,
   refreshStates,
+  onPauseStatesChange,
   onRefresh,
   onViewCreatives,
+  onPauseSusCamp,
   tableData,
 }: Props) {
-  const errorIndexes = useMemo(() => {
+  const adCheckerSummaryFBServerError = useMemo(() => {
     return tableData
       .map((item, index) =>
         item.ad_checker_summary?.message.includes("Facebook server error")
@@ -35,18 +41,40 @@ export function AdCheckerTable({
       .filter((i) => i !== -1);
   }, [tableData]);
 
-  const hasServerErrorData = errorIndexes.length > 0;
+  const updateCampDeliveryStatusError = useMemo(() => {
+    return tableData
+      .map((item, index) =>
+        item.update_campaign_delivery_status == "Facebook server error"
+          ? index
+          : -1
+      )
+      .filter((i) => i !== -1);
+  }, [tableData]);
+
+  const hasAdCheckerSummaryFBServerError =
+    adCheckerSummaryFBServerError.length > 0;
+  const hasUpdateCampDeliveryStatusError =
+    updateCampDeliveryStatusError.length > 0;
+  const serverErrors = {
+    hasAdCheckerSummaryFBServerError,
+    hasUpdateCampDeliveryStatusError,
+  };
+
   const columns = useAdColumns({
-    hasServerErrorData,
+    serverErrors,
+    onPauseStatesChange,
     onViewCreatives,
     onRefresh,
+    onPauseSusCamp,
     refreshStates,
+    pauseStates,
   });
   const [colSizing, setColSizing] = useState<ColumnSizingState>({});
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
     id: false,
     disable_reason: false,
     account_status: false,
+    update_campaign_delivery_status: false,
   });
   const [pagination, setPagination] = useState({
     pageIndex: 0,

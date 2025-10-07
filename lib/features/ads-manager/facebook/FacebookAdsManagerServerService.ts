@@ -528,6 +528,19 @@ export class FacebookAdsManagerServerService {
       };
     }
 
+    const { success } = await response.json();
+
+    if (!success) {
+      console.log("update delivery status - success false");
+      console.log("access_token", this.config.access_token);
+      console.log("id", id);
+      return {
+        isSuccess: false,
+        message: "Facebook server error",
+        data: [],
+      };
+    }
+
     return {
       isSuccess: true,
       message: "Delivery status updated",

@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { PauseStates } from "../../AdCheckerContainer";
 import { Pause } from "lucide-react";
+import { PauseStates } from "../../AdCheckerContainer";
 import { useEffect, useState } from "react";
 import { useAdCheckerContext } from "@/context/ad-checker/AdCheckerContext";
 
@@ -19,7 +19,7 @@ export function DeliveryHeader({
   pauseStates,
 }: Props) {
   const { isSuperAdmin } = useAdCheckerContext();
-  const [secondsRemaining, setSecondsRemaining] = useState<number>(10);
+  const [secondsRemaining, setSecondsRemaining] = useState<number>(60);
   let interval: NodeJS.Timeout;
 
   useEffect(() => {

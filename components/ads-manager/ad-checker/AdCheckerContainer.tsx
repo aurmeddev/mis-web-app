@@ -152,10 +152,6 @@ export function AdCheckerContainer({ searchParams, isSuperAdmin }: Props) {
     const tasks = uniqueCamps.map((camp) => async () => {
       const accessToken = tokenMap.get(camp.profile);
 
-      // // simulate
-      // await new Promise((resolve) => setTimeout(resolve, 2000));
-      // // simulate
-      // errorCatcher.push(camp.profile);
       const { isSuccess, message } =
         await fbAdsManagerService.updateDeliveryStatus({
           access_token: String(accessToken),

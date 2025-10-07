@@ -20,7 +20,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "MIS Web App",
+  title: "Aureas Media - MIS",
   description: "Developed by Aureas Media Dev Team",
 };
 

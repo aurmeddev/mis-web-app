@@ -654,7 +654,7 @@ export class FacebookAdsManagerServerService {
 
   async processDeleteAdRules(params: { id: string }) {
     const { id } = params;
-    let results = [];
+    const results = [];
     const getAdRulesResult = await this.getAdRules({ id });
     if (!getAdRulesResult.isSuccess) {
       return {

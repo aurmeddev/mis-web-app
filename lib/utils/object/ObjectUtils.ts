@@ -35,4 +35,22 @@ export class ObjectUtils {
     }
     return newObj;
   }
+
+  removeDuplicateObjects(params: {
+    array: Record<string, any>[];
+  }): Record<string, any>[] {
+    const { array } = params;
+    if (!Array.isArray(array) || array.length === 0) {
+      return [];
+    }
+    // 1. Map all objects to their unique JSON string representation.
+    const stringifiedObjects = array.map((obj) => JSON.stringify(obj));
+
+    // 2. Use a Set on the array of strings. The Set automatically filters out duplicates.
+    const uniqueStringsSet = new Set(stringifiedObjects);
+
+    // 3. Convert the Set back to an array of strings, and then parse each string
+    // back into a JavaScript object.
+    return Array.from(uniqueStringsSet).map((str) => JSON.parse(str));
+  }
 }

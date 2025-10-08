@@ -9,6 +9,7 @@ import {
 import { ApiResponseProps } from "@/database/query";
 import { DomainManagerServerService } from "../../domains/DomainManagerServerService";
 import { format, parseISO } from "date-fns";
+import { ObjectUtils } from "@/lib/utils/object/ObjectUtils";
 
 type ResultProps = {
   data: any[];
@@ -650,6 +651,45 @@ export class FacebookAdsManagerServerService {
       data: [],
     };
   }
+
+  async processDeleteAdRules(params: { id: string }) {
+    const { id } = params;
+    let results = [];
+    const getAdRulesResult = await this.getAdRules({ id });
+    if (!getAdRulesResult.isSuccess) {
+      return {
+        delete_ad_rules_status: getAdRulesResult.message,
+      };
+    }
+
+    if (getAdRulesResult.data.length === 0) {
+      return {
+        delete_ad_rules_status: getAdRulesResult.message,
+      };
+    }
+
+    for (const rule of getAdRulesResult.data) {
+      const deleteResult = await this.deleteAdRule({
+        id: rule.id,
+        status: "DELETED",
+      });
+      results.push(deleteResult.message);
+    }
+
+    const newSetOfResults = [...new Set(results)]; // Removes duplicate values
+    const hasError = newSetOfResults.includes("Facebook server error");
+    return {
+      delete_ad_rules_status: hasError
+        ? "Facebook server error"
+        : "Ad rule deleted",
+    };
+
+    // return {
+    //   message: result.includes(false)
+    //     ? "Facebook server error"
+    //     : "Ad rule deleted",
+    // };
+  }
 }
 
 const baseInsightsFields = [
@@ -729,11 +769,13 @@ export const formatCampaigns = (data: any) => {
   const adAccountHasNoAdsets: any = [];
   const spreadAdAccount: any = [];
   shallowCopyForSpreadingAdAccount.forEach((adAccount: any) => {
-    const { campaigns, id, name, account_status, disable_reason } = adAccount;
+    const { campaigns, id, name, account_status, disable_reason, ...rest } =
+      adAccount;
     const hasCampaigns = campaigns?.length > 0;
     if (hasCampaigns) {
       const newCampaign = campaigns.map((camp: any) => {
         return {
+          ...rest,
           ...camp,
           ad_account_id: id,
           ad_account_name: name,
@@ -744,6 +786,7 @@ export const formatCampaigns = (data: any) => {
       spreadAdAccount.push(...newCampaign);
     } else {
       adAccountHasNoAdsets.push({
+        ...rest,
         ad_account_id: id,
         ad_account_name: name,
         account_status,

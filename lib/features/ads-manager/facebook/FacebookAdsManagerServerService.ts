@@ -683,12 +683,6 @@ export class FacebookAdsManagerServerService {
         ? "Facebook server error"
         : "Ad rule deleted",
     };
-
-    // return {
-    //   message: result.includes(false)
-    //     ? "Facebook server error"
-    //     : "Ad rule deleted",
-    // };
   }
 }
 

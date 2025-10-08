@@ -9,6 +9,10 @@ type UpdateDeliveryStatusProps = {
   id: string; // Campaign ID or Ad Set ID
   status?: "ACTIVE" | "PAUSED";
 };
+type DeleteAdRuleProps = {
+  id: string;
+  status: "ENABLED" | "DISABLED" | "DELETED" | "HAS_ISSUES";
+};
 type MarketingApiAccessTokenConfigProps = Omit<
   BaseFacebookAdsManagerServiceProps,
   "time_ranges" | "filtering"
@@ -17,4 +21,5 @@ export type {
   BaseFacebookAdsManagerServiceProps,
   MarketingApiAccessTokenConfigProps,
   UpdateDeliveryStatusProps,
+  DeleteAdRuleProps,
 };

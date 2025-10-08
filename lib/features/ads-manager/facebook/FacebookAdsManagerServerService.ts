@@ -2,6 +2,7 @@ import { SearchParamsManager } from "@/lib/utils/search-params/SearchParamsManag
 import { GraphFacebookApiConfig } from "./config/GraphFacebookApiConfig";
 import {
   BaseFacebookAdsManagerServiceProps,
+  DeleteAdRuleProps,
   MarketingApiAccessTokenConfigProps,
   UpdateDeliveryStatusProps,
 } from "./type/FacebookMarketingApiProps";
@@ -12,6 +13,7 @@ import { format, parseISO } from "date-fns";
 type ResultProps = {
   data: any[];
 };
+
 export class FacebookAdsManagerServerService {
   private graphFbApiConfig = new GraphFacebookApiConfig();
   private requestOptions: RequestInit = {
@@ -269,9 +271,10 @@ export class FacebookAdsManagerServerService {
       "access_token" | "filtering"
     > & {
       id: string;
+      account_status: string;
     }
   ) {
-    const { id, time_ranges } = params;
+    const { id, time_ranges, account_status } = params;
     const searchParams: any = {
       access_token: this.config.access_token,
       use_account_attribution_setting: true,
@@ -301,6 +304,7 @@ export class FacebookAdsManagerServerService {
       };
     }
 
+    const isAdAccountStatusActive = account_status === "ACTIVE";
     const result: ResultProps = await response.json();
     const formattedResult = await Promise.all(
       result.data.map(async (prop) => {
@@ -395,6 +399,7 @@ export class FacebookAdsManagerServerService {
               ).filter((value) => value !== "OK");
 
               if (
+                isAdAccountStatusActive &&
                 !isCampaignDeliveryStatusPaused &&
                 currentCampaignDeliveryStatus &&
                 found_suspicious.length > 0
@@ -547,6 +552,101 @@ export class FacebookAdsManagerServerService {
     return {
       isSuccess: true,
       message: "Delivery status updated",
+      data: [],
+    };
+  }
+
+  async getAdRules(params: { id: string }) {
+    const { id } = params;
+    const searchParams: any = {
+      access_token: this.config.access_token,
+      // fields: `id,name,status,evaluation_spec,execution_spec,schedule_spec`,
+    };
+    const searchQueryParams = new SearchParamsManager().append(searchParams);
+    const response = await fetch(
+      `${this.graphFbApiConfig.baseUrl}/${this.graphFbApiConfig.version}/${id}/adrules_library${searchQueryParams}`,
+      this.requestOptions
+    );
+
+    if (!response.ok) {
+      const { error } = await response.json();
+      console.log("get ad rules status error");
+      console.log("access_token", this.config.access_token);
+      console.log("id", id);
+      console.error(error);
+      return {
+        isSuccess: false,
+        message: "Facebook server error",
+        data: [],
+      };
+    }
+
+    const { data } = await response.json();
+    if (data?.length === 0) {
+      console.log("No ad rules found");
+      console.log("access_token", this.config.access_token);
+      console.log("id", id);
+      return {
+        isSuccess: true,
+        message: "No ad rules found",
+        data: [],
+      };
+    }
+
+    console.log("get ad rules status - true");
+    console.log("access_token", this.config.access_token);
+    console.log("id", id);
+    return {
+      isSuccess: true,
+      message: "Get ad rules success",
+      data: data,
+    };
+  }
+
+  async deleteAdRule(params: DeleteAdRuleProps) {
+    const { id, status } = params;
+    const searchParams: any = {
+      access_token: this.config.access_token,
+      status,
+    };
+    const searchQueryParams = new SearchParamsManager().append(searchParams);
+    const response = await fetch(
+      `${this.graphFbApiConfig.baseUrl}/${this.graphFbApiConfig.version}/${id}${searchQueryParams}`,
+      { method: "POST" }
+    );
+
+    if (!response.ok) {
+      const { error } = await response.json();
+      console.log("delete ad rule status error");
+      console.log("access_token", this.config.access_token);
+      console.log("id", id);
+      console.error(error);
+      return {
+        isSuccess: false,
+        message: "Facebook server error",
+        data: [],
+      };
+    }
+
+    const { success } = await response.json();
+
+    if (!success) {
+      console.log("delete ad rule status - false");
+      console.log("access_token", this.config.access_token);
+      console.log("id", id);
+      return {
+        isSuccess: false,
+        message: "Facebook server error",
+        data: [],
+      };
+    }
+
+    console.log("delete ad rule status - true");
+    console.log("access_token", this.config.access_token);
+    console.log("id", id);
+    return {
+      isSuccess: true,
+      message: "Ad rule deleted",
       data: [],
     };
   }

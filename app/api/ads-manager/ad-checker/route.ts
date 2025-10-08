@@ -107,6 +107,7 @@ export const POST = async (request: NextRequest) => {
     const { data } = await graphApi.adChecker({
       id: ada.id,
       time_ranges: `[{"since":"${yesterdayAndToday.from}","until":"${yesterdayAndToday.to}"}]`,
+      account_status: ada.account_status,
     });
     ada.campaigns = data;
   }

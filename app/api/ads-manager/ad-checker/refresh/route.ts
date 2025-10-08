@@ -111,18 +111,14 @@ export const POST = async (request: NextRequest) => {
   for (const ada of AdAccounts) {
     const accountId = ada.id;
     const accountStatus = ada.account_status;
-    if (accountStatus !== "ACTIVE") {
-      ada.delete_ad_rules_status = "Unable to delete ad rules";
-    } else {
-      const { delete_ad_rules_status } = await graphApi.processDeleteAdRules({
-        id: accountId,
-      });
-      ada.delete_ad_rules_status = delete_ad_rules_status;
-    }
+    const { delete_ad_rules_status } = await graphApi.processDeleteAdRules({
+      id: accountId,
+    });
+    ada.delete_ad_rules_status = delete_ad_rules_status;
     const { data } = await graphApi.adChecker({
       id: accountId,
       time_ranges: `[{"since":"${yesterdayAndToday.from}","until":"${yesterdayAndToday.to}"}]`,
-      account_status: ada.account_status,
+      account_status: accountStatus,
     });
     ada.campaigns = data;
   }

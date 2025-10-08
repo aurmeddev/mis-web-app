@@ -9,7 +9,6 @@ import {
 import { ApiResponseProps } from "@/database/query";
 import { DomainManagerServerService } from "../../domains/DomainManagerServerService";
 import { format, parseISO } from "date-fns";
-import { ObjectUtils } from "@/lib/utils/object/ObjectUtils";
 
 type ResultProps = {
   data: any[];
@@ -561,7 +560,7 @@ export class FacebookAdsManagerServerService {
     const { id } = params;
     const searchParams: any = {
       access_token: this.config.access_token,
-      // fields: `id,name,status,evaluation_spec,execution_spec,schedule_spec`,
+      fields: `id,name`, // status,evaluation_spec,execution_spec,schedule_spec
     };
     const searchQueryParams = new SearchParamsManager().append(searchParams);
     const response = await fetch(
@@ -669,14 +668,23 @@ export class FacebookAdsManagerServerService {
     }
 
     for (const rule of getAdRulesResult.data) {
-      const deleteResult = await this.deleteAdRule({
-        id: rule.id,
-        status: "DELETED",
-      });
-      results.push(deleteResult.message);
+      const adRuleName = rule.name.toLowerCase();
+      // Skipped auto ad rule deletion for yinolink ad rule
+      if (!adRuleName.includes("yinolink")) {
+        const deleteResult = await this.deleteAdRule({
+          id: rule.id,
+          status: "DELETED",
+        });
+        results.push(deleteResult.message);
+      }
     }
 
     const newSetOfResults = [...new Set(results)]; // Removes duplicate values
+    if (newSetOfResults.length === 0) {
+      return {
+        delete_ad_rules_status: "No ad rules found",
+      };
+    }
     const hasError = newSetOfResults.includes("Facebook server error");
     return {
       delete_ad_rules_status: hasError

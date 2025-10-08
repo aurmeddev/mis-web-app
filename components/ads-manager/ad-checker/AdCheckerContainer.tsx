@@ -44,14 +44,22 @@ export type AdData = {
   spend: string | number;
   ad_checker_summary: Record<string, any>;
   update_campaign_delivery_status?: string;
+  delete_ad_rules_status: string;
 };
 
 type AdLinks = { image: string; message: string; title: string; url: string };
 
 export type RefreshStates = { canRefresh: boolean; isRefreshing: boolean };
+
 export type PauseStates = {
   canPause: boolean;
   isPausing: boolean;
+  isCountingDown: boolean;
+};
+
+export type DeleteRuleStates = {
+  canDelete: boolean;
+  isDeleting: boolean;
   isCountingDown: boolean;
 };
 
@@ -86,6 +94,12 @@ export function AdCheckerContainer({ searchParams, isSuperAdmin }: Props) {
   const [pauseStates, setPauseStates] = useState<PauseStates>({
     canPause: true,
     isPausing: false,
+    isCountingDown: false,
+  });
+
+  const [deleteStates, setDeleteStates] = useState<DeleteRuleStates>({
+    canDelete: true,
+    isDeleting: false,
     isCountingDown: false,
   });
 
@@ -196,6 +210,10 @@ export function AdCheckerContainer({ searchParams, isSuperAdmin }: Props) {
     });
   };
 
+  const handleRetryDeleteRule = async () => {
+    //tbc
+  };
+
   const handlePauseStatesChange = (isCountdownDone: boolean) => {
     startTransition(() => {
       setPauseStates((prev) => ({
@@ -234,6 +252,8 @@ export function AdCheckerContainer({ searchParams, isSuperAdmin }: Props) {
           links: [],
           ad_checker_summary: { code: 400, message: profile.status },
           targeting_geo: [],
+          update_campaign_delivery_status: "",
+          delete_ad_rules_status: "",
         });
 
         setTableData((prev) => [...prev, ...invalidProfiles]);
@@ -275,6 +295,7 @@ export function AdCheckerContainer({ searchParams, isSuperAdmin }: Props) {
             ad_checker_summary: ad.ad_checker_summary,
             targeting_geo: ad.targeting_countries || [],
             update_campaign_delivery_status: ad.update_campaign_delivery_status,
+            delete_ad_rules_status: ad.delete_ad_rules_status,
           };
         });
 
@@ -403,6 +424,9 @@ export function AdCheckerContainer({ searchParams, isSuperAdmin }: Props) {
             links,
             ad_checker_summary: ad.ad_checker_summary,
             targeting_geo: ad.targeting_countries || [],
+            update_campaign_delivery_status:
+              ad.update_campaign_delivery_status || "",
+            delete_ad_rules_status: ad.delete_ad_rules_status || "",
           };
         });
 
@@ -449,6 +473,7 @@ export function AdCheckerContainer({ searchParams, isSuperAdmin }: Props) {
         profile,
         spend,
         update_campaign_delivery_status,
+        delete_ad_rules_status,
       } = data;
 
       //get the highest length of links
@@ -485,6 +510,7 @@ export function AdCheckerContainer({ searchParams, isSuperAdmin }: Props) {
         delivery: delivery ? delivery : "",
         disable_reason,
         update_campaign_delivery_status,
+        delete_ad_rules_status,
         campaign_name,
         date_created: hasDateCreated ? created_at : "",
         daily_budget,
@@ -562,11 +588,13 @@ export function AdCheckerContainer({ searchParams, isSuperAdmin }: Props) {
           validatedProfiles={validatedProfiles}
         />
         <AdCheckerTable
+          onRetryDeleteRule={handleRetryDeleteRule}
           onPauseStatesChange={handlePauseStatesChange}
           onRefresh={handleRefresh}
           onViewCreatives={handleViewCreatives}
           onPauseSusCamp={handlePauseSuspiciousCampaign}
           tableData={tableData}
+          deleteRuleStates={deleteStates}
           refreshStates={refreshStates}
           pauseStates={pauseStates}
         />

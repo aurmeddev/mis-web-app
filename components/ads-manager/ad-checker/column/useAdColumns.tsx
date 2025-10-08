@@ -1,31 +1,42 @@
 import { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { ColumnDef } from "@tanstack/react-table";
-import { AdData, PauseStates, RefreshStates } from "../AdCheckerContainer";
+import {
+  AdData,
+  DeleteRuleStates,
+  PauseStates,
+  RefreshStates,
+} from "../AdCheckerContainer";
 import { AdCheckerAction } from "../action/AdCheckerAction";
 import { ProfileHeader } from "./header/ProfileHeader";
 import { DeliveryHeader } from "./header/DeliveryHeader";
+import { AdAccountHeader } from "./header/AdAccountHeader";
 
 type Props = {
   onPauseStatesChange: (isCountdownDone: boolean) => void;
   onViewCreatives: (adCreatives: any) => void;
   onRefresh: () => void;
   onPauseSusCamp: () => void;
+  onRetryDeleteRule: () => void;
   serverErrors: {
     hasAdCheckerSummaryFBServerError: boolean;
     hasUpdateCampDeliveryStatusError: boolean;
+    hasAdRulesStatusError: boolean;
   };
+  deleteRuleStates: DeleteRuleStates;
   refreshStates: RefreshStates;
   pauseStates: PauseStates;
 };
 
 export function useAdColumns({
+  deleteRuleStates,
   pauseStates,
   refreshStates,
   onPauseStatesChange,
   onViewCreatives,
   onRefresh,
   onPauseSusCamp,
+  onRetryDeleteRule,
   serverErrors,
 }: Props) {
   const profileHeader = useMemo(
@@ -55,7 +66,13 @@ export function useAdColumns({
       },
       {
         accessorKey: "ad_account",
-        header: "Ad Account",
+        header: () => (
+          <AdAccountHeader
+            hasAdAccountStatusError={serverErrors.hasAdRulesStatusError}
+            deleteRuleStates={deleteRuleStates}
+            onRetryDeleteRule={onRetryDeleteRule}
+          />
+        ),
         cell: ({ getValue }) => {
           const cellValue = getValue<string>();
           return <div className="whitespace-normal">{cellValue}</div>;

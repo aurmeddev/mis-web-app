@@ -6,13 +6,19 @@ import {
   useReactTable,
   VisibilityState,
 } from "@tanstack/react-table";
-import { AdData, PauseStates, RefreshStates } from "../AdCheckerContainer";
+import {
+  AdData,
+  DeleteRuleStates,
+  PauseStates,
+  RefreshStates,
+} from "../AdCheckerContainer";
 import { useAdColumns } from "../column/useAdColumns";
 import { useMemo, useState } from "react";
 import { Pagination } from "@/components/shared/pagination/tanstack/Pagination";
 import { TableWithResizableHeader } from "@/components/shared/table/with-resizable-header/TableWithResizableHeader";
 
 type Props = {
+  deleteRuleStates: DeleteRuleStates;
   pauseStates: PauseStates;
   refreshStates: RefreshStates;
   tableData: AdData[];
@@ -20,15 +26,18 @@ type Props = {
   onViewCreatives: (adCreatives: any) => void;
   onRefresh: () => void;
   onPauseSusCamp: () => void;
+  onRetryDeleteRule: () => void;
 };
 
 export function AdCheckerTable({
+  deleteRuleStates,
   pauseStates,
   refreshStates,
   onPauseStatesChange,
   onRefresh,
   onViewCreatives,
   onPauseSusCamp,
+  onRetryDeleteRule,
   tableData,
 }: Props) {
   const adCheckerSummaryFBServerError = useMemo(() => {
@@ -50,14 +59,25 @@ export function AdCheckerTable({
       )
       .filter((i) => i !== -1);
   }, [tableData]);
+  //delete_ad_rules_status
+  const deleteAdRulesStatusError = useMemo(() => {
+    return tableData
+      .map((item, index) =>
+        item.delete_ad_rules_status == "Facebook server error" ? index : -1
+      )
+      .filter((i) => i !== -1);
+  }, [tableData]);
 
   const hasAdCheckerSummaryFBServerError =
     adCheckerSummaryFBServerError.length > 0;
   const hasUpdateCampDeliveryStatusError =
     updateCampDeliveryStatusError.length > 0;
+  const hasAdRulesStatusError = deleteAdRulesStatusError.length > 0;
+
   const serverErrors = {
     hasAdCheckerSummaryFBServerError,
     hasUpdateCampDeliveryStatusError,
+    hasAdRulesStatusError,
   };
 
   const columns = useAdColumns({
@@ -66,6 +86,8 @@ export function AdCheckerTable({
     onViewCreatives,
     onRefresh,
     onPauseSusCamp,
+    onRetryDeleteRule,
+    deleteRuleStates,
     refreshStates,
     pauseStates,
   });

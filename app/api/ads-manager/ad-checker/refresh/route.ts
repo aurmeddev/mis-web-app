@@ -109,8 +109,13 @@ export const POST = async (request: NextRequest) => {
 
   const AdAccounts = data.filter((key) => key.id === payload.ad_account_id);
   for (const ada of AdAccounts) {
+    const accountId = ada.id;
+    const { delete_ad_rules_status } = await graphApi.processDeleteAdRules({
+      id: accountId,
+    });
+    ada.delete_ad_rules_status = delete_ad_rules_status;
     const { data } = await graphApi.adChecker({
-      id: ada.id,
+      id: accountId,
       time_ranges: `[{"since":"${yesterdayAndToday.from}","until":"${yesterdayAndToday.to}"}]`,
       account_status: ada.account_status,
     });

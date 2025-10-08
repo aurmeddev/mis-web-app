@@ -531,7 +531,7 @@ export class FacebookAdsManagerServerService {
     const { success } = await response.json();
 
     if (!success) {
-      console.log("update delivery status - success false");
+      console.log("update delivery status - false");
       console.log("access_token", this.config.access_token);
       console.log("id", id);
       return {
@@ -541,6 +541,9 @@ export class FacebookAdsManagerServerService {
       };
     }
 
+    console.log("update delivery status - true");
+    console.log("access_token", this.config.access_token);
+    console.log("id", id);
     return {
       isSuccess: true,
       message: "Delivery status updated",

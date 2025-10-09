@@ -424,7 +424,7 @@ export class FacebookAdsManagerServerService {
                 restOfAdsetsProps.ad_checker_status_details
               ).every((value) => value === "OK")
                 ? { code: 200, message: ["Everything is OK!"] } // Everything is OK!
-                : { code: 500, message: found_suspicious };
+                : { code: 451, message: found_suspicious }; // 451: Unavailable For Legal Reasons
 
               const created_at = formatDate(created_time) || "";
               const updated_at = formatDate(updated_time) || "";

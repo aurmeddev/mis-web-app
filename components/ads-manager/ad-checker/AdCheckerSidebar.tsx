@@ -3,7 +3,7 @@ import { useDebouncedCallback } from "use-debounce";
 import { ChangeEvent, startTransition, useState } from "react";
 import { Button } from "../../ui/button";
 import { Input } from "../../ui/input";
-import { Trash2, X } from "lucide-react";
+import { Info, Trash2 } from "lucide-react";
 import { ApProfilesService } from "@/lib/features/ap-profiles/ApProfilesService";
 import { Progress } from "../../ui/progress";
 import { ProfileMarketingApiAccessToken } from "./AdCheckerContainer";
@@ -12,11 +12,14 @@ import { toast } from "sonner";
 import { ValidatedProfilesList } from "../ValidatedProfilesList";
 import { PROFILE_BATCH } from "./constant";
 import { NetworkRequestUtils } from "@/lib/utils/network-request/NetworkRequestUtils";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { GlobalTooltip } from "@/components/shared/tooltip/GlobalTooltip";
+import { Label } from "@/components/ui/label";
 
 type Props = {
   isExportReady: boolean;
   isActionDisabled: boolean;
-  onExportData: () => void;
+  onExportData: (filename: string) => void;
   onSubmit: () => void;
   onSetValidatedProfiles: (
     data: ProfileMarketingApiAccessToken[],
@@ -39,6 +42,8 @@ export function AdCheckerSidebar({
   const [addedProfiles, setAddedProfiles] = useState<string[]>([]);
   const [progress, setProgress] = useState<number>(0);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [exportName, setExportName] = useState<string>("Agency");
+  // const [isSettingsShown, setIsSettingsShown] = useState<CheckedState>(false);
 
   const handleProfileChangeDebounce = useDebouncedCallback(
     async (data: string) => {
@@ -152,6 +157,10 @@ export function AdCheckerSidebar({
     return results;
   };
 
+  const handleExportData = () => {
+    onExportData(exportName);
+  };
+
   const currentProgressPosition = getPositionFromPercentage(
     progress,
     addedProfiles.length
@@ -204,6 +213,48 @@ export function AdCheckerSidebar({
             </Button>
           )}
         </div>
+
+        <div className="flex flex-col">
+          {/* <div className="flex gap-2">
+            <Checkbox
+              id="additional-settings"
+              onCheckedChange={(isChecked) => setIsSettingsShown(isChecked)}
+            />
+            <Label htmlFor="additional-settings">Additional Settings</Label>
+          </div> */}
+
+          {/* {isSettingsShown && (
+            // <Input
+            //   className="my-2"
+            //   onChange={(ev) => setExportName(ev.target.value)}
+            //   placeholder="Enter filename"
+            //   value={exportName}
+            // />
+            // <GlobalSelect onValueChange={} />
+            
+          )} */}
+
+          <div className="flex items-center justify-between">
+            <RadioGroup
+              className="flex my-2"
+              defaultValue="Agency"
+              onValueChange={(value) => setExportName(value)}
+            >
+              <div className="flex items-center gap-3">
+                <RadioGroupItem value="Agency" id="agency" />
+                <Label htmlFor="agency">Agency</Label>
+              </div>
+              <div className="flex items-center gap-3">
+                <RadioGroupItem value="VCC" id="vcc" />
+                <Label htmlFor="vcc">VCC</Label>
+              </div>
+            </RadioGroup>
+
+            <GlobalTooltip tooltipText="This selection controls the automatic file naming for your exported data.">
+              <Info className="text-muted-foreground" size={15} />
+            </GlobalTooltip>
+          </div>
+        </div>
         <Button
           className="cursor-pointer w-full"
           onClick={onSubmit}
@@ -219,10 +270,9 @@ export function AdCheckerSidebar({
             <div className="text-muted-foreground">
               Your Ad Checker Summary Report is ready to download.
             </div>
-
             <Button
               disabled={isActionDisabled}
-              onClick={onExportData}
+              onClick={handleExportData}
               className="cursor-pointer mt-2 w-full"
             >
               Download

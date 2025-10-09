@@ -1,4 +1,5 @@
 import { format } from "date-fns";
+import { toZonedTime } from "date-fns-tz";
 type DateItem = {
   date: string;
   [key: string]: any;
@@ -192,4 +193,12 @@ export class DatetimeUtils {
 
     return dateArray;
   }
+
+  getDatesInTimezone = () => {
+    const TARGET_TIMEZONE = "Asia/Manila"; // GMT+8 for the Philippines
+    // Convert the current UTC date to the target time zone's date.
+    // This creates a date object that correctly represents "today" at 00:00:00
+    // in the target timezone, regardless of the server's time.
+    return toZonedTime(new Date(), TARGET_TIMEZONE);
+  };
 }

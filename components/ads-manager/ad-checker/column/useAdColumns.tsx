@@ -96,6 +96,7 @@ export function useAdColumns({
 
           if (!cellValue || !("code" in cellValue)) return "";
           const isInternalServerError = cellValue?.code === 500;
+          const isSuspicious = cellValue?.code === 451;
           const isAdCheckerSummaryOk = cellValue?.code === 200;
           const isAdCheckerSummaryNoAdset = cellValue?.code === 404;
           const isAdCheckerSummaryProfileIssue = cellValue?.code === 400;
@@ -117,9 +118,20 @@ export function useAdColumns({
                           {adCheckerSummary}
                         </Badge>
                       ) : (
-                        <>• {adCheckerSummary} </>
+                        <>
+                          {isInternalServerError ? (
+                            <Badge
+                              className="uppercase"
+                              variant={"destructive"}
+                            >
+                              Facebook server error
+                            </Badge>
+                          ) : (
+                            <>• {adCheckerSummary}</>
+                          )}
+                        </>
                       )}
-                      {isInternalServerError && idx == totalMessageLength && (
+                      {isSuspicious && idx == totalMessageLength && (
                         <Badge className="uppercase" variant={"destructive"}>
                           Suspicious
                         </Badge>
@@ -171,8 +183,8 @@ export function useAdColumns({
           />
         ),
         cell: ({ row, getValue }) => {
-          const accountStatus = String(row.getValue("account_status"));
-          const disableReason = String(row.getValue("disable_reason"));
+          const accountStatus = String(row.getValue("account_status") || "");
+          const disableReason = String(row.getValue("disable_reason") || "");
           const updateCampDeliveryStatus = String(
             row.getValue("update_campaign_delivery_status") || ""
           );

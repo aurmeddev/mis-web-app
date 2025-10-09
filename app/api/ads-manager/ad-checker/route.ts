@@ -4,6 +4,7 @@ import {
 } from "@/lib/features/ads-manager/facebook/FacebookAdsManagerServerService";
 import { CryptoServerService } from "@/lib/features/security/cryptography/CryptoServerService";
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
+import { DatetimeUtils } from "@/lib/utils/date/DatetimeUtils";
 import { addDays, format } from "date-fns";
 import { NextResponse, NextRequest } from "next/server";
 export const POST = async (request: NextRequest) => {
@@ -53,10 +54,17 @@ export const POST = async (request: NextRequest) => {
     );
   }
 
+  const dateUtils = new DatetimeUtils();
+  const currentDateInTimezone = dateUtils.getDatesInTimezone();
   const yesterdayAndToday = {
-    from: payload.date_from || format(addDays(new Date(), -1), "yyyy-MM-dd"),
-    to: payload.date_to || format(addDays(new Date(), 0), "yyyy-MM-dd"),
+    from:
+      payload.date_from ||
+      format(addDays(currentDateInTimezone, -1), "yyyy-MM-dd"),
+    to:
+      payload.date_to ||
+      format(addDays(currentDateInTimezone, 0), "yyyy-MM-dd"),
   };
+  console.log("yesterdayAndToday", yesterdayAndToday);
 
   const decipher = new CryptoServerService();
   const decryptedData = await decipher.decrypt({

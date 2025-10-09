@@ -261,6 +261,9 @@ export function ManageApProfilesTableContainer({
         marketing_api_access_token:
           data[0].fb_account.marketing_api_access_token,
         app_secret_key: data[0].fb_account.app_secret_key,
+        recruited_by: {
+          full_name: data[0].fb_account.recruited_by?.full_name,
+        },
       },
       created_by: {
         full_name: createdBy.full_name,

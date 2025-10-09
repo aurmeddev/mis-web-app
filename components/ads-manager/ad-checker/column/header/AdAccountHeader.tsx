@@ -41,7 +41,7 @@ export function AdAccountHeader({
 
   return (
     <div className="flex items-center justify-between gap-2">
-      <div>Delivery</div>
+      <div>Ad Account</div>
       {hasAdAccountStatusError && isSuperAdmin && (
         <Badge
           className={cn(

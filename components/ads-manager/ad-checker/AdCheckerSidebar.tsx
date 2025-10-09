@@ -2,7 +2,6 @@
 import { useDebouncedCallback } from "use-debounce";
 import { ChangeEvent, startTransition, useState } from "react";
 import { Button } from "../../ui/button";
-import { Badge } from "../../ui/badge";
 import { Input } from "../../ui/input";
 import { Trash2, X } from "lucide-react";
 import { ApProfilesService } from "@/lib/features/ap-profiles/ApProfilesService";
@@ -10,8 +9,6 @@ import { Progress } from "../../ui/progress";
 import { ProfileMarketingApiAccessToken } from "./AdCheckerContainer";
 import { FacebookAdsManagerClientService } from "@/lib/features/ads-manager/facebook/FacebookAdsManagerClientService";
 import { toast } from "sonner";
-import { GlobalTooltip } from "../../shared/tooltip/GlobalTooltip";
-import { cn } from "@/lib/utils";
 import { ValidatedProfilesList } from "../ValidatedProfilesList";
 import { PROFILE_BATCH } from "./constant";
 import { NetworkRequestUtils } from "@/lib/utils/network-request/NetworkRequestUtils";
@@ -38,6 +35,7 @@ export function AdCheckerSidebar({
 }: Props) {
   const profilesService = new ApProfilesService();
   const networkRequestUtils = new NetworkRequestUtils();
+  const adsManagerApi = new FacebookAdsManagerClientService();
   const [addedProfiles, setAddedProfiles] = useState<string[]>([]);
   const [progress, setProgress] = useState<number>(0);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -90,7 +88,6 @@ export function AdCheckerSidebar({
       );
       onSetValidatedProfiles(filteredProfiles, true);
     } else {
-      // setExtractedProfiles([]);
       onSetValidatedProfiles([], true);
     }
   };
@@ -112,12 +109,9 @@ export function AdCheckerSidebar({
       if (data.length > 0) {
         accessToken = data[0]?.fb_account.marketing_api_access_token || null;
         if (accessToken) {
-          const adsManagerApi = new FacebookAdsManagerClientService();
-          const { isSuccess, data, message } =
-            await adsManagerApi.accessTokenDebugger({
-              access_token: accessToken,
-            });
-
+          const { isSuccess, data } = await adsManagerApi.accessTokenDebugger({
+            access_token: accessToken,
+          });
           if (!isSuccess) {
             status.push(data[0].status);
             canRequest = false;

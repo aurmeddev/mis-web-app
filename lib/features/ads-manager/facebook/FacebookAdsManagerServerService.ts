@@ -675,6 +675,7 @@ export class FacebookAdsManagerServerService {
     }
 
     for (const rule of getAdRulesResult.data) {
+      console.log("Deleting ad rule:", rule.name);
       const deleteResult = await this.deleteAdRule({
         id: rule.id,
         status: "DELETED",
@@ -689,13 +690,13 @@ export class FacebookAdsManagerServerService {
       };
     }
     const hasError = newSetOfResults.includes("Facebook server error");
-    const hasNoPermission = newSetOfResults.includes(
+    const hasNoPermissionError = newSetOfResults.includes(
       "No permission to delete ad rule"
     );
     return {
       delete_ad_rules_status: hasError
         ? "Facebook server error"
-        : hasNoPermission
+        : hasNoPermissionError
         ? "No permission to delete ad rule"
         : "Ad rule deleted",
     };

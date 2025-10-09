@@ -79,15 +79,16 @@ export const POST = async (request: NextRequest) => {
   });
   const { isSuccess, data, message } = await graphApi.getAdAccounts();
   if (!isSuccess) {
+    const data = graphApi.getFallbackResponseData({
+      code: 500,
+      status: "Facebook server error",
+      adSummaryLabel: "ad_checker_summary",
+    });
     return NextResponse.json(
       {
         isSuccess: false,
         message: message,
-        data: graphApi.getFallbackResponseData({
-          code: 500,
-          status: "Facebook server error",
-          adSummaryLabel: "ad_checker_summary",
-        }),
+        data: data[0].adsets,
       },
       { status: 500 }
     );

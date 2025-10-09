@@ -617,6 +617,13 @@ export class FacebookAdsManagerServerService {
 
     if (!response.ok) {
       const { error } = await response.json();
+      if (error?.message.includes("Permissions error")) {
+        return {
+          isSuccess: false,
+          message: "No permission to delete ad rule",
+          data: [],
+        };
+      }
       console.log("delete ad rule status error");
       console.log("access_token", this.config.access_token);
       console.log("id", id);
@@ -668,15 +675,11 @@ export class FacebookAdsManagerServerService {
     }
 
     for (const rule of getAdRulesResult.data) {
-      const adRuleName = rule.name.toLowerCase();
-      // Skipped auto ad rule deletion for yinolink ad rule
-      if (!adRuleName.includes("yinolink")) {
-        const deleteResult = await this.deleteAdRule({
-          id: rule.id,
-          status: "DELETED",
-        });
-        results.push(deleteResult.message);
-      }
+      const deleteResult = await this.deleteAdRule({
+        id: rule.id,
+        status: "DELETED",
+      });
+      results.push(deleteResult.message);
     }
 
     const newSetOfResults = [...new Set(results)]; // Removes duplicate values
@@ -686,9 +689,14 @@ export class FacebookAdsManagerServerService {
       };
     }
     const hasError = newSetOfResults.includes("Facebook server error");
+    const hasNoPermission = newSetOfResults.includes(
+      "No permission to delete ad rule"
+    );
     return {
       delete_ad_rules_status: hasError
         ? "Facebook server error"
+        : hasNoPermission
+        ? "No permission to delete ad rule"
         : "Ad rule deleted",
     };
   }

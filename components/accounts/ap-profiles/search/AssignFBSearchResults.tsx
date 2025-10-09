@@ -37,7 +37,8 @@ export function AssignFBSearchResults({
             >
               <div className="flex flex-col">
                 <div className="font-semibold text-sm">
-                  {item.fb_owner_name}
+                  {item.fb_owner_name}{" "}
+                  <span className="text-primary">{item.username}</span>
                 </div>
                 <p className="text-sm text-gray-500">{normalCase}</p>
               </div>

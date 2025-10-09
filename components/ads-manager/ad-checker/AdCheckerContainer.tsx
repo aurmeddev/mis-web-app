@@ -11,7 +11,8 @@ import { toast } from "sonner";
 import { useAdCheckerContext } from "@/context/ad-checker/AdCheckerContext";
 import { AD_CHECKER_BATCH } from "./constant";
 import { NetworkRequestUtils } from "@/lib/utils/network-request/NetworkRequestUtils";
-import { CloudAlert, Info } from "lucide-react";
+import { Info } from "lucide-react";
+import { format } from "date-fns";
 
 type Props = {
   searchParams: { page: number; limit: number } & GetAllFbAccountsProps;
@@ -457,7 +458,7 @@ export function AdCheckerContainer({ searchParams, isSuperAdmin }: Props) {
     setAdCreativeData(adCreatives);
   };
 
-  const handleExportAdChecker = async () => {
+  const handleExportAdChecker = async (filename: string) => {
     const defaultLinks = { image: "", message: "", title: "", url: "" };
     const fallbackLinks = [defaultLinks, defaultLinks, defaultLinks];
     const plainData = tableData.map((data: AdData) => {
@@ -536,15 +537,11 @@ export function AdCheckerContainer({ searchParams, isSuperAdmin }: Props) {
 
       const blob = new Blob([csv], { type: "text/csv" });
       const url = URL.createObjectURL(blob);
-      const todayDate = new Date().toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-      });
 
+      const todayDateTime = format(new Date(), "MM-dd-yyyy h-mm a");
       const a = document.createElement("a");
       a.href = url;
-      a.download = `exported-data-${todayDate.replaceAll("/", "-")}.csv`;
+      a.download = `${filename}-${todayDateTime}.csv`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

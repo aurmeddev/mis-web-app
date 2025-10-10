@@ -7,7 +7,7 @@ type BaseFacebookAdsManagerServiceProps = {
 
 type UpdateDeliveryStatusProps = {
   id: string; // Campaign ID or Ad Set ID
-  status?: "ACTIVE" | "PAUSED";
+  status: "ACTIVE" | "PAUSED";
 };
 type DeleteAdRuleProps = {
   id: string;

@@ -20,7 +20,7 @@ export const POST = async (request: NextRequest) => {
     access_token: string;
   } = {
     id: "",
-    status: undefined,
+    status: "PAUSED",
     access_token: "",
     // app_secret_key: undefined;
   };

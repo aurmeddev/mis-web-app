@@ -62,5 +62,5 @@ SELECT
   CASE
     WHEN fb_account_id = 0 THEN 'available'
     ELSE 'active'
-  END AS status
+  END AS 'status'
 FROM `Ap_Profiles` AS ap;

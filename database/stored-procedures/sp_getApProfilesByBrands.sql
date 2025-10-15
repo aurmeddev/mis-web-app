@@ -15,7 +15,7 @@ BEGIN
 
     -- Build the CTE (must be the first token in the final SQL)
     SET @cte_query = CONCAT(
-        'WITH BrandAggregations AS (',
+        'WITH ApProfilesByBrands AS (',
         '  SELECT',
         '    apa.ap_profile_id,',
         '    JSON_ARRAYAGG(',
@@ -32,8 +32,8 @@ BEGIN
         '), ',
         'TotalCount AS (',
         '  SELECT',
-        '  COUNT(batc.ap_profile_id) AS total_count',
-        '  FROM BrandAggregations AS batc',
+        '  COUNT(apb.ap_profile_id) AS total_count',
+        '  FROM ApProfilesByBrands AS apb',
         ') '
     );
 
@@ -44,17 +44,18 @@ BEGIN
         '  v_ap.fb_account_id,',
         '  v_ap.profile_name,',
         '  v_ap.remarks,',
-        '  COALESCE(ba.assigned_brands, JSON_ARRAY()) AS assigned_brands,',
+        '  COALESCE(apb.assigned_brands, JSON_ARRAY()) AS assigned_brands,',
         '  v_ap.fb_account,',
         '  v_ap.created_at,',
         '  v_ap.created_by,',
         '  v_ap.ap_created_by,',
         '  v_ap.is_active,',
         '  v_ap.status, ',
-        '  (SELECT total_count FROM TotalCount) AS total_count ',
+        '  tc.total_count ',
         'FROM `v_ApProfiles` AS v_ap ',
-        'INNER JOIN BrandAggregations AS ba ',
-        '  ON ba.ap_profile_id = v_ap.id ',
+        'INNER JOIN ApProfilesByBrands AS apb ',
+        '  ON apb.ap_profile_id = v_ap.id ',
+        'CROSS JOIN TotalCount AS tc ',
         'ORDER BY v_ap.id '
     );
 

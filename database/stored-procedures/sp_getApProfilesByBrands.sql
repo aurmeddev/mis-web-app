@@ -1,6 +1,6 @@
 DELIMITER //
 
-CREATE PROCEDURE sp_getApProfilesByBrandsV2 (
+CREATE PROCEDURE sp_getApProfilesByBrands (
     IN in_brand_ids VARCHAR(255),  -- e.g. '1,2,3'
     IN in_limit_raw VARCHAR(10),   -- e.g. '20' or ''
     IN in_offset_raw VARCHAR(10)   -- e.g. '0' or ''
@@ -27,9 +27,13 @@ BEGIN
         '    ) AS assigned_brands',
         '  FROM `Ap_Profiles_Access` AS apa',
         '  INNER JOIN `Brands` AS b ON b.id = apa.brand_id',
-        '  WHERE apa.is_active = 1',
-        '    AND apa.brand_id IN (', in_brand_ids, ')',
+        '  WHERE apa.brand_id IN (', in_brand_ids, ')',
         '  GROUP BY apa.ap_profile_id',
+        '), ',
+        'TotalCount AS (',
+        '  SELECT',
+        '  COUNT(batc.ap_profile_id) AS total_count',
+        '  FROM BrandAggregations AS batc',
         ') '
     );
 
@@ -46,10 +50,11 @@ BEGIN
         '  v_ap.created_by,',
         '  v_ap.ap_created_by,',
         '  v_ap.is_active,',
-        '  v_ap.status ',
+        '  v_ap.status, ',
+        '  (SELECT total_count FROM TotalCount) AS total_count ',
         'FROM `v_ApProfiles` AS v_ap ',
         'INNER JOIN BrandAggregations AS ba ',
-        '  ON ba.ap_profile_id = v_ap.id '
+        '  ON ba.ap_profile_id = v_ap.id ',
         'ORDER BY v_ap.id '
     );
 

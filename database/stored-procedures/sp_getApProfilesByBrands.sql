@@ -13,6 +13,9 @@ BEGIN
     SET in_limit  = IF(TRIM(in_limit_raw)  = '', NULL, CAST(in_limit_raw  AS UNSIGNED));
     SET in_offset = IF(TRIM(in_offset_raw) = '', NULL, CAST(in_offset_raw AS UNSIGNED));
 
+    -- Create safe tokens for string concatenation (avoid CONCAT NULL collapse)
+    SET @in_limit_token  := IF(in_limit  IS NULL, 'NULL', CAST(in_limit  AS CHAR));
+
     -- Build the CTE (must be the first token in the final SQL)
     SET @cte_query = CONCAT(
         'WITH ApProfilesByBrands AS (',
@@ -38,7 +41,7 @@ BEGIN
     );
 
     -- Build the main SELECT which references the CTE alias
-    SET @base_select = CONCAT(
+    SET @main_query = CONCAT(
         'SELECT',
         '  v_ap.id,',
         '  v_ap.fb_account_id,',
@@ -51,7 +54,8 @@ BEGIN
         '  v_ap.ap_created_by,',
         '  v_ap.is_active,',
         '  v_ap.status, ',
-        '  tc.total_count ',
+        '  tc.total_count, ',
+        '  IF(',@in_limit_token,' IS NOT NULL AND ',@in_limit_token,' > 0, CEIL(tc.total_count / ',@in_limit_token,'), 1) AS total_pages ',
         'FROM `v_ApProfiles` AS v_ap ',
         'INNER JOIN ApProfilesByBrands AS apb ',
         '  ON apb.ap_profile_id = v_ap.id ',
@@ -69,7 +73,7 @@ BEGIN
     END IF;
 
     -- Final SQL: CTE + SELECT + pagination
-    SET @sql := CONCAT(@cte_query, @base_select, @pagination);
+    SET @sql := CONCAT(@cte_query, @main_query, @pagination);
 
     PREPARE data_stmt FROM @sql;
     EXECUTE data_stmt;

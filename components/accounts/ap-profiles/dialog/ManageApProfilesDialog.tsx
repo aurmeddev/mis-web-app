@@ -1,3 +1,4 @@
+"use-client";
 import {
   Dialog,
   DialogContent,
@@ -21,11 +22,15 @@ import {
 import { SearchQuery } from "@/components/otp-generator/type";
 import { useDebouncedCallback } from "use-debounce";
 import { FbAccountsService } from "@/lib/features/fb-accounts/FbAccountsService";
-import { Loader2, X } from "lucide-react";
+import { Check, Loader2, TriangleAlert, X } from "lucide-react";
 import { ApProfilesService } from "@/lib/features/ap-profiles/ApProfilesService";
 import { AssignFBSearchResults } from "../search/AssignFBSearchResults";
 import { SearchWrapper } from "../search/SearchWrapper";
-import { getTokens } from "../table/ManageApProfilesTableContainer";
+import {
+  AccessTokenState,
+  getTokens,
+} from "../table/ManageApProfilesTableContainer";
+import { cn } from "@/lib/utils";
 
 type ManageApProfilesDialogProps = {
   form: any;
@@ -41,6 +46,8 @@ type ManageApProfilesDialogProps = {
   }) => void;
   isActionDisabled: boolean;
   hasAccessToMarketingApiAccessToken: boolean;
+  accessTokenState: AccessTokenState;
+  onAccessTokenStateChange: (token: string) => void;
 };
 
 export function ManageApProfilesDialog({
@@ -54,6 +61,8 @@ export function ManageApProfilesDialog({
   handleModifyEditingData,
   isActionDisabled,
   hasAccessToMarketingApiAccessToken,
+  accessTokenState,
+  onAccessTokenStateChange,
 }: ManageApProfilesDialogProps) {
   const fbAccountsService = new FbAccountsService();
   const profilesService = new ApProfilesService();
@@ -98,6 +107,13 @@ export function ManageApProfilesDialog({
       setIsSearching(false);
     });
   }, 500);
+
+  const handleAccessTokenStateChange = (
+    ev: ChangeEvent<HTMLTextAreaElement>
+  ) => {
+    handleInputChange("marketing_api_access_token", ev.target.value);
+    onAccessTokenStateChange(ev.target.value);
+  };
 
   const handleSearchQueryChange = (ev: ChangeEvent<HTMLInputElement>) => {
     setSearchQuery({ ...searchQuery, query: ev.target.value });
@@ -302,16 +318,43 @@ export function ManageApProfilesDialog({
                 </Label>
                 <Textarea
                   id="marketing_api_access_token"
-                  className="border h-8 px-2 py-1 rounded w-full"
+                  className={cn("border h-fit px-2 py-1 rounded w-full")}
                   disabled={isActionDisabled}
                   value={form.marketing_api_access_token || ""}
-                  onChange={(e) =>
-                    handleInputChange(
-                      "marketing_api_access_token",
-                      e.target.value
-                    )
-                  }
+                  onChange={handleAccessTokenStateChange}
                 />
+                {accessTokenState.isChecking && (
+                  <div className="flex gap-2 items-center text-sm">
+                    <Loader2 className="animate-spin w-4" />
+                    <div>Checking access token</div>
+                  </div>
+                )}
+                {accessTokenState.title && !accessTokenState.isChecking && (
+                  <div
+                    className={cn(
+                      "flex gap-2 text-sm",
+                      accessTokenState.isValid
+                        ? "items-center text-green-500"
+                        : "bg-red-50 p-2 rounded text-red-500"
+                    )}
+                  >
+                    <div className="flex-shrink-0">
+                      {accessTokenState.isValid ? (
+                        <div className="bg-green-500 rounded-full">
+                          <Check className="text-white h-4 w-4" />
+                        </div>
+                      ) : (
+                        <TriangleAlert className="w-5" />
+                      )}
+                    </div>
+                    <div>
+                      <div className="font-semibold">
+                        {accessTokenState.title}
+                      </div>
+                      <div>{accessTokenState.description}</div>
+                    </div>
+                  </div>
+                )}
               </div>
             </>
           )}

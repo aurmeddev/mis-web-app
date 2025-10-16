@@ -23,6 +23,7 @@ import { Profile } from "../type";
 import { PaginationProps } from "@/lib/utils/pagination/type/PaginationProps";
 import { SearchParamsManager } from "@/lib/utils/search-params/SearchParamsManager";
 import { CryptoClientService } from "@/lib/features/security/cryptography/CryptoClientService";
+import { FacebookAdsManagerClientService } from "@/lib/features/ads-manager/facebook/FacebookAdsManagerClientService";
 
 type ManageApProfilesTableContainerProps = {
   response: ApiResponseProps & {
@@ -41,12 +42,23 @@ type ProfileForm = {
   remarks?: string;
 };
 
+export type AccessTokenState = {
+  isChecking?: boolean;
+  isValid: boolean;
+  title: string;
+  description: string;
+};
+
+export type ProfileEditState = { id: number | null; state: string };
+
 export function ManageApProfilesTableContainer({
   response,
   hasAccessToMarketingApiAccessToken,
 }: ManageApProfilesTableContainerProps) {
   const profilesService = new ApProfilesService();
   const searchParamsManager = new SearchParamsManager();
+  const adsManagerApi = new FacebookAdsManagerClientService();
+  const decipher = new CryptoClientService();
 
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -76,11 +88,21 @@ export function ManageApProfilesTableContainer({
   const [canSave, setCanSave] = useState(false);
   const [isSubmitInProgress, setIsSubmitInProgress] = useState(false);
   const [showResults, setShowResults] = useState(false);
+  const [profileEditState, setProfileEditState] = useState<ProfileEditState>({
+    id: null,
+    state: "",
+  });
   const [searchQuery, setSearchQuery] = useState<SearchQuery>({
     query: "",
     isSearching: false,
     result: { data: [], isSuccess: false, message: "" },
     selectedResult: null,
+  });
+  const [accessTokenState, setAccessTokenState] = useState<AccessTokenState>({
+    isChecking: false,
+    isValid: false,
+    title: "",
+    description: "",
   });
 
   useEffect(() => {
@@ -149,6 +171,61 @@ export function ManageApProfilesTableContainer({
       ...prevState,
       ...params,
     }));
+  };
+
+  const handleAccessTokenRequest = async (token: string) => {
+    if (/^\s+$/.test(token) || !token) {
+      return {
+        isSuccess: false,
+        data: "",
+        message: "",
+      };
+    }
+    setAccessTokenState((prevState) => ({ ...prevState, isChecking: true }));
+    const encryptor = await decipher.encrypt({ data: token.trim() });
+    const { isSuccess, data, message } =
+      await adsManagerApi.accessTokenDebugger({
+        access_token: encryptor.encryptedData,
+      });
+
+    if (!isSuccess) {
+      setCanSave(false);
+    } else {
+      setCanSave(true);
+    }
+
+    const title = isSuccess ? message : data[0].status;
+    const description = !isSuccess ? message : "";
+    setAccessTokenState({
+      isChecking: false,
+      isValid: isSuccess,
+      title,
+      description,
+    });
+
+    return response;
+  };
+
+  const handleAccessTokenDebounce = useDebouncedCallback(
+    async (token: string) => {
+      setCanSave(false);
+
+      await handleAccessTokenRequest(token);
+    },
+    500
+  );
+
+  const handleAccessTokenStateChange = (token: string) => {
+    if (/^\s+$/.test(token) || !token) {
+      setAccessTokenState({
+        isChecking: false,
+        isValid: false,
+        title: "",
+        description: "",
+      });
+      return;
+    }
+    handleAccessTokenDebounce(token);
   };
 
   const buildPayload = (
@@ -292,19 +369,6 @@ export function ManageApProfilesTableContainer({
     response: ApiResponseProps,
     payload: any
   ) => {
-    // const tokens = await getTokens({
-    //   app_secret_key: payload.app_secret_key,
-    //   marketing_api_access_token: payload.marketing_api_access_token,
-    //   type: "encrypt",
-    // });
-
-    // const marketingApiAccessToken = tokens["marketing_api_access_token"]
-    //   ? tokens["marketing_api_access_token"]
-    //   : form.marketing_api_access_token;
-    // const appSecretKey = tokens["app_secret_key"]
-    //   ? tokens["app_secret_key"]
-    //   : form.app_secret_key;
-
     setTableData((prevData: Profile[]) =>
       prevData.map((item) => {
         const payloadLength = Object.keys(payload).length;
@@ -328,8 +392,8 @@ export function ManageApProfilesTableContainer({
           fbAccount = {
             ...fbAccount,
             marketing_api_access_token:
-              response.data[0].marketing_api_access_token,
-            app_secret_key: response.data[0].app_secret_key,
+              response.data[0].fb_account.marketing_api_access_token,
+            app_secret_key: response.data[0].fb_account.app_secret_key,
           };
         }
 
@@ -361,6 +425,7 @@ export function ManageApProfilesTableContainer({
     ) as any;
 
     let tokens: any = {};
+    setProfileEditState({ id, state: "loading" });
 
     if (selectedProfile.fb_account) {
       tokens = await getTokens({
@@ -369,6 +434,9 @@ export function ManageApProfilesTableContainer({
           selectedProfile.fb_account.marketing_api_access_token,
         type: "decrypt",
       });
+
+      await handleAccessTokenRequest(tokens.marketing_api_access_token || "");
+      setOpen(true);
     }
 
     setEditingData({
@@ -381,8 +449,8 @@ export function ManageApProfilesTableContainer({
         ...selectedProfile,
         ...tokens,
       });
-      setOpen(true);
     }
+    setProfileEditState({ id: null, state: "" });
   };
 
   const handlePagination = (page: number, limit: number) => {
@@ -428,6 +496,12 @@ export function ManageApProfilesTableContainer({
       app_secret_key: "",
       remarks: "",
     });
+    setAccessTokenState({
+      isChecking: false,
+      isValid: false,
+      title: "",
+      description: "",
+    });
   };
 
   useEffect(() => {
@@ -452,6 +526,8 @@ export function ManageApProfilesTableContainer({
         handleModifyEditingData={handleModifyEditingData}
         isActionDisabled={isSubmitInProgress}
         hasAccessToMarketingApiAccessToken={hasAccessToMarketingApiAccessToken}
+        accessTokenState={accessTokenState}
+        onAccessTokenStateChange={handleAccessTokenStateChange}
       />
       <div className="flex justify-start gap-2 2xl:w-1/3 mt-4 w-[40%]">
         <Button
@@ -488,6 +564,7 @@ export function ManageApProfilesTableContainer({
         <ManageApProfilesTable
           data={tableData}
           handleEditChange={handleEditChange}
+          profileEditState={profileEditState}
         />
 
         <Pagination

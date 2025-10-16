@@ -180,6 +180,7 @@ export function ManageApProfilesDialog({
       setShowResults(false);
       setIsExisting(false);
     });
+    onAccessTokenStateChange("");
   };
 
   useEffect(() => {

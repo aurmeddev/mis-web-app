@@ -6,16 +6,19 @@ import {
   CircleFadingPlus,
   CircleStop,
   FileText,
+  Loader2,
   Pencil,
   SearchX,
   User2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/shared/table/header/Header";
+import { ProfileEditState } from "./ManageApProfilesTableContainer";
 
 type UserManagementTableProps = {
   data: any;
   handleEditChange: (id: number | null) => void;
+  profileEditState: ProfileEditState;
 };
 
 function BadgeStatus({ status }: { status: string }) {
@@ -46,6 +49,7 @@ function BadgeStatus({ status }: { status: string }) {
 export function ManageApProfilesTable({
   data,
   handleEditChange,
+  profileEditState,
 }: UserManagementTableProps) {
   const tableHeaders = [
     { label: "#", className: "border-r text-sm" },
@@ -108,6 +112,9 @@ export function ManageApProfilesTable({
           const fbAccount = rowData.fb_account;
           const hasFbAccountNames =
             "fb_owner_name" in fbAccount || "username" in fbAccount;
+          const isProfileRowLoading =
+            profileEditState.id == rowData.id &&
+            profileEditState.state == "loading";
           return (
             <TableRow key={idx}>
               <TableCell className="border-r font-medium text-sm max-w-[10%]">
@@ -170,10 +177,16 @@ export function ManageApProfilesTable({
                 <div className="flex justify-center gap-2 text-center">
                   <Button
                     className="cursor-pointer h-7 py-0 px-3"
+                    disabled={profileEditState.state == "loading"}
                     variant="outline"
                     onClick={() => handleEditChange(rowData.id)}
                   >
-                    <Pencil style={{ height: "14px", width: "14px" }} /> Edit
+                    {isProfileRowLoading ? (
+                      <Loader2 className="animate-spin" />
+                    ) : (
+                      <Pencil style={{ height: "14px", width: "14px" }} />
+                    )}{" "}
+                    Edit
                   </Button>
                 </div>
               </TableCell>

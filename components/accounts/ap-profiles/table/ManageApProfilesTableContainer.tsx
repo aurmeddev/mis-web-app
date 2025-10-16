@@ -434,9 +434,7 @@ export function ManageApProfilesTableContainer({
           selectedProfile.fb_account.marketing_api_access_token,
         type: "decrypt",
       });
-
-      await handleAccessTokenRequest(tokens.marketing_api_access_token || "");
-      setOpen(true);
+      handleAccessTokenRequest(tokens.marketing_api_access_token || "");
     }
 
     setEditingData({
@@ -449,6 +447,7 @@ export function ManageApProfilesTableContainer({
         ...selectedProfile,
         ...tokens,
       });
+      setOpen(true);
     }
     setProfileEditState({ id: null, state: "" });
   };
@@ -509,6 +508,12 @@ export function ManageApProfilesTableContainer({
       setCanSave(false);
       startTransition(() => {
         setEditingData({});
+        setAccessTokenState({
+          isChecking: false,
+          isValid: false,
+          title: "",
+          description: "",
+        });
       });
     }
   }, [open]);

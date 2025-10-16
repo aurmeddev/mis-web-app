@@ -76,7 +76,7 @@ export class UsersManageServerService {
     }`;
 
     const paginationQueryString = `${hasPagination ? " LIMIT ? OFFSET ?" : ""}`;
-    const queryString = `SELECT * FROM v_UserAccess ${conditionQuery} ${paginationQueryString}`;
+    const queryString = `SELECT * FROM v_UserAccessV2 ${conditionQuery} ${paginationQueryString}`;
 
     let queryValues: string[] = [];
     const hasFilter = filterQuery?.queryValues?.length > 0;
@@ -117,7 +117,7 @@ export class UsersManageServerService {
       if (hasPagination) {
         // Get the total count of rows for pagination
         const rows: any = await query({
-          query: `SELECT COUNT(*) AS total_count FROM v_UserAccess ${conditionQuery}`,
+          query: `SELECT COUNT(*) AS total_count FROM v_UserAccessV2 ${conditionQuery}`,
           values: hasFilter ? filterQuery.queryValues : [],
         });
 

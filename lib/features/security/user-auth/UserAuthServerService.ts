@@ -17,7 +17,7 @@ export class UserAuthServerService {
       },
       operator: "equals",
     });
-    const queryString = `SELECT * FROM v_UserAccess WHERE ${columns} LIMIT 1;`;
+    const queryString = `SELECT * FROM v_UserAccessV2 WHERE ${columns} LIMIT 1;`;
     console.log(queryString);
     console.log(values);
     try {

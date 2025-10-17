@@ -194,11 +194,29 @@ export class DatetimeUtils {
     return dateArray;
   }
 
+  // Returns the current date and time in the specified timezone
   getDatesInTimezone = () => {
     const TARGET_TIMEZONE = "Asia/Manila"; // GMT+8 for the Philippines
     // Convert the current UTC date to the target time zone's date.
     // This creates a date object that correctly represents "today" at 00:00:00
     // in the target timezone, regardless of the server's time.
     return toZonedTime(new Date(), TARGET_TIMEZONE);
+  };
+
+  getMinuteDifference = (unixTimestampInSeconds: any) => {
+    // Convert the input timestamp from seconds to milliseconds (required by Date).
+    const targetTimeMs = unixTimestampInSeconds * 1000;
+
+    // Get the current time in milliseconds.
+    const currentTimeMs = this.getDatesInTimezone().getTime();
+
+    // Calculate the absolute difference in milliseconds.
+    const differenceMs = Math.abs(currentTimeMs - targetTimeMs);
+
+    // Convert milliseconds to minutes.
+    // 1 minute = 60 seconds * 1000 milliseconds = 60,000 milliseconds.
+    const differenceMinutes = differenceMs / 60000;
+
+    return Math.floor(differenceMinutes);
   };
 }

@@ -28,9 +28,10 @@ export const UserActivityContextProvider = ({
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
   const isPathnameNotLoginPage = pathname !== "/login";
+
+  const auth = new UserAuthManager(new UserAuthClientService());
   const keepSessionAlive = useDebouncedCallback(async () => {
     if (isPathnameNotLoginPage && isOpen === false) {
-      const auth = new UserAuthManager(new UserAuthClientService());
       const { isSuccess } = await auth.keepSessionAlive();
       if (!isSuccess) {
         setIsOpen(true);
@@ -41,6 +42,11 @@ export const UserActivityContextProvider = ({
 
   useEffect(() => {
     window.addEventListener("mousemove", keepSessionAlive);
+
+    return () => {
+      // Remove the listener when the component unmounts
+      window.removeEventListener("mousemove", keepSessionAlive);
+    };
   }, []);
 
   return (

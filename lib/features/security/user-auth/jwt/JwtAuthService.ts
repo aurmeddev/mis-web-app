@@ -1,4 +1,5 @@
 import { isEnvProduction } from "@/lib/env/isEnvProduction";
+import { DatetimeUtils } from "@/lib/utils/date/DatetimeUtils";
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 
@@ -33,6 +34,8 @@ export async function getSession() {
 }
 
 export async function refreshSession() {
+  const dateUtils = new DatetimeUtils();
+  const currentDateInTimezone = dateUtils.getDatesInTimezone();
   const cookieStore = await cookies();
   const session = cookieStore.get("session")?.value;
 
@@ -42,7 +45,9 @@ export async function refreshSession() {
 
   // Refresh the session so it doesn't expire
   const parsed = await decrypt(session);
-  parsed.expires = new Date(Date.now() + expirationTime * 1000);
+  parsed.expires = new Date(
+    currentDateInTimezone.getTime() + expirationTime * 1000
+  );
   cookieStore.set({
     name: "session",
     value: await encrypt(parsed),

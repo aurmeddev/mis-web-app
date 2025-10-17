@@ -1,8 +1,6 @@
 import { query } from "@/database/query";
 import { cookies } from "next/headers";
 import { UserLoginParams, VerifyUserIpParams } from "./type/UserAuthProps";
-import { CryptoUtilsManager } from "../cryptography/util/CryptoUtilsManager";
-import { CryptoUtilsServerService } from "../cryptography/util/CryptoUtilsServerService";
 import { UserAccessControlService } from "./util/UserAccessControlService";
 import { MySqlUtils } from "@/lib/utils/mysql/MySqlUtils";
 import { CryptoServerService } from "../cryptography/CryptoServerService";
@@ -84,9 +82,7 @@ export class UserAuthServerService {
         }
       }
 
-      const data = await processUserSessionDataEncryption(
-        validateUserEmailResult
-      );
+      const data = await handleSessionDataEncryption(validateUserEmailResult);
       const isUserExists = data.length > 0;
       console.log("is_active:", data[0].is_active);
       return {
@@ -172,17 +168,32 @@ export class UserAuthServerService {
   }
 }
 
-const processUserSessionDataEncryption = async (session: any) => {
-  const decipher = new CryptoUtilsManager(new CryptoUtilsServerService());
-  for (const user of session) {
-    const decryptedUserId = (
-      await decipher.cryptoArrayString({
-        data: String(user.id),
-        isEncrypt: true,
-      })
-    ).string();
-    user.id = decryptedUserId;
-  }
+const encryptData = async (data: string) => {
+  const cipher = new CryptoServerService();
+  return await cipher.encrypt({
+    data: data,
+  });
+};
 
-  return session;
+const handleSessionDataEncryption = async (session: any) => {
+  // Encrypt the user ID and assigned brands
+  const { id, assigned_brands, ...rest } = session[0];
+  const { isSuccess, encryptedData, message } = await encryptData(String(id));
+  const encryptedUserId = isSuccess ? encryptedData : message;
+  let encryptedUserAccessToken = "";
+  if (assigned_brands.length > 0) {
+    const userAccess = assigned_brands
+      .map((prop: any) => String(prop.brand_id))
+      .join();
+    const { isSuccess, encryptedData, message } = await encryptData(userAccess);
+    encryptedUserAccessToken = isSuccess ? encryptedData : message;
+  }
+  return [
+    {
+      id: encryptedUserId,
+      user_access_token: encryptedUserAccessToken,
+      assigned_brands,
+      ...rest,
+    },
+  ];
 };

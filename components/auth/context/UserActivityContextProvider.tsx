@@ -43,10 +43,10 @@ export const UserActivityContextProvider = ({
   useEffect(() => {
     window.addEventListener("mousemove", keepSessionAlive);
 
-    return () => {
-      // Remove the listener when the component unmounts
-      window.removeEventListener("mousemove", keepSessionAlive);
-    };
+    // return () => {
+    //   // Remove the listener when the component unmounts
+    //   window.removeEventListener("mousemove", keepSessionAlive);
+    // };
   }, []);
 
   return (

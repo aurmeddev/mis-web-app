@@ -20,35 +20,38 @@ import {
 import { DateRange } from "react-day-picker";
 import { DateRangeStateProps } from "./datepicker.type";
 import { withOptionalDefaultWidth } from "@/lib/utils/select/SelectHelpers";
+import { DatetimeUtils } from "@/lib/utils/date/DatetimeUtils";
 
+const dateUtils = new DatetimeUtils();
+const currentDateInTimezone = dateUtils.getDatesInTimezone(); // Replace new Date() object for date and timezone accuracy.
 export const datePresets: Record<string, { from: Date; to: Date }> = {
   yesterday: {
-    from: addDays(new Date(), -1),
-    to: addDays(new Date(), -1),
+    from: addDays(currentDateInTimezone, -1),
+    to: addDays(currentDateInTimezone, -1),
   },
   "2-days-ago": {
-    from: addDays(new Date(), -2),
-    to: addDays(new Date(), -1),
+    from: addDays(currentDateInTimezone, -2),
+    to: addDays(currentDateInTimezone, -1),
   },
   "this-month": {
-    from: startOfMonth(new Date()),
-    to: subDays(new Date(), 1),
+    from: startOfMonth(currentDateInTimezone),
+    to: subDays(currentDateInTimezone, 1),
   },
   "last-month": {
-    from: startOfMonth(subMonths(new Date(), 1)),
-    to: endOfMonth(subMonths(new Date(), 1)),
+    from: startOfMonth(subMonths(currentDateInTimezone, 1)),
+    to: endOfMonth(subMonths(currentDateInTimezone, 1)),
   },
   "last-3-months": {
-    from: startOfMonth(subMonths(new Date(), 3)),
-    to: subDays(new Date(), 1),
+    from: startOfMonth(subMonths(currentDateInTimezone, 3)),
+    to: subDays(currentDateInTimezone, 1),
   },
   "last-6-months": {
-    from: startOfMonth(subMonths(new Date(), 6)),
-    to: subDays(new Date(), 1),
+    from: startOfMonth(subMonths(currentDateInTimezone, 6)),
+    to: subDays(currentDateInTimezone, 1),
   },
   "this-year": {
-    from: startOfYear(new Date()),
-    to: subDays(new Date(), 1),
+    from: startOfYear(currentDateInTimezone),
+    to: subDays(currentDateInTimezone, 1),
   },
 };
 

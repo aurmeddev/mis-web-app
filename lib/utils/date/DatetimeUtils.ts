@@ -72,11 +72,11 @@ export class DatetimeUtils {
   };
 
   getUnixTimestamp = () => {
-    return Math.floor(Date.now() / 1000);
+    return Math.floor(this.getDatesInTimezone().getTime() / 1000);
   };
 
   getCurrentDate = () => {
-    return new Date();
+    return this.getDatesInTimezone();
   };
 
   isValidYMDFormat(dateString: string): boolean {

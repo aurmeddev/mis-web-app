@@ -1,7 +1,6 @@
 "use client";
 
 import { Check, ChevronsUpDown } from "lucide-react";
-
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,34 +16,32 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { SelectOptions } from "./type";
 
 type Props = {
   className?: string;
-  onValueChange: (value: string) => void;
+  isDisabled?: boolean;
   options: SelectOptions[];
+  onSelectedValue: (value: string) => void;
   placeholder: string;
+  value: string;
 };
 
 export function GlobalComboBoxSelect({
   className,
-  onValueChange,
+  isDisabled,
   options,
   placeholder,
+  onSelectedValue,
+  value,
 }: Props) {
   const [open, setOpen] = useState(false);
-  const [value, setValue] = useState("");
-
-  useEffect(() => {
-    if (!value) return;
-    onValueChange(value);
-  }, [value]);
-
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
+          disabled={isDisabled}
           variant="outline"
           role="combobox"
           aria-expanded={open}
@@ -73,7 +70,7 @@ export function GlobalComboBoxSelect({
                   key={option.value}
                   value={option.value}
                   onSelect={(currentValue) => {
-                    setValue(currentValue === value ? "" : currentValue);
+                    onSelectedValue(currentValue === value ? "" : currentValue);
                     setOpen(false);
                   }}
                 >

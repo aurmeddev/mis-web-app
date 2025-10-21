@@ -22,12 +22,14 @@ import { GlobalComboBoxSelect as SelectMediaBuyer } from "@/components/shared/se
 import { SelectOptions } from "@/components/shared/select/type";
 import { ProfileMarketingApiAccessToken } from "../ad-checker/AdCheckerContainer";
 import { ValidatedProfilesList } from "../ValidatedProfilesList";
+import { AdInsightsFilters } from "./AdInsightsContainer";
 
 type Props = {
   brands: SelectOptions[];
   geos: SelectOptions[];
   mediaBuyers: SelectOptions[];
   dateRange: DateRange | undefined;
+  filters: AdInsightsFilters;
   isActionDisabled: boolean;
   isFilterShown: boolean;
   onCheckedChange: (checked: CheckedState) => void;
@@ -49,6 +51,7 @@ export function AdInsightsSidebar({
   geos,
   mediaBuyers,
   dateRange,
+  filters,
   isActionDisabled,
   isFilterShown,
   onCheckedChange,
@@ -243,26 +246,30 @@ export function AdInsightsSidebar({
       {isFilterShown && (
         <div className="flex flex-col space-y-2">
           <SelectBrand
-            onValueChange={(value) => onValueChange(value, "brand")}
             options={brands}
+            onSelectedValue={(value) => onValueChange(value, "brand")}
             placeholder="Select brand"
+            value={filters.brand}
           />
           <SelectGeo
-            onValueChange={(value) => onValueChange(value, "geo")}
             options={geos}
+            onSelectedValue={(value) => onValueChange(value, "geo")}
             placeholder="Select geo"
+            value={filters.geo}
           />
           <SelectMediaBuyer
-            onValueChange={(value) => onValueChange(value, "mediaBuyer")}
             options={mediaBuyers}
+            onSelectedValue={(value) => onValueChange(value, "mediaBuyer")}
             placeholder="Select media buyer"
+            value={filters.mediaBuyer}
           />
           <SelectBudgetOptimization
-            onValueChange={(value) =>
+            options={budgetOptimizationList}
+            onSelectedValue={(value) =>
               onValueChange(value, "budgetOptimization")
             }
-            options={budgetOptimizationList}
             placeholder="Select budget optimization"
+            value={filters.budgetOptimization}
           />
         </div>
       )}

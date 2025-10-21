@@ -1,7 +1,6 @@
 "use client";
 import { GetAllFbAccountsProps } from "@/lib/features/fb-accounts/type/FbAccountsProps";
 import { AdInsightsTable } from "./table/AdInsightsTable";
-import { useState } from "react";
 import { FacebookAdsManagerClientService } from "@/lib/features/ads-manager/facebook/FacebookAdsManagerClientService";
 import { AdCheckerProgressDialog } from "./dialog/AdInsightsProgressDialog";
 import { AdInsightsSidebar } from "./AdInsightsSidebar";
@@ -14,7 +13,8 @@ import { ProfileMarketingApiAccessToken } from "../ad-checker/AdCheckerContainer
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { CheckedState } from "@radix-ui/react-checkbox";
-import { Json2CsvManager } from "@/lib/utils/converter/Json2CsvManager";
+import { useState } from "react";
+// import { Json2CsvManager } from "@/lib/utils/converter/Json2CsvManager";
 
 type Props = {
   brands: SelectOptions[];
@@ -78,7 +78,7 @@ export function AdInsightsContainer({
   const dateFromSearchParam = searchParams.date_from;
   const dateToSearchParam = searchParams.date_to;
   const fbAdsManagerService = new FacebookAdsManagerClientService();
-  const jsonCsvManager = new Json2CsvManager();
+  // const jsonCsvManager = new Json2CsvManager();
   const dateUtil = new DatetimeUtils();
 
   const [isActionDisabled, setIsActionDisabled] = useState(false);
@@ -345,6 +345,7 @@ export function AdInsightsContainer({
           geos={geos}
           mediaBuyers={mediaBuyers}
           dateRange={dateRange}
+          filters={filters}
           onSetDateRange={handleOnSetDateRange}
           isActionDisabled={isActionDisabled}
           isFilterShown={isFilterShown}

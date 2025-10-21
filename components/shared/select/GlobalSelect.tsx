@@ -10,18 +10,26 @@ import { SelectOptions } from "./type";
 
 type Props = {
   className?: string;
+  isDisabled?: boolean;
   options: SelectOptions[];
-  onValueChange: (value: string) => void;
+  onSelectedValue: (value: string) => void;
   placeholder: string;
+  value: string;
 };
 export function GlobalSelect({
   className,
-  onValueChange,
+  isDisabled,
   options,
+  onSelectedValue,
   placeholder,
+  value,
 }: Props) {
   return (
-    <Select onValueChange={onValueChange}>
+    <Select
+      value={String(value)}
+      onValueChange={(value) => onSelectedValue(value)}
+      disabled={isDisabled}
+    >
       <SelectTrigger className={cn(className, "w-full")}>
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>

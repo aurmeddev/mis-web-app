@@ -28,13 +28,13 @@ SELECT
     fb.username
   ) AS base_search_keyword,
   CASE
-    WHEN COALESCE(ac.ap_count, 0) = 0 AND fb.fb_account_quality_type_id = 0 THEN '-'
+    WHEN ap.id IS NULL AND fb.fb_account_quality_type_id = 0 THEN '-'
     WHEN fb.fb_account_quality_type_id = 0 THEN 'rejected'
     WHEN fb.fb_account_quality_type_id = 1 THEN 'passed'
     ELSE 'unknown'
   END AS fb_account_quality,
   fb.remarks,
-  CASE WHEN COALESCE(ac.ap_count, 0) = 0 THEN 'available' ELSE 'active' END AS `status`,
+  CASE WHEN ap.id IS NULL THEN 'available' ELSE 'active' END AS `status`,
   fb.created_at,
   LOWER(ru.full_name) AS recruiter,
   CASE
@@ -57,11 +57,6 @@ SELECT
     )
   END AS ap_profile
 FROM Fb_Accounts fb
-LEFT JOIN (
-  SELECT fb_account_id, COUNT(*) AS ap_count
-  FROM Ap_Profiles
-  GROUP BY fb_account_id
-) ac ON ac.fb_account_id = fb.id
 LEFT JOIN LATERAL (
   SELECT *
   FROM Ap_Profiles ap

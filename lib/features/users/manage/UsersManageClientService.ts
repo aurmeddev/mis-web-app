@@ -23,4 +23,18 @@ export class UsersManageClientService {
 
     return await response.json();
   }
+  async getDistinctRecruiters(): Promise<ApiResponseProps> {
+    const response = await fetch(
+      `${appBaseUrl}/api/users/get-distinct-recruiters`,
+      {
+        method: "GET",
+        headers: {
+          "Content-type": "application/json",
+        },
+        cache: "no-store",
+      }
+    );
+
+    return await response.json();
+  }
 }

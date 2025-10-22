@@ -5,7 +5,7 @@ CASE
   WHEN sp.id IS NULL THEN JSON_OBJECT()
   ELSE JSON_OBJECT('id', sp.id, 'platform', sp.platform, 'created_at', sp.created_at)
 END AS site_platform,
-b.group_id,
+b.management_group_id,
 b.created_at,
 IF(b.is_active=1,"active","inactive") AS status
 FROM `Brands` AS b

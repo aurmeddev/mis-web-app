@@ -400,17 +400,16 @@ export function FbAccountsTableContainer({
           data={memoizedTableData}
           handleEditChange={handleEditChange}
         />
-
-        <Pagination
-          currentPage={Number(searchParamCurrentPage)}
-          limit={searchParamLimit}
-          total_pages={Number(searchParamTotalPages)}
-          handlePagination={handlePagination}
-          className="bottom-6 fixed right-0 w-full"
-        />
-
         <ScrollBar orientation="horizontal" />
       </ScrollArea>
+
+      <Pagination
+        currentPage={Number(searchParamCurrentPage)}
+        limit={searchParamLimit}
+        total_pages={Number(searchParamTotalPages)}
+        handlePagination={handlePagination}
+        className="mt-4"
+      />
     </div>
   );
 }

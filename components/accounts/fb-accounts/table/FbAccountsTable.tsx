@@ -102,7 +102,7 @@ export function FbAccountsTable({
       colSpan: 1,
     },
     {
-      label: "Recruited by",
+      label: "Created by",
       icon: <User2 className="h-4 w-4" />,
       className: "border-r text-sm ",
       colSpan: 1,

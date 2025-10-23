@@ -117,4 +117,35 @@ export class SearchParamsManager {
       return null;
     }
   }
+
+  getUrl(urlString: string) {
+    try {
+      const url = new URL(urlString);
+      const {
+        host,
+        hostname,
+        href,
+        origin,
+        pathname,
+        port,
+        protocol,
+        searchParams,
+        search,
+      } = url;
+      return {
+        host,
+        hostname,
+        href,
+        origin,
+        pathname,
+        port,
+        protocol,
+        searchParams,
+        search,
+      };
+    } catch (error) {
+      console.error("Invalid URL:", error);
+      return {};
+    }
+  }
 }

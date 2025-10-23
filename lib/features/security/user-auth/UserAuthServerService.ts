@@ -1,9 +1,9 @@
 import { query } from "@/database/query";
 import { cookies } from "next/headers";
 import { UserLoginParams, VerifyUserIpParams } from "./type/UserAuthProps";
-import { UserAccessControlService } from "./util/UserAccessControlService";
 import { MySqlUtils } from "@/lib/utils/mysql/MySqlUtils";
 import { CryptoServerService } from "../cryptography/CryptoServerService";
+import { UserAccessController } from "./util/UserAccessController";
 
 export class UserAuthServerService {
   async login(params: UserLoginParams) {
@@ -70,11 +70,10 @@ export class UserAuthServerService {
       const IS_USER_SUPER_ADMIN = validateUserEmailResult[0].user_type_id === 1;
       if (!IS_USER_SUPER_ADMIN) {
         // Check if the user is whitelisted.
-        const userIpAccess = new UserAccessControlService();
-        const ipAccessVerificationResult =
-          await userIpAccess.verifyUserAccessByIp({
-            ip_address: `${ip_address}`,
-          });
+        const userIpAccess = new UserAccessController();
+        const ipAccessVerificationResult = await userIpAccess.verifyUserByIp({
+          ip_address: `${ip_address}`,
+        });
 
         if (!ipAccessVerificationResult.isSuccess) {
           // If the IP is not whitelisted, return a 403 Forbidden response.

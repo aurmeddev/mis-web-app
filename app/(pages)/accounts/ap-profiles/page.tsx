@@ -23,7 +23,7 @@ export default async function Page({ searchParams }: any) {
   const decipher = new CryptoClientService();
   const decipheredUserId = await decipher.decrypt({ data: encryptedUserId });
 
-  const ids = [1, 18, 44, 47, 48, 50, 56, 90];
+  const ids = [1, 18, 44, 48, 90];
   //If Mary Anne Tuazon or SUPER ADMIN
   const hasAccessToMarketingApiAccessToken = ids.includes(
     Number(decipheredUserId.decryptedData)

@@ -35,6 +35,8 @@ export class UserAccessController {
         return item.url === pathname;
       })
     );
-    return checkAccess.some((access: any) => access === true);
+
+    // Removes duplicates and return true if any access is true
+    return [...new Set(checkAccess)].some((access: any) => access === true);
   }
 }

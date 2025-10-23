@@ -84,6 +84,7 @@ export function ManageApProfilesTableContainer({
     remarks: "",
   });
   const [tableData, setTableData] = useState<Profile[]>(response.data);
+  const [step, setStep] = useState(1);
   const [open, setOpen] = useState(false);
   const [canSave, setCanSave] = useState(false);
   const [isSubmitInProgress, setIsSubmitInProgress] = useState(false);
@@ -322,6 +323,7 @@ export function ManageApProfilesTableContainer({
     }
     showToast(true, response.message);
     setOpen(false);
+    setStep(1);
   };
 
   const handleNewEntry = async (response: ApiResponseProps) => {
@@ -487,6 +489,10 @@ export function ManageApProfilesTableContainer({
     setOpen(true);
   };
 
+  const handleUpdateStep = (step: number) => {
+    setStep(step);
+  };
+
   const resetForm = () => {
     setForm({
       profile_name: "",
@@ -521,18 +527,20 @@ export function ManageApProfilesTableContainer({
   return (
     <>
       <ManageApProfilesDialog
+        accessTokenState={accessTokenState}
+        canSave={canSave}
+        editingData={editingData}
         form={form}
         open={open}
-        canSave={canSave}
-        setOpen={setOpen}
-        editingData={editingData}
         handleSubmit={handleSubmit}
         handleInputChange={handleInputChange}
         handleModifyEditingData={handleModifyEditingData}
-        isActionDisabled={isSubmitInProgress}
         hasAccessToMarketingApiAccessToken={hasAccessToMarketingApiAccessToken}
-        accessTokenState={accessTokenState}
+        isActionDisabled={isSubmitInProgress}
         onAccessTokenStateChange={handleAccessTokenStateChange}
+        onUpdateStep={handleUpdateStep}
+        setOpen={setOpen}
+        step={step}
       />
       <div className="flex justify-start gap-2 2xl:w-1/3 mt-4 w-[40%]">
         <Button

@@ -1,5 +1,5 @@
 import Image from "next/image";
-import backgroundImg from "@/public/images/bg-login-page.png";
+import backgroundImg from "@/public/images/bg-login-page.jpg";
 export function LoginPageContainer({
   children,
 }: Readonly<{

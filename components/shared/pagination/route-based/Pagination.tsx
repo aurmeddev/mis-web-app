@@ -26,7 +26,7 @@ export function Pagination({
 }: Props) {
   const limits = ["10", "20", "30", "40", "50"];
   return (
-    <div className={cn(className, "flex justify-end gap-2 mt-2 mr-2")}>
+    <div className={cn(className, "flex justify-end gap-2 mr-2")}>
       <Select
         disabled={!currentPage}
         value={String(limit)}

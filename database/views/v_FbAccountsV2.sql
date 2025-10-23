@@ -36,7 +36,7 @@ SELECT
   fb.remarks,
   CASE WHEN ap.id IS NULL THEN 'available' ELSE 'active' END AS `status`,
   fb.created_at,
-  LOWER(ru.full_name) AS recruiter,
+  ru.id AS recruiter,
   CASE
     WHEN ru.id IS NULL THEN JSON_OBJECT()
     ELSE JSON_OBJECT('id', ru.id, 'full_name', ru.full_name, 'team_name', rt.team_name)

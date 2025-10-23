@@ -79,7 +79,6 @@ export function FbAccountsTableContainer({
     result: { data: [], isSuccess: false, message: "" },
     selectedResult: null,
   });
-
   const memoizedTableData = useMemo(() => tableData, [tableData]);
 
   useEffect(() => {
@@ -265,7 +264,7 @@ export function FbAccountsTableContainer({
     }
   };
 
-  const handlePagination = (page: number, limit: number) => {
+  const handlePagination = async (page: number, limit: number) => {
     const urlQuery = new URLSearchParams();
     urlQuery.set("page", String(page));
     urlQuery.set("limit", String(limit));
@@ -311,7 +310,7 @@ export function FbAccountsTableContainer({
     setOpen(true);
   };
 
-  const handleApplyFilter = ({
+  const handleApplyFilter = async ({
     selectedRecruiter,
     selectedStatus,
   }: ApplyFilter) => {
@@ -327,7 +326,10 @@ export function FbAccountsTableContainer({
     });
 
     if (recruiter) {
-      newRouteQuery.set("recruiter", recruiter);
+      const { encryptedData } = await cryptoClientService.encrypt({
+        data: recruiter,
+      });
+      newRouteQuery.set("recruiter", encryptedData);
     }
 
     if (status) {
@@ -393,7 +395,7 @@ export function FbAccountsTableContainer({
           isSuperOrAdmin={isSuperOrAdmin}
         />
       </div>
-      <ScrollArea className="h-[75dvh] mt-4 relative">
+      <ScrollArea className="h-[68dvh] mt-4">
         <FbAccountsTable
           data={memoizedTableData}
           handleEditChange={handleEditChange}
@@ -404,7 +406,7 @@ export function FbAccountsTableContainer({
           limit={searchParamLimit}
           total_pages={Number(searchParamTotalPages)}
           handlePagination={handlePagination}
-          className="fixed right-0 w-full"
+          className="bottom-6 fixed right-0 w-full"
         />
 
         <ScrollBar orientation="horizontal" />

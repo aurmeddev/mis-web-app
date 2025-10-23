@@ -3,7 +3,6 @@ import { CryptoServerService } from "@/lib/features/security/cryptography/Crypto
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { UserAccessController } from "@/lib/features/security/user-auth/util/UserAccessController";
 import { SearchParamsManager } from "@/lib/utils/search-params/SearchParamsManager";
-import { da } from "date-fns/locale";
 import { NextResponse, NextRequest } from "next/server";
 export const POST = async (
   request: NextRequest,
@@ -22,6 +21,7 @@ export const POST = async (
   }
 
   const { id, user_type_id, navMain } = session.user;
+  const isRegularUser = user_type_id === 3;
   const referrer = request.headers.get("referer") || "";
   const searchParams = new SearchParamsManager();
   const { pathname } = searchParams.getUrl(referrer);
@@ -59,16 +59,13 @@ export const POST = async (
   }
 
   const requestUrlSearchParams = request.nextUrl.searchParams;
-  if (
-    user_type_id === 3 &&
-    hasAccess &&
-    referrerPathname === "/accounts/fb-accounts"
-  ) {
-    // If user is a regular user and has access to the FB Accounts page, fetch only their own data
+  if (isRegularUser && referrerPathname === "/accounts/fb-accounts") {
+    // Fetch only data created by the logged-in regular user
     const decipher = new CryptoServerService();
     const { isSuccess, decryptedData, message } = await decipher.decrypt({
-      data: id, // Decrypt the session user id value
+      data: id,
     });
+
     if (!isSuccess) {
       return NextResponse.json(
         {
@@ -79,6 +76,7 @@ export const POST = async (
         { status: 500 }
       );
     }
+
     payload.recruiter = decryptedData;
     payload.base_search_keyword = searchKeyword;
     requestUrlSearchParams.set("condition", "all");

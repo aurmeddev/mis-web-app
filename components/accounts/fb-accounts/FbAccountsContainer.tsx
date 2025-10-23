@@ -21,19 +21,17 @@ export async function FbAccountsContainer({
 
   let recruiters: Option[] = [{ id: 0, label: "", value: "" }];
   if (isSuperOrAdmin) {
-    const users = await manageUsersService.getAllUsers({
-      team: 3,
-    });
+    const users = await manageUsersService.getDistinctRecruiters();
 
     recruiters = users.data.map((u) => ({
       id: u.id,
       label: u.display_name,
-      value: u.full_name,
+      value: u.id,
     }));
   }
 
   return (
-    <div className="min-h-[calc(100dvh-7rem)] p-6 pr-0">
+    <div className="min-h-[calc(100dvh-5rem)] p-6 pr-0">
       <div>
         <div className="text-xl">FB Accounts Management</div>
         <p className="text-sm">Securely Manage Your Fb Accounts</p>

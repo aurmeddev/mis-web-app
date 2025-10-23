@@ -13,6 +13,8 @@ export const GET = async (request: NextRequest) => {
 
   const mysqlUtils = new MySqlUtils();
   const objUtils = new ObjectUtils();
+  const cipher = new CryptoServerService();
+
   const { page, limit, offset } = mysqlUtils.generatePaginationQuery({
     page: params.page,
     limit:
@@ -36,7 +38,21 @@ export const GET = async (request: NextRequest) => {
   }
 
   if (params.recruiter) {
-    dbFieldColumns.recruiter = params.recruiter.toLowerCase();
+    // Decrypt the recruiter value before filtering
+    const { isSuccess, decryptedData, message } = await cipher.decrypt({
+      data: params.recruiter,
+    });
+    if (!isSuccess) {
+      return NextResponse.json(
+        {
+          isSuccess,
+          message,
+          data: [],
+        },
+        { status: 500 }
+      );
+    }
+    dbFieldColumns.recruiter = decryptedData;
   }
 
   const paginationValues = {
@@ -93,7 +109,6 @@ export const GET = async (request: NextRequest) => {
     const totalRows: number = rows[0].total_count;
     const totalPages: number = Math.ceil(totalRows / limit);
 
-    const cipher = new CryptoServerService();
     const dateUtils = new DatetimeUtils();
 
     const rowIds = mysqlUtils.generateRowIds({

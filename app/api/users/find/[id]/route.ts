@@ -31,8 +31,8 @@ export const POST = async (
       { status: 400 }
     );
   }
-  const domain = new UserServerController();
-  const { isSuccess, data, message } = await domain.find({
+  const user = new UserServerController();
+  const { isSuccess, data, message } = await user.find({
     searchKeyword,
     payload,
     requestUrlSearchParams: request.nextUrl.searchParams,

@@ -1,5 +1,5 @@
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
-import { UsersServerController } from "@/lib/features/users/manage/UsersServerController";
+import { UserServerController } from "@/lib/features/users/manage/UserServerController";
 import { NextResponse, NextRequest } from "next/server";
 export const POST = async (
   request: NextRequest,
@@ -31,7 +31,7 @@ export const POST = async (
       { status: 400 }
     );
   }
-  const domain = new UsersServerController();
+  const domain = new UserServerController();
   const { isSuccess, data, message } = await domain.find({
     searchKeyword,
     payload,

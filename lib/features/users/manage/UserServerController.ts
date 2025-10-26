@@ -1,11 +1,11 @@
 import { ApiResponseProps, query } from "@/database/query";
 import {
-  FindUsersProps,
-  GetAllUsersProps,
-  PostUsersProps,
-  ToggleStatusUsersProps,
-  UpdateUsersProps,
-} from "./type/UsersProps";
+  FindUserProps,
+  GetAllUserProps,
+  PostUserProps,
+  ToggleStatusUserProps,
+  UpdateUserProps,
+} from "./type/UserProps";
 import { MySqlUtils } from "@/lib/utils/mysql/MySqlUtils";
 import { ObjectUtils } from "@/lib/utils/object/ObjectUtils";
 import { PaginationProps } from "@/lib/utils/pagination/type/PaginationProps";
@@ -14,9 +14,9 @@ import { DatetimeUtils } from "@/lib/utils/date/DatetimeUtils";
 import { SearchKeywordService } from "../../search-keyword/SearchKeywordService";
 import { CryptoServerService } from "../../security/cryptography/CryptoServerService";
 
-export class UsersServerController {
+export class UserServerController {
   async getAllUsers(
-    params: GetAllUsersProps
+    params: GetAllUserProps
   ): Promise<ApiResponseProps & { pagination?: PaginationProps }> {
     const dbFieldColumns: {
       user_type_id?: number;
@@ -200,7 +200,7 @@ export class UsersServerController {
     }
   }
 
-  async post(params: PostUsersProps): Promise<ApiResponseProps> {
+  async post(params: PostUserProps): Promise<ApiResponseProps> {
     const mysqlUtils = new MySqlUtils();
     const { columns, values, questionMarksValue } =
       mysqlUtils.generateInsertQuery(params);
@@ -255,7 +255,7 @@ export class UsersServerController {
 
   async find(
     params: Omit<
-      FindUsersProps,
+      FindUserProps,
       "method" | "condition" | "dynamicSearchPayload"
     > & {
       payload: object;
@@ -335,9 +335,7 @@ export class UsersServerController {
     }
   }
 
-  async toggleStatus(
-    params: ToggleStatusUsersProps
-  ): Promise<ApiResponseProps> {
+  async toggleStatus(params: ToggleStatusUserProps): Promise<ApiResponseProps> {
     const { id, is_active } = params;
     if (is_active >= 2) {
       return {
@@ -381,7 +379,7 @@ export class UsersServerController {
     }
   }
 
-  async update(params: UpdateUsersProps): Promise<ApiResponseProps> {
+  async update(params: UpdateUserProps): Promise<ApiResponseProps> {
     const { id, ...rest } = params;
     const mysqlUtils = new MySqlUtils();
     const { columns, values, whereClause } =

@@ -1,7 +1,7 @@
 import { CryptoServerService } from "@/lib/features/security/cryptography/CryptoServerService";
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
-import { UpdateUsersProps } from "@/lib/features/users/manage/type/UsersProps";
-import { UsersServerController } from "@/lib/features/users/manage/UsersServerController";
+import { UpdateUserProps } from "@/lib/features/users/manage/type/UserProps";
+import { UserServerController } from "@/lib/features/users/manage/UserServerController";
 import { ObjectUtils } from "@/lib/utils/object/ObjectUtils";
 import { NextResponse, NextRequest } from "next/server";
 export const PUT = async (request: NextRequest) => {
@@ -17,8 +17,8 @@ export const PUT = async (request: NextRequest) => {
     );
   }
 
-  const user = new UsersServerController();
-  const payload: UpdateUsersProps = await request.json();
+  const user = new UserServerController();
+  const payload: UpdateUserProps = await request.json();
   const { id, email, password, ...rest } = payload;
 
   const objUtil = new ObjectUtils();

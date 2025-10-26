@@ -1,7 +1,7 @@
-import { UsersServerController } from "@/lib/features/users/manage/UsersServerController";
+import { UserServerController } from "@/lib/features/users/manage/UserServerController";
 import { NextResponse, NextRequest } from "next/server";
 export const GET = async (request: NextRequest) => {
-  const umss = new UsersServerController();
+  const umss = new UserServerController();
   const { isSuccess, data, message } = await umss.getDistinctRecruiters();
 
   if (!isSuccess) {

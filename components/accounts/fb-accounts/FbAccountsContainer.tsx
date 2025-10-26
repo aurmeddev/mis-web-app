@@ -4,7 +4,7 @@ import { TableFetch } from "@/components/shared/table/server-fetch/TableFetch";
 import { FbAccountsService } from "@/lib/features/fb-accounts/FbAccountsService";
 import { FbAccountsTableContainer } from "./table/FbAccountsTableContainer";
 import { Option } from "./type";
-import { UsersManageClientService } from "@/lib/features/users/manage/UsersManageClientService";
+import { UsersClientController } from "@/lib/features/users/manage/UsersClientController";
 import { GetAllFbAccountsProps } from "@/lib/features/fb-accounts/type/FbAccountsProps";
 
 type Props = {
@@ -17,7 +17,7 @@ export async function FbAccountsContainer({
   isSuperOrAdmin,
 }: Props) {
   const fbAccountsService = new FbAccountsService();
-  const manageUsersService = new UsersManageClientService();
+  const manageUsersService = new UsersClientController();
 
   let recruiters: Option[] = [{ id: 0, label: "", value: "" }];
   if (isSuperOrAdmin) {

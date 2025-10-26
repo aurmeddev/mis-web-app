@@ -1,18 +1,18 @@
 import { ApiResponseProps } from "@/database/query";
 import {
-  GetAllUsersProps,
-  PostUsersProps,
-  FindUsersProps,
-  ToggleStatusUsersProps,
-  UpdateUsersProps,
-} from "./type/UsersProps";
+  GetAllUserProps,
+  PostUserProps,
+  FindUserProps,
+  ToggleStatusUserProps,
+  UpdateUserProps,
+} from "./type/UserProps";
 import { PaginationProps } from "@/lib/utils/pagination/type/PaginationProps";
 import { appBaseUrl } from "@/lib/base-url/appBaseUrl";
 import { SearchParamsManager } from "@/lib/utils/search-params/SearchParamsManager";
 
-export class UsersClientController {
+export class UserClientController {
   async getAllUsers(
-    params: GetAllUsersProps
+    params: GetAllUserProps
   ): Promise<ApiResponseProps & { pagination?: PaginationProps }> {
     const searchParams = new SearchParamsManager();
     const searchQueryParams = searchParams.append(params);
@@ -44,7 +44,7 @@ export class UsersClientController {
     return await response.json();
   }
 
-  async post(params: PostUsersProps): Promise<ApiResponseProps> {
+  async post(params: PostUserProps): Promise<ApiResponseProps> {
     try {
       const response = await fetch(`${appBaseUrl}/api/users/post`, {
         method: "POST",
@@ -69,7 +69,7 @@ export class UsersClientController {
     }
   }
 
-  async find(params: FindUsersProps): Promise<ApiResponseProps> {
+  async find(params: FindUserProps): Promise<ApiResponseProps> {
     const { searchKeyword, dynamicSearchPayload, ...searchParamsUtils } =
       params;
     const searchParams = new SearchParamsManager();
@@ -88,9 +88,7 @@ export class UsersClientController {
     return await response.json();
   }
 
-  async toggleStatus(
-    params: ToggleStatusUsersProps
-  ): Promise<ApiResponseProps> {
+  async toggleStatus(params: ToggleStatusUserProps): Promise<ApiResponseProps> {
     const response = await fetch(`${appBaseUrl}/api/users/update/status`, {
       method: "PUT",
       headers: {
@@ -102,7 +100,7 @@ export class UsersClientController {
     return await response.json();
   }
 
-  async update(params: UpdateUsersProps): Promise<ApiResponseProps> {
+  async update(params: UpdateUserProps): Promise<ApiResponseProps> {
     const response = await fetch(`${appBaseUrl}/api/users/update`, {
       method: "PUT",
       headers: {

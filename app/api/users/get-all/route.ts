@@ -1,14 +1,14 @@
-import { GetAllUsersProps } from "@/lib/features/users/manage/type/UsersProps";
-import { UsersServerController } from "@/lib/features/users/manage/UsersServerController";
+import { GetAllUserProps } from "@/lib/features/users/manage/type/UserProps";
+import { UserServerController } from "@/lib/features/users/manage/UserServerController";
 import { SearchParamsManager } from "@/lib/utils/search-params/SearchParamsManager";
 import { NextResponse, NextRequest } from "next/server";
 export const GET = async (request: NextRequest) => {
-  const params: GetAllUsersProps = new SearchParamsManager().toObject(
+  const params: GetAllUserProps = new SearchParamsManager().toObject(
     request.nextUrl.searchParams
   );
 
-  const umss = new UsersServerController();
-  const { isSuccess, data, message, pagination } = await umss.getAllUsers(
+  const user = new UserServerController();
+  const { isSuccess, data, message, pagination } = await user.getAllUsers(
     params
   );
 

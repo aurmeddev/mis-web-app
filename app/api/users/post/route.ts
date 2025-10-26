@@ -1,8 +1,8 @@
 // import { CryptoServerService } from "@/lib/features/security/cryptography/CryptoServerService";
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { NextResponse, NextRequest } from "next/server";
-import { PostUsersProps } from "@/lib/features/users/manage/type/UsersProps";
-import { UsersServerController } from "@/lib/features/users/manage/UsersServerController";
+import { PostUserProps } from "@/lib/features/users/manage/type/UserProps";
+import { UserServerController } from "@/lib/features/users/manage/UserServerController";
 import { CryptoServerService } from "@/lib/features/security/cryptography/CryptoServerService";
 export const POST = async (request: NextRequest) => {
   // Check if the user session is valid before processing the request
@@ -32,7 +32,7 @@ export const POST = async (request: NextRequest) => {
   //   );
   // }
 
-  const { email, password, ...rest }: PostUsersProps = await request.json();
+  const { email, password, ...rest }: PostUserProps = await request.json();
 
   if (!rest.full_name) {
     return NextResponse.json(
@@ -56,7 +56,7 @@ export const POST = async (request: NextRequest) => {
     );
   }
 
-  const user = new UsersServerController();
+  const user = new UserServerController();
   const emailVerificationResult = await user.verifyEmail(email);
   if (!emailVerificationResult.isSuccess) {
     return NextResponse.json(

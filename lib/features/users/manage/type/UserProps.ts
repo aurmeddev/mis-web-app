@@ -1,13 +1,13 @@
 import { BaseSearchKeywordProps } from "@/lib/features/search-keyword/type/SearchKeywordProps";
 import { PaginationProps } from "@/lib/utils/pagination/type/PaginationProps";
 
-type GetAllUsersProps = Omit<PaginationProps, "total_pages"> & {
+type GetAllUserProps = Omit<PaginationProps, "total_pages"> & {
   user_type?: number;
   team?: number;
   status?: "active" | "inactive";
 };
 
-type PostUsersProps = {
+type PostUserProps = {
   full_name: string;
   display_name?: string;
   email: string;
@@ -17,15 +17,15 @@ type PostUsersProps = {
   team_id: number;
 };
 
-type FindUsersProps = BaseSearchKeywordProps;
+type FindUserProps = BaseSearchKeywordProps;
 
-type ToggleStatusUsersProps = { id: string; is_active: 0 | 1 };
+type ToggleStatusUserProps = { id: string; is_active: 0 | 1 };
 
-type UpdateUsersProps = PostUsersProps & { id: string };
+type UpdateUserProps = PostUserProps & { id: string };
 export type {
-  GetAllUsersProps,
-  PostUsersProps,
-  FindUsersProps,
-  ToggleStatusUsersProps,
-  UpdateUsersProps,
+  GetAllUserProps,
+  PostUserProps,
+  FindUserProps,
+  ToggleStatusUserProps,
+  UpdateUserProps,
 };

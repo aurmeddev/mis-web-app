@@ -404,32 +404,35 @@ export function ManageApProfilesDialog({
                 )}
               </div>
 
-              {searchQuery.selectedResult && (
-                <>
-                  <div>
-                    <div className="text-muted-foreground">App Secret Key</div>
-                    {form.app_secret_key ? (
-                      <div>{form.app_secret_key}</div>
-                    ) : (
-                      "None"
-                    )}
-                  </div>
-
-                  <div className="grid">
-                    <div className="text-muted-foreground">
-                      Extended Access Token
+              {searchQuery.selectedResult &&
+                hasAccessToMarketingApiAccessToken && (
+                  <>
+                    <div>
+                      <div className="text-muted-foreground">
+                        App Secret Key
+                      </div>
+                      {form.app_secret_key ? (
+                        <div>{form.app_secret_key}</div>
+                      ) : (
+                        "None"
+                      )}
                     </div>
-                    {form.marketing_api_access_token ? (
-                      <Textarea
-                        className="border-none h-fit outline-none p-0 resize-none"
-                        defaultValue={form.marketing_api_access_token}
-                      ></Textarea>
-                    ) : (
-                      "None"
-                    )}
-                  </div>
-                </>
-              )}
+
+                    <div className="grid">
+                      <div className="text-muted-foreground">
+                        Extended Access Token
+                      </div>
+                      {form.marketing_api_access_token ? (
+                        <Textarea
+                          className="border-none h-fit outline-none p-0 resize-none"
+                          defaultValue={form.marketing_api_access_token}
+                        ></Textarea>
+                      ) : (
+                        "None"
+                      )}
+                    </div>
+                  </>
+                )}
 
               <div className="grid">
                 <div className="text-muted-foreground">Remarks</div>

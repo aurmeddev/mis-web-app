@@ -13,15 +13,15 @@ export class CryptoUtilsServerService {
       for (let i = 0; i < params.data.length; i++) {
         const value = String(params.data[i]);
         if (params.isEncrypt) {
-          const { encryptedData, isSuccess } = await security.encrypt({
+          const { encryptedData, isSuccess, message } = await security.encrypt({
             data: value,
           });
-          result.push(isSuccess ? encryptedData : value);
+          result.push(isSuccess ? encryptedData : message);
         } else {
-          const { decryptedData, isSuccess } = await security.decrypt({
+          const { decryptedData, isSuccess, message } = await security.decrypt({
             data: value,
           });
-          result.push(isSuccess ? decryptedData : value);
+          result.push(isSuccess ? decryptedData : message);
         }
       }
     } else if (params.data && params.data.includes(",")) {
@@ -29,15 +29,15 @@ export class CryptoUtilsServerService {
       for (let i = 0; i < splittedBrand.length; i++) {
         const value = String(splittedBrand[i]);
         if (params.isEncrypt) {
-          const { encryptedData, isSuccess } = await security.encrypt({
+          const { encryptedData, isSuccess, message } = await security.encrypt({
             data: value,
           });
-          result.push(isSuccess ? encryptedData : value);
+          result.push(isSuccess ? encryptedData : message);
         } else {
-          const { decryptedData, isSuccess } = await security.decrypt({
+          const { decryptedData, isSuccess, message } = await security.decrypt({
             data: value,
           });
-          result.push(isSuccess ? decryptedData : value);
+          result.push(isSuccess ? decryptedData : message);
         }
       }
     }
@@ -45,15 +45,15 @@ export class CryptoUtilsServerService {
     else {
       const value = String(params.data);
       if (params.isEncrypt) {
-        const { encryptedData, isSuccess } = await security.encrypt({
+        const { encryptedData, isSuccess, message } = await security.encrypt({
           data: value,
         });
-        result.push(isSuccess ? encryptedData : value);
+        result.push(isSuccess ? encryptedData : message);
       } else {
-        const { decryptedData, isSuccess } = await security.decrypt({
+        const { decryptedData, isSuccess, message } = await security.decrypt({
           data: value,
         });
-        result.push(isSuccess ? decryptedData : value);
+        result.push(isSuccess ? decryptedData : message);
       }
     }
 
@@ -69,15 +69,15 @@ export class CryptoUtilsServerService {
       if (params.data.hasOwnProperty(key)) {
         let value = String(params.data[key]);
         if (params.isEncrypt) {
-          const { encryptedData, isSuccess } = await security.encrypt({
+          const { encryptedData, isSuccess, message } = await security.encrypt({
             data: value,
           });
-          value = isSuccess ? encryptedData : value; // Return the original value if encryption fails
+          value = isSuccess ? encryptedData : message; // Return the error message if encryption fails
         } else {
-          const { decryptedData, isSuccess } = await security.decrypt({
+          const { decryptedData, isSuccess, message } = await security.decrypt({
             data: value,
           });
-          value = isSuccess ? decryptedData : value; // Return the original value if decryption fails
+          value = isSuccess ? decryptedData : message; // Return the error message if decryption fails
         }
         cryptoResult[key] = value;
       }

@@ -1,20 +1,15 @@
 import { ApiResponseProps, query } from "@/database/query";
 import {
-  FindUsersAccessProps,
-  PostUsersAccessProps,
-} from "./type/UsersAccessProps";
+  VerifyUserMenuPermissionsProps,
+  PostUserMenuPermissionsProps,
+} from "./type/UserPermissionsProps";
 import { MySqlUtils } from "@/lib/utils/mysql/MySqlUtils";
 import { SearchKeywordService } from "../../search-keyword/SearchKeywordService";
 
-type FindUsersAccessServerServiceProps = Omit<
-  FindUsersAccessProps,
-  "method" | "condition" | "dynamicSearchPayload"
-> & {
-  payload: object;
-  requestUrlSearchParams: any;
-};
-export class UsersAccessServerService {
-  async post(params: PostUsersAccessProps): Promise<ApiResponseProps> {
+export class UserPermissionsServerController {
+  async postUserMenuPermissions(
+    params: PostUserMenuPermissionsProps
+  ): Promise<ApiResponseProps> {
     const { user_id, ...rest } = params;
     if (!Array.isArray(user_id)) {
       return {
@@ -32,10 +27,10 @@ export class UsersAccessServerService {
     for (const id of user_id) {
       for (const main of main_menu) {
         const mainMenuPayload = {
-          user_id: id,
+          user_id: Number(id),
           main_menu_id: main.main_menu_id,
         };
-        const validationResponse = await this.find({
+        const validationResponse = await this.verifyUserMenuPermissions({
           searchKeyword: "validation",
           requestUrlSearchParams: customSearchParams,
           payload: mainMenuPayload,
@@ -48,7 +43,7 @@ export class UsersAccessServerService {
               "Unable to proceed. The user already has access to the main menu.",
           });
         } else {
-          const mainMenuAccessResponse = await PostDataUserAccess({
+          const mainMenuAccessResponse = await handlePostUserMenuPermissions({
             dbTableName: "User_Access_Main_Menus",
             payload: mainMenuPayload,
           });
@@ -67,14 +62,14 @@ export class UsersAccessServerService {
           });
         }
 
-        if (main.sub_menu.length > 0) {
+        if (main.sub_menu && main.sub_menu.length > 0) {
           for (const sub of main.sub_menu) {
             const subMenuPayload = {
-              user_id: id,
+              user_id: Number(id),
               main_menu_id: main.main_menu_id,
               sub_menu_id: sub.sub_menu_id,
             };
-            const validationResponse = await this.find({
+            const validationResponse = await this.verifyUserMenuPermissions({
               searchKeyword: "validation",
               requestUrlSearchParams: customSearchParams,
               payload: subMenuPayload,
@@ -87,10 +82,12 @@ export class UsersAccessServerService {
                   "Unable to proceed. The user already has access to the sub menu.",
               });
             } else {
-              const subMenuAccessResponse = await PostDataUserAccess({
-                dbTableName: "User_Access_Sub_Menus",
-                payload: subMenuPayload,
-              });
+              const subMenuAccessResponse = await handlePostUserMenuPermissions(
+                {
+                  dbTableName: "User_Access_Sub_Menus",
+                  payload: subMenuPayload,
+                }
+              );
 
               if (!subMenuAccessResponse.isSuccess) {
                 return {
@@ -116,7 +113,15 @@ export class UsersAccessServerService {
     };
   }
 
-  async find(params: FindUsersAccessServerServiceProps) {
+  async verifyUserMenuPermissions(
+    params: Omit<
+      VerifyUserMenuPermissionsProps,
+      "method" | "condition" | "dynamicSearchPayload"
+    > & {
+      payload: object;
+      requestUrlSearchParams: any;
+    }
+  ) {
     const { searchKeyword, payload, requestUrlSearchParams } = params;
 
     let validPayload: object = {};
@@ -177,7 +182,7 @@ export class UsersAccessServerService {
   }
 }
 
-type PostDataUserAccessProps = {
+type handlePostUserMenuPermissionsProps = {
   dbTableName: string;
   payload:
     | {
@@ -191,7 +196,9 @@ type PostDataUserAccessProps = {
       };
 };
 
-const PostDataUserAccess = async (params: PostDataUserAccessProps) => {
+const handlePostUserMenuPermissions = async (
+  params: handlePostUserMenuPermissionsProps
+) => {
   const { dbTableName, payload } = params;
   const mysql = new MySqlUtils();
   const { columns, values, questionMarksValue } =

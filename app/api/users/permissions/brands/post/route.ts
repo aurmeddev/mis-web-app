@@ -1,7 +1,7 @@
 // import { CryptoServerService } from "@/lib/features/security/cryptography/CryptoServerService";
 import { CryptoUtilsServerService } from "@/lib/features/security/cryptography/util/CryptoUtilsServerService";
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
-import { PostUserMenuPermissionsProps } from "@/lib/features/users/permissions/type/UserPermissionsProps";
+import { PostUserBrandPermissionsProps } from "@/lib/features/users/permissions/type/UserPermissionsProps";
 import { UserPermissionsServerController } from "@/lib/features/users/permissions/UserPermissionsServerController";
 import { NextResponse, NextRequest } from "next/server";
 export const POST = async (request: NextRequest) => {
@@ -35,8 +35,31 @@ export const POST = async (request: NextRequest) => {
 
   // const USER_ID = decryptedData;
 
-  const { user_id, main_menu }: PostUserMenuPermissionsProps =
+  const { user_id, brand_id }: PostUserBrandPermissionsProps =
     await request.json();
+
+  if (!Array.isArray(brand_id)) {
+    return NextResponse.json(
+      {
+        isSuccess: false,
+        message: "Invalid brand IDs provided.",
+        data: [],
+      },
+      { status: 400 }
+    );
+  }
+
+  if (brand_id.length === 0) {
+    return NextResponse.json(
+      {
+        isSuccess: false,
+        message: "Brand IDs is required.",
+        data: [],
+      },
+      { status: 400 }
+    );
+  }
+
   const cryptoUtil = new CryptoUtilsServerService();
   const decryptResult = await cryptoUtil.cryptoArrayString({
     data: user_id,
@@ -57,9 +80,9 @@ export const POST = async (request: NextRequest) => {
   }
 
   const user = new UserPermissionsServerController();
-  const { isSuccess, data, message } = await user.postUserMenuPermissions({
+  const { isSuccess, data, message } = await user.postUserBrandPermissions({
     user_id: decryptedUserIds,
-    main_menu,
+    brand_id,
   });
 
   return NextResponse.json(

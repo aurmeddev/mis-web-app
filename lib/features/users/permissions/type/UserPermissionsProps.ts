@@ -16,7 +16,21 @@ type PostUserMenuPermissionsProps = Omit<
   BaseUserMenuPermissionsProps,
   "id" | "is_active"
 >;
-type VerifyUserMenuPermissionsProps = BaseSearchKeywordProps;
+
+type VerifyUserMenuPermissionsProps = Omit<
+  BaseSearchKeywordProps,
+  "method" | "condition" | "dynamicSearchPayload"
+> & {
+  payload: object;
+  requestUrlSearchParams: any;
+};
+
+type VerifyUserBrandPermissionsProps = VerifyUserMenuPermissionsProps;
+
+type PostUserBrandPermissionsProps = {
+  user_id: string[];
+  brand_id: number[];
+};
 // type GetUserPermissionsProps = PaginationProps;
 // type ToggleUserMenuPermissionsStatusProps = Omit<
 //   BaseUserMenuPermissionsProps,
@@ -24,8 +38,10 @@ type VerifyUserMenuPermissionsProps = BaseSearchKeywordProps;
 // >;
 export type {
   BaseUserMenuPermissionsProps,
-  // GetUserPermissionsProps,
   PostUserMenuPermissionsProps,
   VerifyUserMenuPermissionsProps,
+  VerifyUserBrandPermissionsProps,
+  PostUserBrandPermissionsProps,
+  // GetUserPermissionsProps,
   // ToggleUserMenuPermissionsStatusProps,
 };

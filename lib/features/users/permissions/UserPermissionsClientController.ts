@@ -1,5 +1,8 @@
 import { ApiResponseProps } from "@/database/query";
-import { PostUserMenuPermissionsProps } from "./type/UserPermissionsProps";
+import {
+  PostUserBrandPermissionsProps,
+  PostUserMenuPermissionsProps,
+} from "./type/UserPermissionsProps";
 import { appBaseUrl } from "@/lib/base-url/appBaseUrl";
 
 export class UserPermissionsClientController {
@@ -8,6 +11,22 @@ export class UserPermissionsClientController {
   ): Promise<ApiResponseProps> {
     const response = await fetch(
       `${appBaseUrl}/api/users/permissions/menus/post`,
+      {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify(params),
+      }
+    );
+    return await response.json();
+  }
+
+  async postUserBrandPermissions(
+    params: PostUserBrandPermissionsProps
+  ): Promise<ApiResponseProps> {
+    const response = await fetch(
+      `${appBaseUrl}/api/users/permissions/brands/post`,
       {
         method: "POST",
         headers: {

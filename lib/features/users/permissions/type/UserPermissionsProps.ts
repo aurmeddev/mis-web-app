@@ -27,8 +27,15 @@ type VerifyUserMenuPermissionsProps = Omit<
 
 type VerifyUserBrandPermissionsProps = VerifyUserMenuPermissionsProps;
 
+type VerifyApProfileBrandPermissionsProps = VerifyUserMenuPermissionsProps;
+
 type PostUserBrandPermissionsProps = {
   user_id: string[];
+  brand_id: number[];
+};
+
+type PostApProfileBrandPermissionsProps = {
+  ap_profile_id: number[];
   brand_id: number[];
 };
 // type GetUserPermissionsProps = PaginationProps;
@@ -42,6 +49,8 @@ export type {
   VerifyUserMenuPermissionsProps,
   VerifyUserBrandPermissionsProps,
   PostUserBrandPermissionsProps,
+  PostApProfileBrandPermissionsProps,
+  VerifyApProfileBrandPermissionsProps,
   // GetUserPermissionsProps,
   // ToggleUserMenuPermissionsStatusProps,
 };

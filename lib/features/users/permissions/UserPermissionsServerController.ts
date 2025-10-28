@@ -4,6 +4,8 @@ import {
   VerifyUserBrandPermissionsProps,
   PostUserMenuPermissionsProps,
   PostUserBrandPermissionsProps,
+  PostApProfileBrandPermissionsProps,
+  VerifyApProfileBrandPermissionsProps,
 } from "./type/UserPermissionsProps";
 import { MySqlUtils } from "@/lib/utils/mysql/MySqlUtils";
 import { SearchKeywordService } from "../../search-keyword/SearchKeywordService";
@@ -324,6 +326,134 @@ export class UserPermissionsServerController {
       };
     }
   }
+
+  async postApProfileBrandPermissions(
+    params: PostApProfileBrandPermissionsProps
+  ) {
+    const { ap_profile_id, brand_id } = params;
+    const result: any[] = [];
+    const customSearchParams = new URLSearchParams();
+    customSearchParams.set("method", "find-one");
+    customSearchParams.set("condition", "all");
+    for (const id of ap_profile_id) {
+      for (const brandId of brand_id) {
+        const permissionsPayload = {
+          ap_profile_id: Number(id),
+          brand_id: brandId,
+        };
+        const validationResponse = await this.verifyApProfileBrandPermissions({
+          searchKeyword: "validation",
+          requestUrlSearchParams: customSearchParams,
+          payload: permissionsPayload,
+        });
+
+        if (!validationResponse.isSuccess) {
+          return {
+            isSuccess: false,
+            message: validationResponse.message,
+            data: [],
+          };
+        }
+
+        const userHasAccessAlready = validationResponse.data.length > 0;
+        if (userHasAccessAlready) {
+          result.push({
+            ...permissionsPayload,
+            status:
+              "Unable to proceed. The profile already has access to the brand.",
+          });
+        } else {
+          const permissionsResponse = await handlePostUserPermissions({
+            dbTableName: "Ap_Profiles_Access",
+            payload: permissionsPayload,
+          });
+
+          if (!permissionsResponse.isSuccess) {
+            return {
+              isSuccess: false,
+              message: permissionsResponse.message,
+              data: [],
+            };
+          }
+
+          result.push({
+            ...permissionsPayload,
+            status: "Success!",
+          });
+        }
+      }
+    }
+
+    console.log("Add AP Profile Brand Permissions:");
+    console.log(result);
+    return {
+      isSuccess: true,
+      message: "Data have been submitted successfully.",
+      data: [],
+    };
+  }
+
+  async verifyApProfileBrandPermissions(
+    params: VerifyApProfileBrandPermissionsProps
+  ) {
+    const { searchKeyword, payload, requestUrlSearchParams } = params;
+
+    let validPayload: object = {};
+    try {
+      validPayload = payload;
+    } catch (error) {
+      return {
+        isSuccess: false,
+        message: "Invalid JSON payload.",
+        data: [],
+      };
+    }
+    const searchApi = new SearchKeywordService();
+    const { queryString, values, isSuccess, message } = searchApi.search({
+      searchKeyword,
+      requestUrlSearchParams: requestUrlSearchParams,
+      dynamicSearchPayload: validPayload,
+      databaseTableName: "Ap_Profiles_Access",
+      staticSearchField: "ap_profile_id",
+    });
+
+    if (!isSuccess) {
+      return {
+        isSuccess,
+        message,
+        data: [],
+      };
+    }
+
+    // Execute the query to find data in the database
+    try {
+      const response: any = await query({
+        query: queryString,
+        values: values,
+      });
+
+      if (response.length === 0) {
+        return {
+          isSuccess: true,
+          message: "No data found.",
+          data: [],
+        };
+      }
+
+      return {
+        isSuccess: true,
+        message: "Data fetched successfully.",
+        data: response,
+      };
+    } catch (error: any) {
+      console.error(error);
+      return {
+        isSuccess: false,
+        message: "Something went wrong! Please try again.",
+        data: [],
+      };
+    }
+  }
 }
 
 type handlePostUserMenuPermissionsProps = {
@@ -340,6 +470,10 @@ type handlePostUserMenuPermissionsProps = {
       }
     | {
         user_id: number;
+        brand_id: number;
+      }
+    | {
+        ap_profile_id: number;
         brand_id: number;
       };
 };

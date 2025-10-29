@@ -111,4 +111,16 @@ export class UserClientController {
 
     return await response.json();
   }
+
+  async getUserTypes(): Promise<ApiResponseProps> {
+    const response = await fetch(`${appBaseUrl}/api/users/types`, {
+      method: "GET",
+      headers: {
+        "Content-type": "application/json",
+      },
+      cache: "force-cache",
+    });
+
+    return await response.json();
+  }
 }

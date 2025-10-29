@@ -440,4 +440,34 @@ export class UserServerController {
       data: [],
     };
   }
+
+  async getUserTypes(): Promise<ApiResponseProps> {
+    const queryString = `SELECT * FROM User_Types`;
+    try {
+      const response: any = await query({
+        query: queryString,
+        values: [],
+      });
+
+      if (response.length === 0) {
+        return {
+          isSuccess: true,
+          message: "No data found.",
+          data: [],
+        };
+      }
+      return {
+        isSuccess: true,
+        message: "Data fetched successfully.",
+        data: response,
+      };
+    } catch (error: any) {
+      console.error(error);
+      return {
+        isSuccess: false,
+        message: "Something went wrong! Please try again.",
+        data: [],
+      };
+    }
+  }
 }

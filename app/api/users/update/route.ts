@@ -21,18 +21,6 @@ export const PUT = async (request: NextRequest) => {
   const payload: UpdateUserProps = await request.json();
   const { id, email, password, ...rest } = payload;
 
-  const objUtil = new ObjectUtils();
-  if (!objUtil.isValidObject(rest)) {
-    return NextResponse.json(
-      {
-        isSuccess: false,
-        message: "Invalid update payload. No fields to update.",
-        data: [],
-      },
-      { status: 400 }
-    );
-  }
-
   const newPayload: any = rest;
   const cipher = new CryptoServerService();
   const result = await cipher.decrypt({
@@ -79,6 +67,18 @@ export const PUT = async (request: NextRequest) => {
       );
     }
     newPayload.email = email;
+  }
+
+  const objUtil = new ObjectUtils();
+  if (!objUtil.isValidObject(rest)) {
+    return NextResponse.json(
+      {
+        isSuccess: false,
+        message: "Invalid update payload. No fields to update.",
+        data: [],
+      },
+      { status: 400 }
+    );
   }
 
   const response = await user.update({

@@ -232,6 +232,7 @@ export class UserServerController {
 
       const result: any = {
         id: encryptedData,
+        password: params.password,
         status: "active",
         created_at: dateUtils.formatDateTime(
           dateUtils.convertToUTC8(await getServerCurrentDatetime())

@@ -53,4 +53,25 @@ export class ObjectUtils {
     // back into a JavaScript object.
     return Array.from(uniqueStringsSet).map((str) => JSON.parse(str));
   }
+
+  cleanObjectProperties = <T extends Record<string, unknown>>(
+    obj: T
+  ): Record<string, unknown> => {
+    return Object.keys(obj).reduce((accumulator, key) => {
+      // TypeScript needs the key to be cast to keyof T to access the value properly.
+      const value = obj[key as keyof T];
+
+      // Keep the property only if its value is NOT null, NOT undefined, NOT an empty string, AND NOT NaN.
+      if (
+        value !== null &&
+        value !== undefined &&
+        value !== "" &&
+        !Number.isNaN(value)
+      ) {
+        // Add the valid property to the new object (accumulator)
+        (accumulator as Record<string, unknown>)[key] = value;
+      }
+      return accumulator;
+    }, {} as Record<string, unknown>);
+  };
 }

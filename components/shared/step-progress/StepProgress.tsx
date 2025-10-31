@@ -23,7 +23,7 @@ export function StepProgress({
             key={label}
             className={cn(
               "flex items-center text-xs",
-              idx === 0 && "flex-1",
+              idx != steps.length - 1 && "flex-1",
               idx > 0 && "ml-2"
             )}
           >
@@ -41,7 +41,9 @@ export function StepProgress({
             <div className="pr-2 whitespace-nowrap">{label}</div>
 
             {/* Connecting line */}
-            {idx === 0 && <div className="border flex-1"></div>}
+            {idx != steps.length - 1 && (
+              <div className="border flex-1 w-full"></div>
+            )}
           </div>
         );
       })}

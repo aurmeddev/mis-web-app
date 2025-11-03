@@ -385,7 +385,7 @@ export class FacebookAdsManagerServerService {
               statuses.daily_budget_status =
                 convertedToUsd > this.maximumDailyBudget
                   ? `Exceeded ($${this.maximumDailyBudget}) daily budget amount.`
-                  : String(convertedToUsd).includes("9")
+                  : String(convertedToUsd).includes("9") && convertedToUsd > 100
                   ? "Suspicious daily budget amount."
                   : "OK";
 

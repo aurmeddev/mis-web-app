@@ -1,7 +1,5 @@
 import { TableBody, Table, TableRow, TableCell } from "@/components/ui/table";
 import { UserAccessRecordRaw } from "./UserAccessTableContainer";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
 import {
   AtSign,
   CircleFadingPlus,
@@ -13,30 +11,13 @@ import {
 } from "lucide-react";
 import { Header } from "@/components/shared/table/header/Header";
 import { Button } from "@/components/ui/button";
+import { MemoizedBadgeStatus } from "@/components/shared/badge/BadgeStatus";
 
 type Props = {
   data: UserAccessRecordRaw[];
   editingRow: string;
   handleEditChange: (id: string) => void;
 };
-
-function BadgeStatus({ isActive }: { isActive: boolean }) {
-  return (
-    <Badge variant={"outline"}>
-      <div className="flex items-center gap-1 px-1 py-1 w-full">
-        <span className="relative flex h-2 w-2">
-          <span
-            className={cn(
-              "relative inline-flex rounded-full h-2 w-2",
-              isActive ? "bg-emerald-500" : "bg-rose-500"
-            )}
-          ></span>
-        </span>
-        <div>{isActive ? "Active" : "Inactive"}</div>
-      </div>
-    </Badge>
-  );
-}
 
 export function UserAccessTable({ data, editingRow, handleEditChange }: Props) {
   const tableHeaders = [
@@ -112,7 +93,7 @@ export function UserAccessTable({ data, editingRow, handleEditChange }: Props) {
                   />
                 ) : (
                 )} */}
-                <BadgeStatus isActive={rowData.status == "active"} />
+                <MemoizedBadgeStatus isActive={rowData.status == "active"} />
               </TableCell>
               <TableCell className="border-r text-xs">
                 <div>{rowData.user_type_name}</div>

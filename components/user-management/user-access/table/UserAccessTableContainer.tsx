@@ -16,7 +16,6 @@ import { ApiResponseProps } from "@/database/query";
 import { UserAccessDialog } from "../../dialog/UserAccessDialog";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import z from "zod";
 import { UserClientController } from "@/lib/features/users/manage/UserClientController";
 import { genderList } from "../../static-data";
 import { CryptoClientService } from "@/lib/features/security/cryptography/CryptoClientService";
@@ -26,6 +25,7 @@ import { SelectOptions } from "@/components/shared/select/type";
 import { UpdateUserProps } from "@/lib/features/users/manage/type/UserProps";
 import { userAccessFormSchema } from "../../schema";
 import { ObjectUtils } from "@/lib/utils/object/ObjectUtils";
+import z from "zod";
 
 type Props = {
   response: ApiResponseProps & {
@@ -201,8 +201,6 @@ export function UserAccessTableContainer({ response }: Props) {
 
   const handleAddUserEntry = () => {
     setIsAddingNew(true);
-    // setForm(null);
-    // setEditingRow(null);
     handleDialogState("userAccess", true);
   };
 
@@ -240,7 +238,6 @@ export function UserAccessTableContainer({ response }: Props) {
         userAccessFormOriginal[fieldName as keyof UserAccessFormValues];
       const currentValue =
         currentFormValues[fieldName as keyof UserAccessFormValues];
-
       let hasChanged = false;
 
       // Special handling for Arrays (like brand, main_menu, sub_menu)
@@ -457,7 +454,11 @@ export function UserAccessTableContainer({ response }: Props) {
       const menuParam = menuAccess.mainMenu.map((mainMenuId) => {
         const subMenu =
           menuSelectOptions.sub_menu
-            .filter((sm) => sm.main_menu_id == mainMenuId)
+            .filter(
+              (sm) =>
+                sm.main_menu_id == mainMenuId &&
+                menuAccess.subMenu.includes(sm.value)
+            )
             .map((fsm) => ({ sub_menu_id: fsm.id })) || undefined;
         return {
           main_menu_id: Number(mainMenuId),

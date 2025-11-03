@@ -8,7 +8,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -21,7 +21,6 @@ import {
 } from "@/components/ui/form";
 import { FieldPath, UseFormReturn } from "react-hook-form";
 import { StepProgress } from "@/components/shared/step-progress/StepProgress";
-import { genderList } from "../static-data";
 import { MultiSelectComboBoxV2 } from "@/components/shared/select/MultiSelectComboBoxV2";
 import {
   MenuAccess,
@@ -31,6 +30,22 @@ import { useUserAccessContext } from "@/context/user-access/UserAccessContext";
 import { RHFInput } from "@/components/shared/rhf/RHFInput";
 import { RHFSelect } from "@/components/shared/rhf/RHFSingleSelect";
 import { RHFPasswordToggleInput } from "@/components/shared/rhf/RHFPasswordToggleInput";
+import { Label } from "@/components/ui/label";
+import { CheckedState } from "@radix-ui/react-checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { MenuAccessItem } from "../menu-access/MenuAccessItem";
+
+type SubMenu = {
+  sub_menu_id: string;
+  label: string;
+};
+
+type ParentMenu = {
+  main_menu_id: string;
+  label: string;
+  sub_menu: SubMenu[];
+  sort: number;
+};
 
 type Props = {
   isAddingNew: boolean;
@@ -66,8 +81,16 @@ export function UserAccessDialog({
   const { brands, menuSelectOptions, userSelectOptions } =
     useUserAccessContext();
   const [step, setStep] = useState(1);
-  const { control, formState, getValues, handleSubmit, reset, trigger } =
-    userAccessForm;
+  const {
+    control,
+    formState,
+    getValues,
+    setValue,
+    handleSubmit,
+    reset,
+    trigger,
+    watch,
+  } = userAccessForm;
 
   const handleClose = () => {
     setStep(1);
@@ -77,25 +100,157 @@ export function UserAccessDialog({
     reset();
   };
 
-  const sortedMainMenu = menuSelectOptions.main_menu.sort(
-    (a, b) => a.sort - b.sort
+  const menuStructure: ParentMenu[] = useMemo(
+    () =>
+      menuSelectOptions.main_menu
+        .map((mainMenu) => {
+          const mainMenuId = String(mainMenu.id);
+          const subMenu =
+            menuSelectOptions.sub_menu
+              .filter((sm) => sm.main_menu_id == mainMenuId)
+              .map((fsm) => ({
+                sub_menu_id: String(fsm.id),
+                label: fsm.label,
+                sort: fsm.sort,
+              }))
+              .sort((a, b) => a.sort - b.sort) || undefined;
+          return {
+            main_menu_id: mainMenuId,
+            label: mainMenu.label,
+            sub_menu: subMenu,
+            sort: mainMenu.sort,
+          };
+        })
+        .sort((a, b) => a.sort - b.sort),
+    [menuSelectOptions]
   );
-  const filteredAndSortedSubMenu = menuSelectOptions.sub_menu
-    .filter((d) => selectedMenuAccess.mainMenu.includes(d.main_menu_id))
-    .sort((a, b) => a.sort - b.sort);
+
+  // Pre-compute a map for O(1) lookup of main menu items
+  const mainMenuMap = new Map(
+    menuSelectOptions.main_menu.map((item) => [item.value, item])
+  );
+
+  const selectedMenuStructure = useMemo(() => {
+    return selectedMenuAccess.mainMenu
+      .map((mainMenuId) => {
+        const mainMenu = mainMenuMap.get(mainMenuId);
+
+        // Skip if main menu item doesn't exist
+        if (!mainMenu) return null;
+
+        // Filter Sub Menus efficiently
+        const filteredSubMenu = menuSelectOptions.sub_menu
+          .filter(
+            (sm) =>
+              sm.main_menu_id === mainMenuId &&
+              selectedMenuAccess.subMenu.includes(sm.value)
+          )
+          .map((fsm) => ({ label: fsm.label, sort: fsm.sort }));
+
+        return {
+          label: mainMenu.label,
+          sub_menu: filteredSubMenu,
+          sort: Number(mainMenu.sort) || 1,
+        };
+      })
+      .filter((item) => item !== null)
+      .sort((a, b) => a.sort - b.sort);
+  }, [
+    selectedMenuAccess.mainMenu,
+    selectedMenuAccess.subMenu,
+    menuSelectOptions.sub_menu,
+    mainMenuMap,
+  ]);
 
   const nameDetails = {
     full_name: getValues("full_name"),
     display_name: getValues("display_name"),
   };
   const email = getValues("email");
-  const menuAccess = {
-    main_menu: getValues("main_menu"),
-    sub_menu: getValues("sub_menu"),
+
+  const silentOptions = {
+    shouldValidate: false,
+    shouldDirty: false,
+    shouldTouch: false,
   };
-  const userInfo = {
-    user_type: getValues("user_type"),
-    team: getValues("team"),
+
+  // Function to handle changes for Main Menu Checkboxes
+  const handleParentChange = (checked: CheckedState, main_menu_id: string) => {
+    const currentMainMenus = getValues("main_menu") || [];
+    const currentSubMenus = getValues("sub_menu") || [];
+
+    let newMainMenus = [];
+    if (checked) {
+      // Add the main menu ID
+      newMainMenus = [...currentMainMenus, main_menu_id];
+      setValue("main_menu", newMainMenus, silentOptions);
+    } else {
+      // Remove the main menu ID
+      newMainMenus = currentMainMenus.filter((id) => id !== main_menu_id);
+      setValue("main_menu", newMainMenus, silentOptions);
+    }
+    onMenuChange(newMainMenus, "mainMenu");
+
+    const childrenSubMenuIds =
+      menuStructure
+        .find((p) => p.main_menu_id === main_menu_id)
+        ?.sub_menu.map((c) => c.sub_menu_id) || [];
+
+    let newSubMenus = [];
+    if (checked) {
+      const subMenusToAdd = childrenSubMenuIds.filter(
+        (id) => !currentSubMenus.includes(id)
+      );
+      newSubMenus = [...currentSubMenus, ...subMenusToAdd];
+      setValue("sub_menu", newSubMenus, silentOptions);
+    } else {
+      newSubMenus = currentSubMenus.filter(
+        (id) => !childrenSubMenuIds.includes(id)
+      );
+      setValue("sub_menu", newSubMenus, silentOptions);
+    }
+    onMenuChange(newSubMenus, "subMenu");
+  };
+
+  // Function to handle changes for Sub Menu Checkboxes
+  const handleChildChange = (checked: CheckedState, sub_menu_id: string) => {
+    const currentMainMenus = getValues("main_menu") || [];
+    const currentSubMenus = getValues("sub_menu") || [];
+
+    const mainMenuId = menuSelectOptions.sub_menu.find(
+      (sm) => sm.id == Number(sub_menu_id)
+    )?.main_menu_id;
+
+    let newSubMenus = [];
+    let newMainMenus: string[] = [];
+    if (checked) {
+      // Add the sub menu ID
+      newSubMenus = [...currentSubMenus, sub_menu_id];
+      // Check also the main menu of sub
+      newMainMenus = [...currentMainMenus, String(mainMenuId)];
+      setValue("main_menu", newMainMenus, silentOptions);
+      setValue("sub_menu", newSubMenus, silentOptions);
+    } else {
+      // Remove the sub menu ID
+      newSubMenus = currentSubMenus.filter((id) => id !== sub_menu_id);
+      // Check if any of the sub menu of a menu is checked
+      const filteredSubMenu = menuSelectOptions.sub_menu
+        .filter((sm) => sm.main_menu_id == mainMenuId)
+        .map((fsm) => fsm.value);
+      const isAnySubMenusChecked = newSubMenus.some((nsm) =>
+        filteredSubMenu.includes(nsm)
+      );
+
+      if (!isAnySubMenusChecked) {
+        newMainMenus = currentMainMenus.filter(
+          (id) => id !== String(mainMenuId)
+        );
+        setValue("main_menu", newMainMenus, silentOptions);
+      }
+      setValue("sub_menu", newSubMenus, silentOptions);
+    }
+    onMenuChange(newMainMenus, "mainMenu");
+    onMenuChange(newSubMenus, "subMenu");
   };
 
   const handleStep = async (type: "back" | "next") => {
@@ -116,6 +271,10 @@ export function UserAccessDialog({
       setStep((prev) => (type == "back" ? prev - 1 : prev + 1));
     }
   };
+
+  // Watch the fields to trigger re-renders when the arrays change
+  const watchedMainMenus = watch("main_menu") || [];
+  const watchedSubMenus = watch("sub_menu") || [];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -181,19 +340,37 @@ export function UserAccessDialog({
                   placeholder="input"
                 />
 
-                <RHFSelect
+                <FormField
                   control={control}
                   name="gender"
-                  label="Gender"
-                  placeholder="Select gender"
-                  options={genderList}
+                  render={({ field }) => (
+                    <FormItem className="space-y-3">
+                      <FormLabel>Gender</FormLabel>
+                      <FormControl>
+                        <RadioGroup
+                          className="flex space-y-1"
+                          defaultValue={field.value}
+                          onValueChange={field.onChange}
+                        >
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem id="male" value="1" />
+                            <Label htmlFor="male">Male</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem id="female" value="2" />
+                            <Label htmlFor="female">Female</Label>
+                          </div>
+                        </RadioGroup>
+                      </FormControl>
+                    </FormItem>
+                  )}
                 />
 
                 <RHFSelect
                   control={control}
                   name="user_type"
-                  label="User Type"
-                  placeholder="Select user type"
+                  label="Account Type"
+                  placeholder="Select account type"
                   options={userSelectOptions.user_types}
                 />
 
@@ -234,40 +411,22 @@ export function UserAccessDialog({
                 <FormField
                   control={control}
                   name="main_menu"
-                  render={({ field }) => (
+                  render={() => (
                     <FormItem>
-                      <FormLabel>Main Menu</FormLabel>
+                      <FormLabel>Menus</FormLabel>
                       <FormControl>
-                        <MultiSelectComboBoxV2
-                          label="Select main menu"
-                          options={sortedMainMenu}
-                          onSelectValue={(value) => {
-                            onMenuChange(value, "mainMenu");
-                            field.onChange(value);
-                          }}
-                          selectedValue={selectedMenuAccess.mainMenu}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={control}
-                  name="sub_menu"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Sub Menu</FormLabel>
-                      <FormControl>
-                        <MultiSelectComboBoxV2
-                          label="Select sub menu"
-                          options={filteredAndSortedSubMenu}
-                          onSelectValue={(value) => {
-                            onMenuChange(value, "subMenu");
-                            field.onChange(value);
-                          }}
-                          selectedValue={selectedMenuAccess.subMenu}
-                        />
+                        <div>
+                          {menuStructure.map((parent) => (
+                            <MenuAccessItem
+                              key={parent.main_menu_id}
+                              parent={parent}
+                              watchedMainMenus={watchedMainMenus}
+                              watchedSubMenus={watchedSubMenus}
+                              handleParentChange={handleParentChange}
+                              handleChildChange={handleChildChange}
+                            />
+                          ))}
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -293,32 +452,30 @@ export function UserAccessDialog({
 
                 <div>
                   <div className="text-muted-foreground">Brand Access</div>
-                  {selectedBrandAccess.map((selBrandAccess) => {
-                    const brandLabel = brands.find(
-                      (b: { value: string }) => b.value == selBrandAccess
-                    )?.label;
-                    return <div key={brandLabel}>{brandLabel}</div>;
-                  })}
+                  {selectedBrandAccess.length > 0 ? (
+                    selectedBrandAccess.map((selBrandAccess) => {
+                      const brandLabel = brands.find(
+                        (b: { value: string }) => b.value == selBrandAccess
+                      )?.label;
+                      return <div key={brandLabel}>{brandLabel}</div>;
+                    })
+                  ) : (
+                    <div>None</div>
+                  )}
                 </div>
 
                 <div>
                   <div className="text-muted-foreground">Menu Access</div>
-                  {selectedMenuAccess.mainMenu.map((selMenuAccess) => {
-                    const mainMenuLabel = menuSelectOptions.main_menu.find(
-                      (mm) => mm.value == selMenuAccess
-                    )?.label;
-                    return <div key={mainMenuLabel}>{mainMenuLabel}</div>;
-                  })}
-                </div>
-
-                <div>
-                  <div className="text-muted-foreground">Sub Menu Access</div>
-                  {selectedMenuAccess.subMenu.map((selSubMenuAccess) => {
-                    const subMenuLabel = menuSelectOptions.sub_menu.find(
-                      (sm) => sm.value == selSubMenuAccess
-                    )?.label;
-                    return <div key={subMenuLabel}>{subMenuLabel}</div>;
-                  })}
+                  {selectedMenuStructure.map((selMenuAccess) => (
+                    <div key={selMenuAccess.label} className="mb-2 space-y-1">
+                      {selMenuAccess.label}
+                      {selMenuAccess.sub_menu.map((selSubAccess) => (
+                        <div key={selSubAccess.label} className="ml-2">
+                          - {selSubAccess.label}
+                        </div>
+                      ))}
+                    </div>
+                  ))}
                 </div>
               </div>
             )}

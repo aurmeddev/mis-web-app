@@ -30,7 +30,9 @@ export function MultiSelectComboBoxV2({
   selectedValue,
 }: Props) {
   const [open, setOpen] = useState(false);
-  const [selectedOptions, setSelectedOptions] = useState<any>(selectedValue);
+  const [selectedOptions, setSelectedOptions] = useState<any>(
+    selectedValue || []
+  );
 
   const handleSelect = (currentValue: string) => {
     setSelectedOptions((prev: string[]) =>

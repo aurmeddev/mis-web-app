@@ -28,7 +28,6 @@ export const userAccessFormSchema = z.object({
   sub_menu: z
     .array(z.string())
     .min(1, { message: "Please select at least one Sub Menu item." }),
-  brand: z
-    .array(z.string())
-    .min(1, { message: "Please select at least one Brand." }),
+  brand: z.array(z.string()).optional(),
+  // .min(1, { message: "Please select at least one Brand." }),
 });

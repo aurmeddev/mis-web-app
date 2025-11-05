@@ -28,6 +28,8 @@ type PostUserBrandPermissionsProps = {
   brand_id: number[];
 };
 
+type UpdateUserBrandPermissionsProps = PostUserBrandPermissionsProps;
+
 type PostApProfileBrandPermissionsProps = {
   ap_profile_id: number[];
   brand_id: number[];
@@ -43,6 +45,7 @@ export type {
   PostUserBrandPermissionsProps,
   PostApProfileBrandPermissionsProps,
   VerifyPermissionsProps,
+  UpdateUserBrandPermissionsProps,
   // GetUserPermissionsProps,
   // ToggleUserMenuPermissionsStatusProps,
 };

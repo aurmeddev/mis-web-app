@@ -47,12 +47,14 @@ UserAccessBrandsJSON AS(
             'id',uab.id,
             'brand_id',uab.brand_id,
             'brand_name',b.brand_name,
-        	'status',IF(uab.is_active = 1, 'active', 'inactive')
+            'status','active'
+        	#--'status',IF(uab.is_active = 1, 'active', 'inactive')
         )
     ) AS assigned_brands
     FROM `User_Access_Brands` AS uab
     INNER JOIN `Brands` AS b 
     ON b.id=uab.brand_id
+    WHERE uab.is_active=1
     GROUP BY uab.user_id
 )
 -- Final Query (Joining the pre-aggregated JSON)

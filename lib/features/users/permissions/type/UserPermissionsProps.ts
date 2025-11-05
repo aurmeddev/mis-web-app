@@ -17,17 +17,11 @@ type PostUserMenuPermissionsProps = Omit<
   "id" | "is_active"
 >;
 
-type VerifyUserMenuPermissionsProps = Omit<
-  BaseSearchKeywordProps,
-  "method" | "condition" | "dynamicSearchPayload"
-> & {
+type VerifyPermissionsProps = Pick<BaseSearchKeywordProps, "searchKeyword"> & {
   payload: object;
-  requestUrlSearchParams: any;
+  databaseTableName: string;
+  staticSearchField: string;
 };
-
-type VerifyUserBrandPermissionsProps = VerifyUserMenuPermissionsProps;
-
-type VerifyApProfileBrandPermissionsProps = VerifyUserMenuPermissionsProps;
 
 type PostUserBrandPermissionsProps = {
   user_id: string[];
@@ -46,11 +40,9 @@ type PostApProfileBrandPermissionsProps = {
 export type {
   BaseUserMenuPermissionsProps,
   PostUserMenuPermissionsProps,
-  VerifyUserMenuPermissionsProps,
-  VerifyUserBrandPermissionsProps,
   PostUserBrandPermissionsProps,
   PostApProfileBrandPermissionsProps,
-  VerifyApProfileBrandPermissionsProps,
+  VerifyPermissionsProps,
   // GetUserPermissionsProps,
   // ToggleUserMenuPermissionsStatusProps,
 };

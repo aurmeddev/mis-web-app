@@ -1,11 +1,9 @@
 import { ApiResponseProps, query } from "@/database/query";
 import {
-  VerifyUserMenuPermissionsProps,
-  VerifyUserBrandPermissionsProps,
   PostUserMenuPermissionsProps,
   PostUserBrandPermissionsProps,
   PostApProfileBrandPermissionsProps,
-  VerifyApProfileBrandPermissionsProps,
+  VerifyPermissionsProps,
 } from "./type/UserPermissionsProps";
 import { MySqlUtils } from "@/lib/utils/mysql/MySqlUtils";
 import { SearchKeywordService } from "../../search-keyword/SearchKeywordService";
@@ -24,20 +22,18 @@ export class UserPermissionsServerController {
     }
     const { main_menu } = rest;
     const result: any[] = [];
-    const customSearchParams = new URLSearchParams();
-    customSearchParams.set("method", "find-one");
-    customSearchParams.set("condition", "all");
-
+    const databaseTableName = "v_UserAccessMenus";
     for (const id of user_id) {
       for (const main of main_menu) {
         const mainMenuPayload = {
           user_id: Number(id),
           main_menu_id: main.main_menu_id,
         };
-        const validationResponse = await this.verifyUserMenuPermissions({
+        const validationResponse = await this.handleVerifyPermissions({
           searchKeyword: "validation",
-          requestUrlSearchParams: customSearchParams,
           payload: mainMenuPayload,
+          databaseTableName: databaseTableName,
+          staticSearchField: "user_id",
         });
 
         if (!validationResponse.isSuccess) {
@@ -56,8 +52,8 @@ export class UserPermissionsServerController {
               "Unable to proceed. The user already has access to the main menu.",
           });
         } else {
-          const mainMenuAccessResponse = await handlePostUserPermissions({
-            dbTableName: "User_Access_Main_Menus",
+          const mainMenuAccessResponse = await this.handlePostPermissions({
+            databaseTableName: "User_Access_Main_Menus",
             payload: mainMenuPayload,
           });
 
@@ -82,10 +78,11 @@ export class UserPermissionsServerController {
               main_menu_id: main.main_menu_id,
               sub_menu_id: sub.sub_menu_id,
             };
-            const validationResponse = await this.verifyUserMenuPermissions({
+            const validationResponse = await this.handleVerifyPermissions({
               searchKeyword: "validation",
-              requestUrlSearchParams: customSearchParams,
               payload: subMenuPayload,
+              databaseTableName: databaseTableName,
+              staticSearchField: "user_id",
             });
 
             if (!validationResponse.isSuccess) {
@@ -103,8 +100,8 @@ export class UserPermissionsServerController {
                   "Unable to proceed. The user already has access to the sub menu.",
               });
             } else {
-              const subMenuAccessResponse = await handlePostUserPermissions({
-                dbTableName: "User_Access_Sub_Menus",
+              const subMenuAccessResponse = await this.handlePostPermissions({
+                databaseTableName: "User_Access_Sub_Menus",
                 payload: subMenuPayload,
               });
 
@@ -135,66 +132,6 @@ export class UserPermissionsServerController {
     };
   }
 
-  async verifyUserMenuPermissions(params: VerifyUserMenuPermissionsProps) {
-    const { searchKeyword, payload, requestUrlSearchParams } = params;
-
-    let validPayload: object = {};
-    try {
-      validPayload = payload;
-    } catch (error) {
-      return {
-        isSuccess: false,
-        message: "Invalid JSON payload.",
-        data: [],
-      };
-    }
-    const searchApi = new SearchKeywordService();
-    const { queryString, values, isSuccess, message } = searchApi.search({
-      searchKeyword,
-      requestUrlSearchParams: requestUrlSearchParams,
-      dynamicSearchPayload: validPayload,
-      databaseTableName: "v_UserAccessMenus",
-      staticSearchField: "user_id",
-    });
-
-    if (!isSuccess) {
-      return {
-        isSuccess,
-        message,
-        data: [],
-      };
-    }
-
-    // Execute the query to find data in the database
-    try {
-      const response: any = await query({
-        query: queryString,
-        values: values,
-      });
-
-      if (response.length === 0) {
-        return {
-          isSuccess: true,
-          message: "No data found.",
-          data: [],
-        };
-      }
-
-      return {
-        isSuccess: true,
-        message: "Data fetched successfully.",
-        data: response,
-      };
-    } catch (error: any) {
-      console.error(error);
-      return {
-        isSuccess: false,
-        message: "Something went wrong! Please try again.",
-        data: [],
-      };
-    }
-  }
-
   async postUserBrandPermissions(params: PostUserBrandPermissionsProps) {
     const { user_id, brand_id } = params;
     if (!Array.isArray(user_id)) {
@@ -206,19 +143,18 @@ export class UserPermissionsServerController {
     }
 
     const result: any[] = [];
-    const customSearchParams = new URLSearchParams();
-    customSearchParams.set("method", "find-one");
-    customSearchParams.set("condition", "all");
+    const databaseTableName = "User_Access_Brands";
     for (const id of user_id) {
       for (const brandId of brand_id) {
         const permissionsPayload = {
           user_id: Number(id),
           brand_id: brandId,
         };
-        const validationResponse = await this.verifyUserBrandPermissions({
+        const validationResponse = await this.handleVerifyPermissions({
           searchKeyword: "validation",
-          requestUrlSearchParams: customSearchParams,
           payload: permissionsPayload,
+          databaseTableName: databaseTableName,
+          staticSearchField: "user_id",
         });
 
         if (!validationResponse.isSuccess) {
@@ -237,8 +173,8 @@ export class UserPermissionsServerController {
               "Unable to proceed. The user already has access to the brand.",
           });
         } else {
-          const permissionsResponse = await handlePostUserPermissions({
-            dbTableName: "User_Access_Brands",
+          const permissionsResponse = await this.handlePostPermissions({
+            databaseTableName: databaseTableName,
             payload: permissionsPayload,
           });
 
@@ -267,84 +203,23 @@ export class UserPermissionsServerController {
     };
   }
 
-  async verifyUserBrandPermissions(params: VerifyUserBrandPermissionsProps) {
-    const { searchKeyword, payload, requestUrlSearchParams } = params;
-
-    let validPayload: object = {};
-    try {
-      validPayload = payload;
-    } catch (error) {
-      return {
-        isSuccess: false,
-        message: "Invalid JSON payload.",
-        data: [],
-      };
-    }
-    const searchApi = new SearchKeywordService();
-    const { queryString, values, isSuccess, message } = searchApi.search({
-      searchKeyword,
-      requestUrlSearchParams: requestUrlSearchParams,
-      dynamicSearchPayload: validPayload,
-      databaseTableName: "User_Access_Brands",
-      staticSearchField: "user_id",
-    });
-
-    if (!isSuccess) {
-      return {
-        isSuccess,
-        message,
-        data: [],
-      };
-    }
-
-    // Execute the query to find data in the database
-    try {
-      const response: any = await query({
-        query: queryString,
-        values: values,
-      });
-
-      if (response.length === 0) {
-        return {
-          isSuccess: true,
-          message: "No data found.",
-          data: [],
-        };
-      }
-
-      return {
-        isSuccess: true,
-        message: "Data fetched successfully.",
-        data: response,
-      };
-    } catch (error: any) {
-      console.error(error);
-      return {
-        isSuccess: false,
-        message: "Something went wrong! Please try again.",
-        data: [],
-      };
-    }
-  }
-
   async postApProfileBrandPermissions(
     params: PostApProfileBrandPermissionsProps
   ) {
     const { ap_profile_id, brand_id } = params;
     const result: any[] = [];
-    const customSearchParams = new URLSearchParams();
-    customSearchParams.set("method", "find-one");
-    customSearchParams.set("condition", "all");
+    const databaseTableName = "Ap_Profiles_Access";
     for (const id of ap_profile_id) {
       for (const brandId of brand_id) {
         const permissionsPayload = {
           ap_profile_id: Number(id),
           brand_id: brandId,
         };
-        const validationResponse = await this.verifyApProfileBrandPermissions({
+        const validationResponse = await this.handleVerifyPermissions({
           searchKeyword: "validation",
-          requestUrlSearchParams: customSearchParams,
           payload: permissionsPayload,
+          databaseTableName: databaseTableName,
+          staticSearchField: "ap_profile_id",
         });
 
         if (!validationResponse.isSuccess) {
@@ -363,8 +238,8 @@ export class UserPermissionsServerController {
               "Unable to proceed. The profile already has access to the brand.",
           });
         } else {
-          const permissionsResponse = await handlePostUserPermissions({
-            dbTableName: "Ap_Profiles_Access",
+          const permissionsResponse = await this.handlePostPermissions({
+            databaseTableName: "Ap_Profiles_Access",
             payload: permissionsPayload,
           });
 
@@ -393,12 +268,13 @@ export class UserPermissionsServerController {
     };
   }
 
-  async verifyApProfileBrandPermissions(
-    params: VerifyApProfileBrandPermissionsProps
-  ) {
-    const { searchKeyword, payload, requestUrlSearchParams } = params;
-
-    let validPayload: object = {};
+  private async handleVerifyPermissions(params: VerifyPermissionsProps) {
+    const { searchKeyword, payload, databaseTableName, staticSearchField } =
+      params;
+    const customSearchParams = new URLSearchParams();
+    customSearchParams.set("method", "find-one");
+    customSearchParams.set("condition", "all");
+    let validPayload = {};
     try {
       validPayload = payload;
     } catch (error) {
@@ -411,10 +287,10 @@ export class UserPermissionsServerController {
     const searchApi = new SearchKeywordService();
     const { queryString, values, isSuccess, message } = searchApi.search({
       searchKeyword,
-      requestUrlSearchParams: requestUrlSearchParams,
+      requestUrlSearchParams: customSearchParams,
       dynamicSearchPayload: validPayload,
-      databaseTableName: "Ap_Profiles_Access",
-      staticSearchField: "ap_profile_id",
+      databaseTableName,
+      staticSearchField,
     });
 
     if (!isSuccess) {
@@ -454,59 +330,90 @@ export class UserPermissionsServerController {
       };
     }
   }
+
+  private async handlePostPermissions(params: HandlePermissionsProps) {
+    const { databaseTableName, payload } = params;
+    const mysql = new MySqlUtils();
+    const { columns, values, questionMarksValue } =
+      mysql.generateInsertQuery(payload);
+    const queryString = `INSERT INTO ${databaseTableName} ${columns} ${questionMarksValue}`;
+    console.log(queryString);
+    console.log(values);
+
+    // Execute the query to insert data into the database
+    try {
+      const response: any = await query({
+        query: queryString,
+        values: values,
+      });
+
+      return {
+        isSuccess: true,
+        message: "Data have been submitted successfully.",
+        data: response,
+      };
+    } catch (error: any) {
+      console.error(error);
+      return {
+        isSuccess: false,
+        message: "Something went wrong! Please try again.",
+        data: [],
+      };
+    }
+  }
+
+  // private async handleUpdatePermissions(params: any) {
+  //   const { databaseTableName, payload } = params;
+  //   const mysql = new MySqlUtils();
+  //   const { columns, values, whereClause } = mysql.generateUpdateQuery(params);
+  //   const queryString = `UPDATE ${databaseTableName} ${columns} ${whereClause}`;
+  //   console.log(queryString);
+  //   console.log(values);
+
+  //   // Execute the query to update data into the database
+  //   try {
+  //     await query({
+  //       query: queryString,
+  //       values: values,
+  //     });
+
+  //     return {
+  //       isSuccess: true,
+  //       message: "Updated successfully.",
+  //       data: [],
+  //     };
+  //   } catch (error: any) {
+  //     console.error(error);
+  //     return {
+  //       isSuccess: false,
+  //       message: "Something went wrong! Please reload the page and try again.",
+  //       data: [],
+  //     };
+  //   }
+  // }
 }
 
-type handlePostUserMenuPermissionsProps = {
-  dbTableName: string;
-  payload:
-    | {
-        user_id: number;
-        main_menu_id: number;
-      }
-    | {
-        user_id: number;
-        sub_menu_id: number;
-        main_menu_id: number;
-      }
-    | {
-        user_id: number;
-        brand_id: number;
-      }
-    | {
-        ap_profile_id: number;
-        brand_id: number;
-      };
+type IdProps = { id?: number };
+
+type MainMenuProps = IdProps & {
+  user_id: number;
+  main_menu_id: number;
 };
 
-const handlePostUserPermissions = async (
-  params: handlePostUserMenuPermissionsProps
-) => {
-  const { dbTableName, payload } = params;
-  const mysql = new MySqlUtils();
-  const { columns, values, questionMarksValue } =
-    mysql.generateInsertQuery(payload);
-  const queryString = `INSERT INTO ${dbTableName} ${columns} ${questionMarksValue}`;
-  console.log(queryString);
-  console.log(values);
+type SubMenuProps = MainMenuProps & {
+  sub_menu_id: number;
+};
 
-  // Execute the query to insert data into the database
-  try {
-    const response: any = await query({
-      query: queryString,
-      values: values,
-    });
+type BrandProps = Pick<MainMenuProps, "user_id" | "id"> & {
+  brand_id: number;
+};
 
-    return {
-      isSuccess: true,
-      message: "Data have been submitted successfully.",
-      data: response,
-    };
-  } catch (error: any) {
-    console.error(error);
-    return {
-      isSuccess: false,
-      message: "Something went wrong! Please try again.",
-      data: [],
-    };
-  }
+type ApProfileProps = Pick<BrandProps, "brand_id"> &
+  IdProps & {
+    ap_profile_id: number;
+  };
+
+type HandlePermissionsProps = {
+  databaseTableName: string;
+  payload: MainMenuProps | SubMenuProps | BrandProps | ApProfileProps;
 };

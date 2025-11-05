@@ -4,6 +4,7 @@ import {
   PostUserBrandPermissionsProps,
   PostApProfileBrandPermissionsProps,
   VerifyPermissionsProps,
+  UpdateUserBrandPermissionsProps,
 } from "./type/UserPermissionsProps";
 import { MySqlUtils } from "@/lib/utils/mysql/MySqlUtils";
 import { SearchKeywordService } from "../../search-keyword/SearchKeywordService";
@@ -203,6 +204,96 @@ export class UserPermissionsServerController {
     };
   }
 
+  async updateUserBrandPermissions(params: UpdateUserBrandPermissionsProps) {
+    const { user_id, brand_id } = params;
+    if (!Array.isArray(user_id)) {
+      return {
+        isSuccess: false,
+        message: "The user_id value is invalid. It must be an array.",
+        data: [],
+      };
+    }
+
+    const result: any[] = [];
+    const databaseTableName = "User_Access_Brands";
+    for (const id of user_id) {
+      for (const brandId of brand_id) {
+        const permissionsPayload = {
+          user_id: Number(id),
+          brand_id: brandId,
+        };
+        const validationResponse = await this.handleVerifyPermissions({
+          searchKeyword: "validation",
+          payload: permissionsPayload,
+          databaseTableName: databaseTableName,
+          staticSearchField: "user_id",
+        });
+
+        if (!validationResponse.isSuccess) {
+          return {
+            isSuccess: false,
+            message: validationResponse.message,
+            data: [],
+          };
+        }
+
+        const data = validationResponse.data;
+        const userHasAccessAlready = data.length > 0;
+        if (userHasAccessAlready) {
+          // Update the status
+          const { id, is_active } = { ...data[0] };
+          const status: 0 | 1 = is_active === 1 ? 0 : 1;
+          const updatePayload = {
+            id: Number(id),
+            is_active: status,
+          };
+          const permissionsResponse = await this.handleUpdatePermissions({
+            databaseTableName: databaseTableName,
+            payload: updatePayload,
+          });
+
+          if (!permissionsResponse.isSuccess) {
+            return {
+              isSuccess: false,
+              message: permissionsResponse.message,
+              data: [],
+            };
+          }
+          result.push({
+            ...updatePayload,
+            status: "Success!",
+          });
+        } else {
+          const permissionsResponse = await this.handlePostPermissions({
+            databaseTableName: databaseTableName,
+            payload: permissionsPayload,
+          });
+
+          if (!permissionsResponse.isSuccess) {
+            return {
+              isSuccess: false,
+              message: permissionsResponse.message,
+              data: [],
+            };
+          }
+
+          result.push({
+            ...permissionsPayload,
+            status: "Success!",
+          });
+        }
+      }
+    }
+
+    console.log("Updated User Brand Permissions:");
+    console.log(result);
+    return {
+      isSuccess: true,
+      message: "Data have been updated successfully.",
+      data: [],
+    };
+  }
+
   async postApProfileBrandPermissions(
     params: PostApProfileBrandPermissionsProps
   ) {
@@ -362,38 +453,40 @@ export class UserPermissionsServerController {
     }
   }
 
-  // private async handleUpdatePermissions(params: any) {
-  //   const { databaseTableName, payload } = params;
-  //   const mysql = new MySqlUtils();
-  //   const { columns, values, whereClause } = mysql.generateUpdateQuery(params);
-  //   const queryString = `UPDATE ${databaseTableName} ${columns} ${whereClause}`;
-  //   console.log(queryString);
-  //   console.log(values);
+  private async handleUpdatePermissions(params: HandleUpdatePermissionsProps) {
+    const { databaseTableName, payload } = params;
+    const mysql = new MySqlUtils();
+    const { columns, values, whereClause } = mysql.generateUpdateQuery(payload);
+    const queryString = `UPDATE ${databaseTableName} ${columns} ${whereClause}`;
+    console.log(queryString);
+    console.log(values);
 
-  //   // Execute the query to update data into the database
-  //   try {
-  //     await query({
-  //       query: queryString,
-  //       values: values,
-  //     });
+    // Execute the query to update data into the database
+    try {
+      await query({
+        query: queryString,
+        values: values,
+      });
 
-  //     return {
-  //       isSuccess: true,
-  //       message: "Updated successfully.",
-  //       data: [],
-  //     };
-  //   } catch (error: any) {
-  //     console.error(error);
-  //     return {
-  //       isSuccess: false,
-  //       message: "Something went wrong! Please reload the page and try again.",
-  //       data: [],
-  //     };
-  //   }
-  // }
+      return {
+        isSuccess: true,
+        message: "Updated successfully.",
+        data: [],
+      };
+    } catch (error: any) {
+      console.error(error);
+      return {
+        isSuccess: false,
+        message: "Something went wrong! Please reload the page and try again.",
+        data: [],
+      };
+    }
+  }
 }
 
 type IdProps = { id?: number };
+
+type StatusProps = { is_active: 0 | 1 };
 
 type MainMenuProps = IdProps & {
   user_id: number;
@@ -404,9 +497,11 @@ type SubMenuProps = MainMenuProps & {
   sub_menu_id: number;
 };
 
-type BrandProps = Pick<MainMenuProps, "user_id" | "id"> & {
+type BrandProps = Pick<MainMenuProps, "user_id"> & {
   brand_id: number;
 };
+
+type UpdateBrandProps = IdProps & StatusProps;
 
 type ApProfileProps = Pick<BrandProps, "brand_id"> &
   IdProps & {
@@ -416,4 +511,11 @@ type ApProfileProps = Pick<BrandProps, "brand_id"> &
 type HandlePermissionsProps = {
   databaseTableName: string;
   payload: MainMenuProps | SubMenuProps | BrandProps | ApProfileProps;
+};
+
+type HandleUpdatePermissionsProps = Pick<
+  HandlePermissionsProps,
+  "databaseTableName"
+> & {
+  payload: UpdateBrandProps;
 };

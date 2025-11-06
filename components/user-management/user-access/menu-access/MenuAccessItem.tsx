@@ -45,7 +45,7 @@ export const MenuAccessItem = ({
           }
         />
         <Label
-          className="font-semibold text-base"
+          className="font-semibold text-sm"
           htmlFor={`main-${parent.main_menu_id}`}
         >
           {parent.label}

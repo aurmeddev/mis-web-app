@@ -1,5 +1,4 @@
 import { TableBody, Table, TableRow, TableCell } from "@/components/ui/table";
-import { UserAccessRecordRaw } from "./UserAccessTableContainer";
 import {
   AtSign,
   CircleFadingPlus,
@@ -12,14 +11,13 @@ import {
 import { Header } from "@/components/shared/table/header/Header";
 import { Button } from "@/components/ui/button";
 import { MemoizedBadgeStatus } from "@/components/shared/badge/BadgeStatus";
+import { UserAccessRecordRaw, UserAccessTableProps } from "../UserAccess.types";
 
-type Props = {
-  data: UserAccessRecordRaw[];
-  editingRow: string;
-  handleEditChange: (id: string) => void;
-};
-
-export function UserAccessTable({ data, editingRow, handleEditChange }: Props) {
+export function UserAccessTable({
+  data,
+  editingRow,
+  handleEditChange,
+}: UserAccessTableProps) {
   const tableHeaders = [
     { label: "#", className: "border-r w-[4%]" },
     { label: "Name", className: "border-r w-[20%]" },

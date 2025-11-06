@@ -4,25 +4,14 @@ import { UserAccessTableContainer } from "./table/UserAccessTableContainer";
 import { TableLoader } from "../../shared/skeleton-loader/TableLoader";
 import { UserClientController } from "@/lib/features/users/manage/UserClientController";
 import { UserAccessProvider } from "@/context/user-access/UserAccessContext";
-import {
-  MenuSelectOptions,
-  UserSelectOptions,
-} from "@/app/(pages)/users/access/page";
-
-type Props = {
-  brands: any;
-  menuSelectOptions: MenuSelectOptions;
-  searchParams: { page: number; limit: number };
-  userSelectOptions: UserSelectOptions;
-};
+import { UserAccessContainerProps } from "./UserAccess.types";
 
 export async function UserAccessContainer({
   brands,
   menuSelectOptions,
   userSelectOptions,
   searchParams,
-}: Props) {
-  console.log(brands);
+}: UserAccessContainerProps) {
   const userClient = new UserClientController();
   return (
     <UserAccessProvider

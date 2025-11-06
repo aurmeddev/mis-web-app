@@ -6,6 +6,7 @@ import {
   VerifyPermissionsProps,
   UpdateUserBrandPermissionsProps,
   UpdateUserMenuPermissionsProps,
+  UpdateApProfileBrandPermissionsProps,
 } from "./type/UserPermissionsProps";
 import { MySqlUtils } from "@/lib/utils/mysql/MySqlUtils";
 import { SearchKeywordService } from "../../search-keyword/SearchKeywordService";
@@ -464,7 +465,7 @@ export class UserPermissionsServerController {
           });
         } else {
           const permissionsResponse = await this.handlePostPermissions({
-            databaseTableName: "Ap_Profiles_Access",
+            databaseTableName: databaseTableName,
             payload: permissionsPayload,
           });
 
@@ -489,6 +490,90 @@ export class UserPermissionsServerController {
     return {
       isSuccess: true,
       message: "Data have been submitted successfully.",
+      data: [],
+    };
+  }
+
+  async updateApProfileBrandPermissions(
+    params: UpdateApProfileBrandPermissionsProps
+  ) {
+    const { ap_profile_id, brand_id } = params;
+    const result: any[] = [];
+    const databaseTableName = "Ap_Profiles_Access";
+    for (const id of ap_profile_id) {
+      for (const brandId of brand_id) {
+        const permissionsPayload = {
+          ap_profile_id: Number(id),
+          brand_id: brandId,
+        };
+        const validationResponse = await this.handleVerifyPermissions({
+          searchKeyword: "validation",
+          payload: permissionsPayload,
+          databaseTableName: databaseTableName,
+          staticSearchField: "ap_profile_id",
+        });
+
+        if (!validationResponse.isSuccess) {
+          return {
+            isSuccess: false,
+            message: validationResponse.message,
+            data: [],
+          };
+        }
+
+        const data = validationResponse.data;
+        const userHasAccessAlready = data.length > 0;
+        if (userHasAccessAlready) {
+          // Update the status
+          const { id, is_active } = { ...data[0] };
+          const status: 0 | 1 = is_active === 1 ? 0 : 1;
+          const updatePayload = {
+            id: Number(id),
+            is_active: status,
+          };
+          const permissionsResponse = await this.handleUpdatePermissions({
+            databaseTableName: databaseTableName,
+            payload: updatePayload,
+          });
+
+          if (!permissionsResponse.isSuccess) {
+            return {
+              isSuccess: false,
+              message: permissionsResponse.message,
+              data: [],
+            };
+          }
+          result.push({
+            ...updatePayload,
+            status: "Success!",
+          });
+        } else {
+          const permissionsResponse = await this.handlePostPermissions({
+            databaseTableName: databaseTableName,
+            payload: permissionsPayload,
+          });
+
+          if (!permissionsResponse.isSuccess) {
+            return {
+              isSuccess: false,
+              message: permissionsResponse.message,
+              data: [],
+            };
+          }
+
+          result.push({
+            ...permissionsPayload,
+            status: "Success!",
+          });
+        }
+      }
+    }
+
+    console.log("Update AP Profile Brand Permissions:");
+    console.log(result);
+    return {
+      isSuccess: true,
+      message: "Data have been updated successfully.",
       data: [],
     };
   }

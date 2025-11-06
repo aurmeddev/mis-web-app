@@ -36,6 +36,8 @@ type PostApProfileBrandPermissionsProps = {
   ap_profile_id: number[];
   brand_id: number[];
 };
+
+type UpdateApProfileBrandPermissionsProps = PostApProfileBrandPermissionsProps;
 // type GetUserPermissionsProps = PaginationProps;
 // type ToggleUserMenuPermissionsStatusProps = Omit<
 //   BaseUserMenuPermissionsProps,
@@ -49,6 +51,7 @@ export type {
   VerifyPermissionsProps,
   UpdateUserBrandPermissionsProps,
   UpdateUserMenuPermissionsProps,
+  UpdateApProfileBrandPermissionsProps,
   // GetUserPermissionsProps,
   // ToggleUserMenuPermissionsStatusProps,
 };

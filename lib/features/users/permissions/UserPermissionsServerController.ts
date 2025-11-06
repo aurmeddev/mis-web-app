@@ -5,6 +5,7 @@ import {
   PostApProfileBrandPermissionsProps,
   VerifyPermissionsProps,
   UpdateUserBrandPermissionsProps,
+  UpdateUserMenuPermissionsProps,
 } from "./type/UserPermissionsProps";
 import { MySqlUtils } from "@/lib/utils/mysql/MySqlUtils";
 import { SearchKeywordService } from "../../search-keyword/SearchKeywordService";
@@ -14,13 +15,6 @@ export class UserPermissionsServerController {
     params: PostUserMenuPermissionsProps
   ): Promise<ApiResponseProps> {
     const { user_id, ...rest } = params;
-    if (!Array.isArray(user_id)) {
-      return {
-        isSuccess: false,
-        message: "The user_id value is invalid. It must be an array.",
-        data: [],
-      };
-    }
     const { main_menu } = rest;
     const result: any[] = [];
     const databaseTableName = "v_UserAccessMenus";
@@ -133,16 +127,164 @@ export class UserPermissionsServerController {
     };
   }
 
-  async postUserBrandPermissions(params: PostUserBrandPermissionsProps) {
-    const { user_id, brand_id } = params;
-    if (!Array.isArray(user_id)) {
-      return {
-        isSuccess: false,
-        message: "The user_id value is invalid. It must be an array.",
-        data: [],
-      };
+  async updateUserMenuPermissions(
+    params: UpdateUserMenuPermissionsProps
+  ): Promise<ApiResponseProps> {
+    const { user_id, ...rest } = params;
+    const { main_menu } = rest;
+    const result: any[] = [];
+    for (const id of user_id) {
+      for (const main of main_menu) {
+        const mainMenuPayload = {
+          user_id: Number(id),
+          main_menu_id: main.main_menu_id,
+        };
+        const databaseTableName = "User_Access_Main_Menus";
+        const validationResponse = await this.handleVerifyPermissions({
+          searchKeyword: "validation",
+          payload: mainMenuPayload,
+          databaseTableName: databaseTableName,
+          staticSearchField: "user_id",
+        });
+
+        if (!validationResponse.isSuccess) {
+          return {
+            isSuccess: false,
+            message: validationResponse.message,
+            data: [],
+          };
+        }
+
+        const data = validationResponse.data;
+        const userHasAccessAlready = data.length > 0;
+        if (userHasAccessAlready) {
+          // Update the status
+          const { id, is_active } = { ...data[0] };
+          const status: 0 | 1 = is_active === 1 ? 0 : 1;
+          const updatePayload = {
+            id: Number(id),
+            is_active: status,
+          };
+          const permissionsResponse = await this.handleUpdatePermissions({
+            databaseTableName: databaseTableName,
+            payload: updatePayload,
+          });
+
+          if (!permissionsResponse.isSuccess) {
+            return {
+              isSuccess: false,
+              message: permissionsResponse.message,
+              data: [],
+            };
+          }
+          result.push({
+            ...mainMenuPayload,
+            status: "Success",
+          });
+        } else {
+          const mainMenuAccessResponse = await this.handlePostPermissions({
+            databaseTableName: databaseTableName,
+            payload: mainMenuPayload,
+          });
+
+          if (!mainMenuAccessResponse.isSuccess) {
+            return {
+              isSuccess: false,
+              message: mainMenuAccessResponse.message,
+              data: [],
+            };
+          }
+
+          result.push({
+            ...mainMenuPayload,
+            status: "Success!",
+          });
+        }
+
+        if (main.sub_menu && main.sub_menu.length > 0) {
+          for (const sub of main.sub_menu) {
+            const subMenuPayload = {
+              user_id: Number(id),
+              main_menu_id: main.main_menu_id,
+              sub_menu_id: sub.sub_menu_id,
+            };
+            const databaseTableName = "User_Access_Sub_Menus";
+            const validationResponse = await this.handleVerifyPermissions({
+              searchKeyword: "validation",
+              payload: subMenuPayload,
+              databaseTableName: databaseTableName,
+              staticSearchField: "user_id",
+            });
+
+            if (!validationResponse.isSuccess) {
+              return {
+                isSuccess: false,
+                message: validationResponse.message,
+                data: [],
+              };
+            }
+
+            const data = validationResponse.data;
+            const userHasAccessAlready = data.length > 0;
+            if (userHasAccessAlready) {
+              // Update the status
+              const { id, is_active } = { ...data[0] };
+              const status: 0 | 1 = is_active === 1 ? 0 : 1;
+              const updatePayload = {
+                id: Number(id),
+                is_active: status,
+              };
+              const permissionsResponse = await this.handleUpdatePermissions({
+                databaseTableName: databaseTableName,
+                payload: updatePayload,
+              });
+
+              if (!permissionsResponse.isSuccess) {
+                return {
+                  isSuccess: false,
+                  message: permissionsResponse.message,
+                  data: [],
+                };
+              }
+              result.push({
+                ...subMenuPayload,
+                status: "Success",
+              });
+            } else {
+              const subMenuAccessResponse = await this.handlePostPermissions({
+                databaseTableName: "User_Access_Sub_Menus",
+                payload: subMenuPayload,
+              });
+
+              if (!subMenuAccessResponse.isSuccess) {
+                return {
+                  isSuccess: false,
+                  message: subMenuAccessResponse.message,
+                  data: [],
+                };
+              }
+
+              result.push({
+                ...subMenuPayload,
+                status: "Success!",
+              });
+            }
+          }
+        }
+      }
     }
 
+    console.log("Updated User Menus Permissions:");
+    console.log(result);
+    return {
+      isSuccess: true,
+      message: "Data have been updated successfully.",
+      data: [],
+    };
+  }
+
+  async postUserBrandPermissions(params: PostUserBrandPermissionsProps) {
+    const { user_id, brand_id } = params;
     const result: any[] = [];
     const databaseTableName = "User_Access_Brands";
     for (const id of user_id) {
@@ -206,14 +348,6 @@ export class UserPermissionsServerController {
 
   async updateUserBrandPermissions(params: UpdateUserBrandPermissionsProps) {
     const { user_id, brand_id } = params;
-    if (!Array.isArray(user_id)) {
-      return {
-        isSuccess: false,
-        message: "The user_id value is invalid. It must be an array.",
-        data: [],
-      };
-    }
-
     const result: any[] = [];
     const databaseTableName = "User_Access_Brands";
     for (const id of user_id) {
@@ -484,38 +618,38 @@ export class UserPermissionsServerController {
   }
 }
 
-type IdProps = { id?: number };
+// type IdProps = { id: number };
+// type StatusProps = { is_active: 0 | 1 };
 
-type StatusProps = { is_active: 0 | 1 };
-
-type MainMenuProps = IdProps & {
+type PostMainMenuProps = {
   user_id: number;
   main_menu_id: number;
 };
 
-type SubMenuProps = MainMenuProps & {
+type PostSubMenuProps = PostMainMenuProps & {
   sub_menu_id: number;
 };
 
-type BrandProps = Pick<MainMenuProps, "user_id"> & {
+type PostBrandProps = Pick<PostMainMenuProps, "user_id"> & {
   brand_id: number;
 };
 
-type UpdateBrandProps = IdProps & StatusProps;
-
-type ApProfileProps = Pick<BrandProps, "brand_id"> &
-  IdProps & {
-    ap_profile_id: number;
-  };
+type PostApProfileProps = Pick<PostBrandProps, "brand_id"> & {
+  ap_profile_id: number;
+};
 
 type HandlePermissionsProps = {
   databaseTableName: string;
-  payload: MainMenuProps | SubMenuProps | BrandProps | ApProfileProps;
+  payload:
+    | PostMainMenuProps
+    | PostSubMenuProps
+    | PostBrandProps
+    | PostApProfileProps;
 };
 
 type HandleUpdatePermissionsProps = Pick<
   HandlePermissionsProps,
   "databaseTableName"
 > & {
-  payload: UpdateBrandProps;
+  payload: { id: number; is_active: 0 | 1 };
 };

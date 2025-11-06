@@ -4,6 +4,7 @@ import {
   PostUserBrandPermissionsProps,
   PostUserMenuPermissionsProps,
   UpdateUserBrandPermissionsProps,
+  UpdateUserMenuPermissionsProps,
 } from "./type/UserPermissionsProps";
 import { appBaseUrl } from "@/lib/base-url/appBaseUrl";
 
@@ -15,6 +16,22 @@ export class UserPermissionsClientController {
       `${appBaseUrl}/api/users/permissions/menus/post`,
       {
         method: "POST",
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify(params),
+      }
+    );
+    return await response.json();
+  }
+
+  async updateUserMenuPermissions(
+    params: UpdateUserMenuPermissionsProps
+  ): Promise<ApiResponseProps> {
+    const response = await fetch(
+      `${appBaseUrl}/api/users/permissions/menus/update`,
+      {
+        method: "PUT",
         headers: {
           "Content-type": "application/json",
         },
@@ -46,7 +63,7 @@ export class UserPermissionsClientController {
     const response = await fetch(
       `${appBaseUrl}/api/users/permissions/brands/update`,
       {
-        method: "POST",
+        method: "PUT",
         headers: {
           "Content-type": "application/json",
         },

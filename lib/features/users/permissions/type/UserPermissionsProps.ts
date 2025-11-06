@@ -17,6 +17,8 @@ type PostUserMenuPermissionsProps = Omit<
   "id" | "is_active"
 >;
 
+type UpdateUserMenuPermissionsProps = PostUserMenuPermissionsProps;
+
 type VerifyPermissionsProps = Pick<BaseSearchKeywordProps, "searchKeyword"> & {
   payload: object;
   databaseTableName: string;
@@ -46,6 +48,7 @@ export type {
   PostApProfileBrandPermissionsProps,
   VerifyPermissionsProps,
   UpdateUserBrandPermissionsProps,
+  UpdateUserMenuPermissionsProps,
   // GetUserPermissionsProps,
   // ToggleUserMenuPermissionsStatusProps,
 };

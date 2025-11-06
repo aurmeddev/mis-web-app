@@ -26,7 +26,6 @@ import { ArrayUtils } from "@/lib/utils/array/ArrayUtils";
 
 export const useUserAccess = ({ response }: UseUserAccessProps) => {
   // --- Service Initialization ---
-  const domainsService = new DomainManagerClientService();
   const searchParamsManager = new SearchParamsManager();
   const userClient = new UserClientController();
   const decipher = new CryptoClientService();
@@ -482,8 +481,8 @@ export const useUserAccess = ({ response }: UseUserAccessProps) => {
         return;
       }
       setSearchQuery({ ...searchQuery, isSearching: true });
-      const { data } = await domainsService.find({
-        method: "find-one",
+      const { data } = await userClient.find({
+        method: "find-any",
         searchKeyword: searchText,
       });
       setTableData(data);

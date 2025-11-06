@@ -237,6 +237,8 @@ export function UserAccessDialog({
     }
   };
 
+  const eventPreventDefault = (ev: Event) => ev.preventDefault();
+
   // Watch the fields to trigger re-renders when the arrays change
   const watchedMainMenus = watch("main_menu") || [];
   const watchedSubMenus = watch("sub_menu") || [];
@@ -244,9 +246,9 @@ export function UserAccessDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        onEscapeKeyDown={(ev) => ev.preventDefault()}
+        onEscapeKeyDown={eventPreventDefault}
         onCloseAutoFocus={handleClose}
-        onInteractOutside={(ev) => ev.preventDefault()}
+        onInteractOutside={eventPreventDefault}
         showCloseButton={false}
       >
         <DialogHeader>

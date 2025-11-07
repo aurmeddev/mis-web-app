@@ -1,23 +1,21 @@
 import { Step3ReviewProps } from "../../UserAccess.types";
 
 export const Step3Review = ({
-  watchedFullName,
-  watchedDisplayName,
-  watchedEmail,
   brands,
   selectedBrandAccess,
   selectedMenuStructure,
+  watchedDetails,
 }: Step3ReviewProps) => (
   <div className="grid gap-4 px-1 text-sm">
     <div>
       <div className="text-muted-foreground">Name</div>
-      <div>{watchedFullName}</div>
-      <div className="text-muted-foreground">{watchedDisplayName}</div>
+      <div>{watchedDetails.full_name}</div>
+      <div className="text-muted-foreground">{watchedDetails.display_name}</div>
     </div>
 
     <div>
       <div className="text-muted-foreground">Email</div>
-      <div>{watchedEmail}</div>
+      <div>{watchedDetails.email}</div>
     </div>
 
     <div>

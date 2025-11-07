@@ -85,7 +85,9 @@ export type Step3ReviewProps = Pick<
     }[];
     sort: number;
   }[];
-  watchedDisplayName: string | undefined;
-  watchedEmail: string | undefined;
-  watchedFullName: string | undefined;
+  watchedDetails: {
+    display_name: string | undefined;
+    email: string | undefined;
+    full_name: string | undefined;
+  };
 };

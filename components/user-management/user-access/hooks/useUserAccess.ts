@@ -7,7 +7,6 @@ import { ApiResponseProps } from "@/database/poolQuery";
 import { userAccessFormSchema } from "../../schema";
 import { SelectOptions } from "@/components/shared/select/type";
 import { useUserAccessContext } from "@/context/user-access/UserAccessContext";
-import { DomainManagerClientService } from "@/lib/features/domains/DomainManagerClientService";
 import { CryptoClientService } from "@/lib/features/security/cryptography/CryptoClientService";
 import { UpdateUserProps } from "@/lib/features/users/manage/type/UserProps";
 import { UserClientController } from "@/lib/features/users/manage/UserClientController";
@@ -253,7 +252,8 @@ export const useUserAccess = ({ response }: UseUserAccessProps) => {
   };
 
   const handleMenuChange = (value: string[], type: "mainMenu" | "subMenu") => {
-    setMenuAccess((prevState) => ({ ...prevState, [type]: value }));
+    const cleanedValue = [...new Set([...value])];
+    setMenuAccess((prevState) => ({ ...prevState, [type]: cleanedValue }));
   };
 
   const handleAddUserEntry = () => {

@@ -93,39 +93,30 @@ export function UserAccessDialog({
     menuSelectOptions.main_menu.map((item) => [item.value, item])
   );
 
-  const selectedMenuStructure = useMemo(
-    () =>
-      selectedMenuAccess.mainMenu
-        .map((mainMenuId) => {
-          const mainMenu = mainMenuMap.get(mainMenuId);
+  const selectedMenuStructure = selectedMenuAccess.mainMenu
+    .map((mainMenuId) => {
+      const mainMenu = mainMenuMap.get(mainMenuId);
 
-          // Skip if main menu item doesn't exist
-          if (!mainMenu) return null;
+      // Skip if main menu item doesn't exist
+      if (!mainMenu) return null;
 
-          // Filter Sub Menus efficiently
-          const filteredSubMenu = menuSelectOptions.sub_menu
-            .filter(
-              (sm) =>
-                sm.main_menu_id === mainMenuId &&
-                selectedMenuAccess.subMenu.includes(sm.value)
-            )
-            .map((fsm) => ({ label: fsm.label, sort: fsm.sort }));
+      // Filter Sub Menus efficiently
+      const filteredSubMenu = menuSelectOptions.sub_menu
+        .filter(
+          (sm) =>
+            sm.main_menu_id === mainMenuId &&
+            selectedMenuAccess.subMenu.includes(sm.value)
+        )
+        .map((fsm) => ({ label: fsm.label, sort: fsm.sort }));
 
-          return {
-            label: mainMenu.label,
-            sub_menu: filteredSubMenu,
-            sort: Number(mainMenu.sort) || 1,
-          };
-        })
-        .filter((item) => item !== null)
-        .sort((a, b) => a.sort - b.sort),
-    [
-      selectedMenuAccess.mainMenu,
-      selectedMenuAccess.subMenu,
-      menuSelectOptions.sub_menu,
-      mainMenuMap,
-    ]
-  );
+      return {
+        label: mainMenu.label,
+        sub_menu: filteredSubMenu,
+        sort: Number(mainMenu.sort) || 1,
+      };
+    })
+    .filter((item) => item !== null)
+    .sort((a, b) => a.sort - b.sort);
 
   const nameDetails = {
     full_name: getValues("full_name"),
@@ -302,9 +293,11 @@ export function UserAccessDialog({
                 brands={brands}
                 selectedBrandAccess={selectedBrandAccess}
                 selectedMenuStructure={selectedMenuStructure}
-                watchedDisplayName={nameDetails.display_name}
-                watchedEmail={email}
-                watchedFullName={nameDetails.full_name}
+                watchedDetails={{
+                  display_name: nameDetails.display_name,
+                  email,
+                  full_name: nameDetails.full_name,
+                }}
               />
             )}
 

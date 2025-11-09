@@ -230,8 +230,12 @@ export const useUserAccess = ({ response }: UseUserAccessProps) => {
             originalValue,
             currentValue
           );
+
           changedValues[fieldName] = removedValue;
-          brandValue = currentValue;
+
+          if (fieldName == "brand") {
+            brandValue = currentValue;
+          }
           continue;
         }
       } else {
@@ -252,8 +256,7 @@ export const useUserAccess = ({ response }: UseUserAccessProps) => {
   };
 
   const handleMenuChange = (value: string[], type: "mainMenu" | "subMenu") => {
-    const cleanedValue = [...new Set([...value])];
-    setMenuAccess((prevState) => ({ ...prevState, [type]: cleanedValue }));
+    setMenuAccess((prevState) => ({ ...prevState, [type]: value }));
   };
 
   const handleAddUserEntry = () => {
@@ -283,11 +286,17 @@ export const useUserAccess = ({ response }: UseUserAccessProps) => {
         ...rest
       } = selectedUserAccessData;
 
+      const mapBrand =
+        brand?.map(
+          (b: string) => brands.find((bn) => bn.id == Number(b))?.label
+        ) || undefined;
+      // if a row data is not modified by update from handleUpdateEntry use assigned_brands
       const brandsAccess =
-        brand ||
+        mapBrand ||
         assigned_brands?.map((b: { brand_name: string }) =>
           String(b.brand_name)
         );
+
       const main_menu =
         mainMenuValue || navMain.map((nav: { id: number }) => String(nav.id));
       const sub_menu =
@@ -401,13 +410,12 @@ export const useUserAccess = ({ response }: UseUserAccessProps) => {
 
     if ("main_menu" in changedValues || "sub_menu" in changedValues) {
       //format the main menu param
-      const menuParam = menuAccess.mainMenu.map((mainMenuId) => {
+      const menuParam = main_menu.map((mainMenuId: string) => {
         const subMenu =
           menuSelectOptions.sub_menu
             .filter(
               (sm) =>
-                sm.main_menu_id == mainMenuId &&
-                menuAccess.subMenu.includes(sm.value)
+                sm.main_menu_id == mainMenuId && sub_menu.includes(sm.value)
             )
             .map((fsm) => ({ sub_menu_id: fsm.id })) || undefined;
         return {
@@ -416,11 +424,14 @@ export const useUserAccess = ({ response }: UseUserAccessProps) => {
         };
       });
 
-      const menuPermissionResponse =
-        await userPermission.postUserMenuPermissions({
-          main_menu: menuParam,
-          user_id: [userId],
-        });
+      const menuPermissionPayload = {
+        main_menu: menuParam,
+        user_id: [userId],
+      };
+
+      const menuPermissionResponse = isAddingNew
+        ? await userPermission.postUserMenuPermissions(menuPermissionPayload)
+        : await userPermission.updateUserMenuPermissions(menuPermissionPayload);
 
       showToast(
         menuPermissionResponse.isSuccess,
@@ -452,13 +463,25 @@ export const useUserAccess = ({ response }: UseUserAccessProps) => {
     }
 
     setDialogState((prevState) => ({ ...prevState, userAccess: false }));
-    const brandData = brandValue.length > 0 ? brandValue : brand;
+    let brandData: string[] = brand;
+    // if any brand is removed brand or updated
+    if (brandValue.length > 0) {
+      const brandIds = brandValue.map((brandName: string) => {
+        const brandId = brands.find(
+          (brandOption: SelectOptions) => brandOption.label == brandName
+        )?.id;
+        return String(brandId);
+      });
+      // assign transformed ['BrandName'] brand name to ids ['1']
+      brandData = brandIds;
+    }
+
     const entryData = {
       ...rest,
       brand: brandData,
       gender,
-      main_menu,
-      sub_menu,
+      main_menu: menuAccess.mainMenu,
+      sub_menu: menuAccess.subMenu,
       user_type,
       team,
     };

@@ -183,10 +183,14 @@ export function UserAccessDialog({
       // Add the sub menu ID
       newSubMenus = [...currentSubMenus, sub_menu_id];
       // Check also the main menu of sub
-      newMainMenus = [...currentMainMenus, String(mainMenuId)];
+      const mergeMainMenus = [...currentMainMenus, String(mainMenuId)];
+      newMainMenus = [...new Set(mergeMainMenus)];
+
       setValue("main_menu", newMainMenus, silentOptions);
       setValue("sub_menu", newSubMenus, silentOptions);
     } else {
+      //retain the main menus
+      newMainMenus = currentMainMenus;
       // Remove the sub menu ID
       newSubMenus = currentSubMenus.filter((id) => id !== sub_menu_id);
       // Check if any of the sub menu of a menu is checked

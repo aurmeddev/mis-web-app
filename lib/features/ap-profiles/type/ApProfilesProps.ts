@@ -1,11 +1,12 @@
 import { PaginationProps } from "@/lib/utils/pagination/type/PaginationProps";
 import { BaseSearchKeywordProps } from "../../search-keyword/type/SearchKeywordProps";
+import { PostApProfileBrandPermissionsProps } from "../../users/permissions/type/UserPermissionsProps";
 
 type BaseApProfilesProps = {
-  id: number; // auto-incremented in the database
-  profile_name?: string;
+  profile_name: string;
   fb_account_id: number;
   remarks?: string;
+  id: number; // auto-incremented in the database
   is_active: 0 | 1; // 0: Inactive, 1: Active
   created_by:
     | {
@@ -16,12 +17,15 @@ type BaseApProfilesProps = {
   created_at: string;
 };
 
-type PostApProfilesProps = Omit<
+type ApProfileBrandPermissionsProps = PostApProfileBrandPermissionsProps;
+
+type PostApProfilesProps = Pick<
   BaseApProfilesProps,
-  "id" | "is_active" | "created_by" | "created_at"
+  "profile_name" | "fb_account_id" | "remarks"
 > & {
   marketing_api_access_token?: string;
   app_secret_key?: string;
+  brand_permissions?: Pick<ApProfileBrandPermissionsProps, "brand_id">; // NOTE: Remove the ? to make it required if frontend is ready
 };
 
 type UpdateApProfilesProps = Omit<
@@ -32,11 +36,12 @@ type UpdateApProfilesProps = Omit<
   new_fb_account_id?: number;
   marketing_api_access_token?: string;
   app_secret_key?: string;
+  brand_permissions?: ApProfileBrandPermissionsProps;
 };
 
-type ToggleApProfilesStatusProps = Omit<
+type ToggleApProfilesStatusProps = Pick<
   BaseApProfilesProps,
-  "profile_name" | "fb_account_id" | "remarks" | "created_by" | "created_at"
+  "id" | "is_active"
 >;
 
 type FindApProfilesProps = BaseSearchKeywordProps;

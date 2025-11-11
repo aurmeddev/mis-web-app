@@ -10,6 +10,13 @@ BEGIN
     DECLARE in_limit INT;
     DECLARE in_offset INT;
 
+    -- Handle empty brand_ids by setting to '0' (no matches)
+    IF in_brand_ids IS NULL OR TRIM(in_brand_ids) = '' THEN
+    	SET @in_brand := '0';
+    ELSE
+        SET @in_brand := in_brand_ids;
+    END IF;
+
     -- Convert pagination inputs to INT (NULL means "no pagination")
     SET in_limit  = IF(TRIM(in_limit_raw)  = '', NULL, CAST(in_limit_raw  AS UNSIGNED));
     SET in_offset = IF(TRIM(in_offset_raw) = '', NULL, CAST(in_offset_raw AS UNSIGNED));
@@ -46,7 +53,7 @@ BEGIN
         '  SELECT',
         '    apa.ap_profile_id',
         '  FROM `Ap_Profiles_Access` AS apa',
-        '  WHERE apa.brand_id IN (', in_brand_ids, ') AND apa.is_active = 1 ',
+        '  WHERE apa.brand_id IN (', @in_brand, ') AND apa.is_active = 1 ',
         '  GROUP BY apa.ap_profile_id',
         '), ',
         'AssignedBrandsToApProfiles AS (',

@@ -23,7 +23,13 @@ export const PUT = async (
 
   const profileId = `${(await params).id}`;
   const data: UpdateApProfilesProps = await request.json();
-  const { id, marketing_api_access_token, app_secret_key, ...prop } = data;
+  const {
+    id,
+    marketing_api_access_token,
+    app_secret_key,
+    brand_permissions,
+    ...prop
+  } = data;
 
   const isMarketingApiAccessTokenValid =
     marketing_api_access_token !== undefined &&

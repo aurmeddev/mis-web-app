@@ -17,16 +17,18 @@ type BaseApProfilesProps = {
   created_at: string;
 };
 
-type ApProfileBrandPermissionsProps = PostApProfileBrandPermissionsProps;
+type ApProfileBrandPermissionsProps = Partial<
+  Pick<PostApProfileBrandPermissionsProps, "brand_id"> // NOTE: Remove the Partial to make it required if frontend is ready
+>;
 
 type PostApProfilesProps = Pick<
   BaseApProfilesProps,
   "profile_name" | "fb_account_id" | "remarks"
-> & {
-  marketing_api_access_token?: string;
-  app_secret_key?: string;
-  brand_permissions?: Pick<ApProfileBrandPermissionsProps, "brand_id">; // NOTE: Remove the ? to make it required if frontend is ready
-};
+> &
+  ApProfileBrandPermissionsProps & {
+    marketing_api_access_token?: string;
+    app_secret_key?: string;
+  };
 
 type UpdateApProfilesProps = Omit<
   BaseApProfilesProps,
@@ -36,7 +38,6 @@ type UpdateApProfilesProps = Omit<
   new_fb_account_id?: number;
   marketing_api_access_token?: string;
   app_secret_key?: string;
-  brand_permissions?: ApProfileBrandPermissionsProps;
 };
 
 type ToggleApProfilesStatusProps = Pick<

@@ -259,9 +259,9 @@ export const PUT = async (
   }
 };
 
-type ValidateFbAccountAssignmentProps = Omit<
+type ValidateFbAccountAssignmentProps = Pick<
   UpdateApProfilesProps,
-  "id" | "remarks" | "fb_account_id" | "profile_name"
+  "new_fb_account_id" | "new_profile_name"
 >;
 // Validate if the fb account does not assign to another profile
 const validateFbAccountAssignment = async (

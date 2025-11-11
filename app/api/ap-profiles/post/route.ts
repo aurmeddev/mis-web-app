@@ -9,6 +9,7 @@ import { DatetimeUtils } from "@/lib/utils/date/DatetimeUtils";
 import { ApProfilesServerService } from "@/lib/features/ap-profiles/ApProfilesServerService";
 import { FbAccountsServerService } from "@/lib/features/fb-accounts/FbAccountsServerService";
 import { UserPermissionsServerController } from "@/lib/features/users/permissions/UserPermissionsServerController";
+import { PostApProfileBrandPermissionsProps } from "@/lib/features/users/permissions/type/UserPermissionsProps";
 export const POST = async (request: NextRequest) => {
   // Check if the user session is valid before processing the request
   const session = await getSession();
@@ -45,7 +46,7 @@ export const POST = async (request: NextRequest) => {
   const {
     marketing_api_access_token,
     app_secret_key,
-    brand_permissions,
+    brand_id,
     ...data
   }: PostApProfilesProps = await request.json();
   const objUtil = new ObjectUtils();
@@ -192,9 +193,10 @@ export const POST = async (request: NextRequest) => {
       }
     }
 
+    // Add brand permissions if provided
     const { assigned_brands } = await addBrandPermissionsToApProfile({
       ap_profile_id: [insertId],
-      brand_permissions: brand_permissions || { brand_id: [] },
+      brand_id: brand_id || [],
     });
 
     const result = [
@@ -269,15 +271,11 @@ const encryptSensitiveData = async (params: {
   return result;
 };
 
-const addBrandPermissionsToApProfile = async (params: {
-  ap_profile_id: number[];
-  brand_permissions: {
-    brand_id: number[];
-  };
-}) => {
-  const { ap_profile_id, brand_permissions } = params;
-  const hasBrandPermissions =
-    brand_permissions && brand_permissions.brand_id?.length > 0;
+const addBrandPermissionsToApProfile = async (
+  params: PostApProfileBrandPermissionsProps
+) => {
+  const { ap_profile_id, brand_id } = params;
+  const hasBrandPermissions = brand_id.length > 0;
 
   if (!hasBrandPermissions) {
     return {
@@ -288,8 +286,8 @@ const addBrandPermissionsToApProfile = async (params: {
   // Add brand permissions if provided
   const permissions = new UserPermissionsServerController();
   const response = await permissions.postApProfileBrandPermissions({
-    ap_profile_id: ap_profile_id,
-    brand_id: brand_permissions.brand_id,
+    ap_profile_id,
+    brand_id,
   });
 
   if (!response.isSuccess) {
@@ -301,6 +299,6 @@ const addBrandPermissionsToApProfile = async (params: {
   }
 
   return {
-    assigned_brands: brand_permissions.brand_id,
+    assigned_brands: brand_id,
   };
 };

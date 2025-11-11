@@ -8,8 +8,6 @@ import { NextResponse, NextRequest } from "next/server";
 import { DatetimeUtils } from "@/lib/utils/date/DatetimeUtils";
 import { ApProfilesServerService } from "@/lib/features/ap-profiles/ApProfilesServerService";
 import { FbAccountsServerService } from "@/lib/features/fb-accounts/FbAccountsServerService";
-import { UserPermissionsServerController } from "@/lib/features/users/permissions/UserPermissionsServerController";
-import { PostApProfileBrandPermissionsProps } from "@/lib/features/users/permissions/type/UserPermissionsProps";
 export const POST = async (request: NextRequest) => {
   // Check if the user session is valid before processing the request
   const session = await getSession();
@@ -46,7 +44,7 @@ export const POST = async (request: NextRequest) => {
   const {
     marketing_api_access_token,
     app_secret_key,
-    brand_id,
+    // brand_id, Commented out because brand permissions handling is removed from POST AP Profiles api
     ...data
   }: PostApProfilesProps = await request.json();
   const objUtil = new ObjectUtils();
@@ -194,10 +192,10 @@ export const POST = async (request: NextRequest) => {
     }
 
     // Add brand permissions if provided
-    const { assigned_brands } = await addBrandPermissionsToApProfile({
-      ap_profile_id: [insertId],
-      brand_id: brand_id || [],
-    });
+    // const { assigned_brands } = await addBrandPermissionsToApProfile({
+    //   ap_profile_id: [insertId],
+    //   brand_id: brand_id || [],
+    // });
 
     const result = [
       {
@@ -205,7 +203,7 @@ export const POST = async (request: NextRequest) => {
         fb_account_id: data.fb_account_id || 0,
         profile_name: data.profile_name,
         remarks: data.remarks || null,
-        assigned_brands,
+        // assigned_brands,
         fb_account: getFbAccountInfo || {},
         status: isFbAccountIdProvided ? "active" : "available",
         created_by: {
@@ -271,34 +269,34 @@ const encryptSensitiveData = async (params: {
   return result;
 };
 
-const addBrandPermissionsToApProfile = async (
-  params: PostApProfileBrandPermissionsProps
-) => {
-  const { ap_profile_id, brand_id } = params;
-  const hasBrandPermissions = brand_id.length > 0;
+// const addBrandPermissionsToApProfile = async (
+//   params: PostApProfileBrandPermissionsProps
+// ) => {
+//   const { ap_profile_id, brand_id } = params;
+//   const hasBrandPermissions = brand_id.length > 0;
 
-  if (!hasBrandPermissions) {
-    return {
-      assigned_brands: [],
-    };
-  }
+//   if (!hasBrandPermissions) {
+//     return {
+//       assigned_brands: [],
+//     };
+//   }
 
-  // Add brand permissions if provided
-  const permissions = new UserPermissionsServerController();
-  const response = await permissions.postApProfileBrandPermissions({
-    ap_profile_id,
-    brand_id,
-  });
+//   // Add brand permissions if provided
+//   const permissions = new UserPermissionsServerController();
+//   const response = await permissions.postApProfileBrandPermissions({
+//     ap_profile_id,
+//     brand_id,
+//   });
 
-  if (!response.isSuccess) {
-    // Failed to assign brand permissions to the AP profile.
-    console.error(response.message);
-    return {
-      assigned_brands: [],
-    };
-  }
+//   if (!response.isSuccess) {
+//     // Failed to assign brand permissions to the AP profile.
+//     console.error(response.message);
+//     return {
+//       assigned_brands: [],
+//     };
+//   }
 
-  return {
-    assigned_brands: brand_id,
-  };
-};
+//   return {
+//     assigned_brands: brand_id,
+//   };
+// };

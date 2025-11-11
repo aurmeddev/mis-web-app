@@ -91,7 +91,6 @@ BEGIN
         '  v_ap.created_by,',
         '  v_ap.ap_created_by,',
         '  v_ap.is_active,',
-        '  tc.total_count, ',
         '  v_ap.status ',
         @total_count_pages_query,
         'FROM `v_ApProfiles` AS v_ap ',

@@ -1,6 +1,5 @@
 import { PaginationProps } from "@/lib/utils/pagination/type/PaginationProps";
 import { BaseSearchKeywordProps } from "../../search-keyword/type/SearchKeywordProps";
-import { PostApProfileBrandPermissionsProps } from "../../users/permissions/type/UserPermissionsProps";
 
 type BaseApProfilesProps = {
   profile_name: string;
@@ -17,18 +16,18 @@ type BaseApProfilesProps = {
   created_at: string;
 };
 
-type ApProfileBrandPermissionsProps = Partial<
-  Pick<PostApProfileBrandPermissionsProps, "brand_id"> // NOTE: Remove the Partial to make it required if frontend is ready
->;
+// Commented out because brand permissions handling is removed from POST AP Profiles api
+// type ApProfileBrandPermissionsProps = Partial<
+//   Pick<PostApProfileBrandPermissionsProps, "brand_id"> // NOTE: Remove the Partial to make it required if frontend is ready
+// >;
 
 type PostApProfilesProps = Pick<
   BaseApProfilesProps,
   "profile_name" | "fb_account_id" | "remarks"
-> &
-  ApProfileBrandPermissionsProps & {
-    marketing_api_access_token?: string;
-    app_secret_key?: string;
-  };
+> & {
+  marketing_api_access_token?: string;
+  app_secret_key?: string;
+};
 
 type UpdateApProfilesProps = Omit<
   BaseApProfilesProps,

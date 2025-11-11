@@ -39,22 +39,12 @@ export const POST = async (
     requestUrlSearchParams: request.nextUrl.searchParams,
   });
 
-  if (!isSuccess) {
-    return NextResponse.json(
-      {
-        isSuccess,
-        message,
-        data: [],
-      },
-      { status: 400 }
-    );
-  }
   return NextResponse.json(
     {
       isSuccess,
       message,
       data: data,
     },
-    { status: 200 }
+    { status: isSuccess ? 200 : 400 }
   );
 };

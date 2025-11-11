@@ -23,13 +23,7 @@ export const PUT = async (
 
   const profileId = `${(await params).id}`;
   const data: UpdateApProfilesProps = await request.json();
-  const {
-    id,
-    marketing_api_access_token,
-    app_secret_key,
-    brand_permissions,
-    ...prop
-  } = data;
+  const { id, marketing_api_access_token, app_secret_key, ...prop } = data;
 
   const isMarketingApiAccessTokenValid =
     marketing_api_access_token !== undefined &&
@@ -265,9 +259,9 @@ export const PUT = async (
   }
 };
 
-type ValidateFbAccountAssignmentProps = Omit<
+type ValidateFbAccountAssignmentProps = Pick<
   UpdateApProfilesProps,
-  "id" | "remarks" | "fb_account_id" | "profile_name"
+  "new_fb_account_id" | "new_profile_name"
 >;
 // Validate if the fb account does not assign to another profile
 const validateFbAccountAssignment = async (

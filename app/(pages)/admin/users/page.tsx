@@ -38,20 +38,6 @@ export default async function Page({ searchParams }: any) {
 
   if (!session) return <NotFound param={notFoundObj} />;
 
-  const encryptedTeamId = session.user.id;
-  const decipher = new CryptoUtilsManager(new CryptoUtilsServerService());
-  const decipheredTeamId = (
-    await decipher.cryptoArrayString({ data: encryptedTeamId })
-  ).string();
-
-  /*
-   *User ID 1 is the Super Admin Account
-   */
-  const IS_USER_SUPER_ADMIN = decipheredTeamId === "1";
-  if (!IS_USER_SUPER_ADMIN) {
-    return <NotFound param={notFoundObj} />;
-  }
-
   const awaitedParams = await searchParams;
   const page = Number(awaitedParams.page) || 1;
   const limit = Number(awaitedParams.limit) || 50;

@@ -2,7 +2,7 @@
 import {
   MenuSelectOptions,
   UserSelectOptions,
-} from "@/app/(pages)/users/access/page";
+} from "@/app/(pages)/admin/users/page";
 import { SelectOptions } from "@/components/shared/select/type";
 import { createContext, useContext } from "react";
 

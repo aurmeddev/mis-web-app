@@ -2,30 +2,26 @@ import { SelectOptions } from "@/components/shared/select/type";
 import { CheckedState } from "@radix-ui/react-checkbox";
 import { Control } from "react-hook-form";
 import { ParentMenu } from "./dialog/UserAccessDialog";
-import {
-  MenuSelectOptions,
-  UserSelectOptions,
-} from "@/app/(pages)/admin/users/page";
 import { ApiResponseProps } from "@/database/query";
 import { PaginationProps } from "@/lib/utils/pagination/type/PaginationProps";
 import { userAccessFormSchema } from "../schema";
 import z from "zod";
 
-export type UserAccessContainerProps = {
+type UserAccessContainerProps = {
   brands: SelectOptions[];
   menuSelectOptions: MenuSelectOptions;
   searchParams: { page: number; limit: number };
   userSelectOptions: UserSelectOptions;
 };
 
-export type UserAccessTableContainerProps = {
+type UserAccessTableContainerProps = {
   response: ApiResponseProps & {
     pagination?: PaginationProps;
   };
   usersData: UserAccessRecordRaw[];
 };
 
-export type UserAccessRecordRaw = {
+type UserAccessRecordRaw = {
   row_id?: number;
   id: string;
   brand: string[];
@@ -41,17 +37,35 @@ export type UserAccessRecordRaw = {
   navMain: any;
 };
 
-export type MenuAccess = { mainMenu: string[]; subMenu: string[] };
-export type UserAccessFormValues = z.infer<typeof userAccessFormSchema>;
+type MenuAccess = { mainMenu: string[]; subMenu: string[] };
+type UserAccessFormValues = z.infer<typeof userAccessFormSchema>;
+
+type MainMenuSelectOptions = SelectOptions & {
+  sort: number;
+};
+
+type SubMenuSelectOptions = MainMenuSelectOptions & {
+  main_menu_id: string;
+};
+
+type UserSelectOptions = {
+  teams: SelectOptions[];
+  user_types: SelectOptions[];
+};
+
+type MenuSelectOptions = {
+  main_menu: MainMenuSelectOptions[];
+  sub_menu: SubMenuSelectOptions[];
+};
 
 // --- Hook Props ---
-export type UseUserAccessProps = {
+type UseUserAccessProps = {
   response: ApiResponseProps & {
     pagination?: PaginationProps;
   };
 };
 
-export type UserAccessTableProps = {
+type UserAccessTableProps = {
   data: UserAccessRecordRaw[];
   editingRow: string;
   onEditChange: (id: string) => void;
@@ -67,14 +81,14 @@ type StatusState = {
   isSubmitting: boolean;
 };
 
-export type StatusCellProps = {
+type StatusCellProps = {
   rowData: UserAccessRecordRaw;
   statusState: StatusState;
   onEditStatus: UserAccessTableProps["onEditStatus"];
   onConfirmStatus: UserAccessTableProps["onConfirmStatus"];
 };
 
-export type StepFieldsProps = {
+type StepFieldsProps = {
   brands: SelectOptions[];
   control: Control<UserAccessFormValues>;
   menuStructure: ParentMenu[];
@@ -86,11 +100,11 @@ export type StepFieldsProps = {
   watchedSubMenus: string[];
 };
 
-export type Step1FieldsProps = Pick<StepFieldsProps, "control"> & {
+type Step1FieldsProps = Pick<StepFieldsProps, "control"> & {
   userSelectOptions: UserSelectOptions;
 };
 
-export type Step3ReviewProps = Pick<
+type Step3ReviewProps = Pick<
   StepFieldsProps,
   "brands" | "selectedBrandAccess"
 > & {
@@ -107,4 +121,22 @@ export type Step3ReviewProps = Pick<
     email: string | undefined;
     full_name: string | undefined;
   };
+};
+
+export type {
+  UserAccessContainerProps,
+  UserAccessTableContainerProps,
+  UserAccessRecordRaw,
+  MenuAccess,
+  UserAccessFormValues,
+  MainMenuSelectOptions,
+  SubMenuSelectOptions,
+  UserSelectOptions,
+  MenuSelectOptions,
+  UseUserAccessProps,
+  UserAccessTableProps,
+  StatusCellProps,
+  StepFieldsProps,
+  Step3ReviewProps,
+  Step1FieldsProps,
 };

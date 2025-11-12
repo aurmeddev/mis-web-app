@@ -57,7 +57,9 @@ export function FbAccountsDialog({
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid gap-2">
-            <Label htmlFor="fb_owner_name">FB Owner Name</Label>
+            <Label htmlFor="fb_owner_name">
+              FB Owner Name <span className="text-red-500">*</span>
+            </Label>
             <div className="relative">
               <Input
                 autoFocus
@@ -72,7 +74,12 @@ export function FbAccountsDialog({
             </div>
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="email_address">Email</Label>
+            <Label htmlFor="email_address">
+              Email{" "}
+              <span className="font-normal text-muted-foreground">
+                (optional)
+              </span>
+            </Label>
             <div className="relative">
               <Input
                 className="border h-8 px-2 py-0 rounded w-full"
@@ -85,7 +92,12 @@ export function FbAccountsDialog({
             </div>
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="contact_no">Contact Number</Label>
+            <Label htmlFor="contact_no">
+              Contact Number{" "}
+              <span className="font-normal text-muted-foreground">
+                (optional)
+              </span>
+            </Label>
             <div className="relative">
               <Input
                 className="border h-8 px-2 py-0 rounded w-full"
@@ -99,7 +111,9 @@ export function FbAccountsDialog({
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="username">Username</Label>
+            <Label htmlFor="username">
+              Username <span className="text-red-500">*</span>
+            </Label>
             <div className="relative">
               <Input
                 className="border h-8 px-2 py-0 rounded w-full"
@@ -112,7 +126,9 @@ export function FbAccountsDialog({
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">
+              Password <span className="text-red-500">*</span>
+            </Label>
             <div className="relative">
               <Input
                 className="border h-8 px-2 py-0 rounded w-full"
@@ -125,7 +141,9 @@ export function FbAccountsDialog({
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="app_2fa_key">2FA Secret Key</Label>
+            <Label htmlFor="app_2fa_key">
+              2FA Secret Key <span className="text-red-500">*</span>
+            </Label>
             <div className="relative">
               <Input
                 className="border h-8 px-2 py-0 rounded w-full"
@@ -139,7 +157,9 @@ export function FbAccountsDialog({
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="recovery_code">Recovery Code</Label>
+            <Label htmlFor="recovery_code">
+              Recovery Code <span className="text-red-500">*</span>
+            </Label>
             <div className="relative">
               <Input
                 className="border h-8 px-2 py-0 rounded w-full"
@@ -152,7 +172,12 @@ export function FbAccountsDialog({
             </div>
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="remarks">Remarks</Label>
+            <Label htmlFor="remarks">
+              Remarks{" "}
+              <span className="font-normal text-muted-foreground">
+                (optional)
+              </span>
+            </Label>
             <Textarea
               className="border h-8 px-2 py-1 rounded w-full"
               disabled={isActionDisabled}

@@ -10,13 +10,16 @@ import {
 } from "lucide-react";
 import { Header } from "@/components/shared/table/header/Header";
 import { Button } from "@/components/ui/button";
-import { MemoizedBadgeStatus } from "@/components/shared/badge/BadgeStatus";
 import { UserAccessRecordRaw, UserAccessTableProps } from "../UserAccess.types";
+import { StatusCell } from "./cell/StatusCell";
 
 export function UserAccessTable({
   data,
   editingRow,
-  handleEditChange,
+  onEditChange,
+  onConfirmStatus,
+  onEditStatus,
+  statusState,
 }: UserAccessTableProps) {
   const tableHeaders = [
     { label: "#", className: "border-r w-[4%]" },
@@ -30,7 +33,7 @@ export function UserAccessTable({
     {
       label: "Status",
       icon: <CircleFadingPlus className="h-4 w-4" />,
-      className: "border-r w-[15%]",
+      className: "border-r w-[12%]",
       colSpan: 2,
     },
     {
@@ -82,16 +85,16 @@ export function UserAccessTable({
               <TableCell className="border-r text-sm truncate">
                 {rowData.email}
               </TableCell>
-              <TableCell className="border-r py-0" colSpan={2}>
-                {/* {isEditing ? (
-                  <StatusSelect
-                    value={String(form.status) || String(rowData.status)}
-                    onChange={handleStatusChange}
-                    isDisabled={isActionDisabled}
-                  />
-                ) : (
-                )} */}
-                <MemoizedBadgeStatus isActive={rowData.status == "active"} />
+              <TableCell
+                className="bg-white! border-r py-0 relative"
+                colSpan={2}
+              >
+                <StatusCell
+                  rowData={rowData}
+                  statusState={statusState}
+                  onConfirmStatus={onConfirmStatus}
+                  onEditStatus={onEditStatus}
+                />
               </TableCell>
               <TableCell className="border-r text-xs">
                 <div>{rowData.user_type_name}</div>
@@ -102,7 +105,7 @@ export function UserAccessTable({
                   <Button
                     className="cursor-pointer py-0 px-3"
                     variant="outline"
-                    onClick={() => handleEditChange(rowData.id)}
+                    onClick={() => onEditChange(rowData.id)}
                     size={"sm"}
                   >
                     {rowData.id == editingRow ? (
@@ -112,14 +115,6 @@ export function UserAccessTable({
                         <Pencil className="mr-0 h-4 w-4" /> Edit
                       </>
                     )}
-                  </Button>
-                  <Button
-                    className="cursor-pointer py-0 px-3"
-                    variant="outline"
-                    onClick={() => handleEditChange(rowData.id)}
-                    size={"sm"}
-                  >
-                    <Settings2 className="mr-0 h-4 w-4" /> View Access
                   </Button>
                 </div>
               </TableCell>

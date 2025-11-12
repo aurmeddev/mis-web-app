@@ -75,6 +75,12 @@ export const useUserAccess = ({ response }: UseUserAccessProps) => {
     result: { data: [], isSuccess: false, message: "" },
     selectedResult: null,
   });
+  const [statusState, setStatusState] = useState({
+    isEditing: false,
+    id: "",
+    isActive: false,
+    isSubmitting: false,
+  });
 
   const [menuAccess, setMenuAccess] = useState<MenuAccess>({
     mainMenu: [],
@@ -347,6 +353,48 @@ export const useUserAccess = ({ response }: UseUserAccessProps) => {
     }
   };
 
+  const handleEditStatus = async (id: string, isActive: boolean) => {
+    setStatusState((prevState) => ({
+      ...prevState,
+      isActive,
+      id,
+      isEditing: id ? true : false,
+    }));
+  };
+
+  const handleConfirmStatus = async (id: string, isActive: boolean) => {
+    setStatusState((prevState) => ({
+      ...prevState,
+      isSubmitting: true,
+    }));
+    const { isSuccess, message } = await userClient.toggleStatus({
+      id,
+      is_active: isActive ? 1 : 0,
+    });
+    if (!isSuccess) {
+      showToast(false, message);
+      return;
+    }
+    showToast(true, message);
+    setTableData((prevState) => {
+      return prevState.map((entry) => {
+        if (entry.id === id) {
+          return {
+            ...entry,
+            status: isActive ? "active" : "inactive",
+          };
+        }
+        return entry;
+      });
+    });
+    setStatusState({
+      id: "",
+      isActive: false,
+      isEditing: false,
+      isSubmitting: false,
+    });
+  };
+
   const handleReset = () => {
     userAccessForm.reset();
     setMenuAccess({ mainMenu: [], subMenu: [] });
@@ -556,6 +604,7 @@ export const useUserAccess = ({ response }: UseUserAccessProps) => {
     menuAccess,
     selectedBrandAccess,
     userAccessForm,
+    statusState,
 
     // Data
     menuStructure,
@@ -568,6 +617,8 @@ export const useUserAccess = ({ response }: UseUserAccessProps) => {
     // Handlers
     handleAddUserEntry,
     handleEditChange,
+    handleEditStatus,
+    handleConfirmStatus,
     handleSubmit,
     handleBrandChange,
     handleMenuChange,

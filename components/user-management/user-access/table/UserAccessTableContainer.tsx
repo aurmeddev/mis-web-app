@@ -20,6 +20,7 @@ export function UserAccessTableContainer({
     menuAccess,
     selectedBrandAccess,
     userAccessForm,
+    statusState,
 
     menuStructure,
 
@@ -29,6 +30,8 @@ export function UserAccessTableContainer({
 
     handleAddUserEntry,
     handleEditChange,
+    handleEditStatus,
+    handleConfirmStatus,
     handleSubmit,
     handleBrandChange,
     handleMenuChange,
@@ -75,7 +78,10 @@ export function UserAccessTableContainer({
         <UserAccessTable
           data={tableData}
           editingRow={editingRow}
-          handleEditChange={handleEditChange}
+          onEditChange={handleEditChange}
+          onConfirmStatus={handleConfirmStatus}
+          onEditStatus={handleEditStatus}
+          statusState={statusState}
         />
       </ScrollArea>
       <Pagination

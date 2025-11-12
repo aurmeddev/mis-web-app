@@ -5,7 +5,7 @@ import { ParentMenu } from "./dialog/UserAccessDialog";
 import {
   MenuSelectOptions,
   UserSelectOptions,
-} from "@/app/(pages)/users/access/page";
+} from "@/app/(pages)/admin/users/page";
 import { ApiResponseProps } from "@/database/query";
 import { PaginationProps } from "@/lib/utils/pagination/type/PaginationProps";
 import { userAccessFormSchema } from "../schema";
@@ -54,7 +54,24 @@ export type UseUserAccessProps = {
 export type UserAccessTableProps = {
   data: UserAccessRecordRaw[];
   editingRow: string;
-  handleEditChange: (id: string) => void;
+  onEditChange: (id: string) => void;
+  onEditStatus: (id: string, isActive: boolean) => void;
+  onConfirmStatus: (id: string, isActive: boolean) => void;
+  statusState: StatusState;
+};
+
+type StatusState = {
+  id: string;
+  isEditing: boolean;
+  isActive: boolean;
+  isSubmitting: boolean;
+};
+
+export type StatusCellProps = {
+  rowData: UserAccessRecordRaw;
+  statusState: StatusState;
+  onEditStatus: UserAccessTableProps["onEditStatus"];
+  onConfirmStatus: UserAccessTableProps["onConfirmStatus"];
 };
 
 export type StepFieldsProps = {

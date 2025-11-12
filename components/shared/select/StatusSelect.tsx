@@ -7,21 +7,24 @@ import {
   SelectLabel,
   SelectItem,
 } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 
 type StatusSelectProps = {
+  className?: string;
   isDisabled: boolean;
   onChange: (value: string) => void;
   value: string;
 };
 
 export function StatusSelect({
+  className,
   isDisabled,
   onChange,
   value,
 }: StatusSelectProps) {
   return (
     <Select onValueChange={onChange} value={value} disabled={isDisabled}>
-      <SelectTrigger className="h-8">
+      <SelectTrigger className={cn("h-8", className)}>
         <SelectValue placeholder="Select a status" />
       </SelectTrigger>
       <SelectContent>

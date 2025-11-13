@@ -33,8 +33,8 @@ export async function FbAccountsContainer({
   return (
     <div className="min-h-[calc(100dvh-5rem)] p-6 pr-0">
       <div>
-        <div className="text-xl">FB Accounts Management</div>
-        <p className="text-sm">Securely Manage Your Fb Accounts</p>
+        <div className="text-xl">Facebook Accounts</div>
+        <p className="text-sm">Manage credentials for Facebook accounts.</p>
       </div>
 
       <Suspense fallback={<TableLoader />}>

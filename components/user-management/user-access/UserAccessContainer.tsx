@@ -22,7 +22,9 @@ export async function UserAccessContainer({
       <div className="min-h-[calc(100dvh-5rem)] p-6 pr-0">
         <div>
           <div className="text-xl">Users</div>
-          <p className="text-sm">Manage and control user permissions.</p>
+          <p className="text-sm">
+            Manage user accounts and control individual access permissions.
+          </p>
         </div>
         <Suspense fallback={<TableLoader />}>
           <TableFetch

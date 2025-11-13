@@ -6,9 +6,9 @@ export async function UserManagementContainer() {
   return (
     <div className="min-h-[calc(100dvh-5rem)] p-6 pr-0">
       <div>
-        <div className="text-xl">User management</div>
+        <div className="text-xl">Whitelist IP</div>
         <p className="text-sm">
-          {"Manage your team's whitelisted IP addresses"}
+          {"Manage authorized IP addresses for system access."}
         </p>
       </div>
       <Suspense fallback={<UserManagementTableLoader />}>

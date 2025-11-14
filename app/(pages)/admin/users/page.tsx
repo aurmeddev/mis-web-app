@@ -38,7 +38,7 @@ export default async function Page({ searchParams }: any) {
 
   const awaitedParams = await searchParams;
   const page = Number(awaitedParams.page) || 1;
-  const limit = Number(awaitedParams.limit) || 50;
+  const limit = Number(awaitedParams.limit) || 10;
   const params = {
     page,
     limit,

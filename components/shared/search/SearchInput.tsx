@@ -3,16 +3,17 @@ import { cn } from "@/lib/utils";
 import { ChangeEvent } from "react";
 import { Input } from "@/components/ui/input";
 import { SearchQuery } from "@/components/otp-generator/type";
+import React from "react";
 
 type Props = {
   searchQuery: SearchQuery;
   onSearchQueryChange: (ev: ChangeEvent<HTMLInputElement>) => void;
-  onSearchFocus: () => void;
+  onSearchFocus?: () => void;
   placeholder?: string;
   className?: string;
 };
 
-export function SearchInput({
+function SearchInput({
   searchQuery,
   onSearchQueryChange,
   onSearchFocus,
@@ -42,3 +43,5 @@ export function SearchInput({
     </>
   );
 }
+
+export const SearchInputMemo = React.memo(SearchInput);

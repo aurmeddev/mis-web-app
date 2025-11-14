@@ -8,7 +8,7 @@ import { OtpGeneratorService } from "@/lib/features/security/otp-generator/OtpGe
 import { GeneratorCardLoading } from "./GeneratorCardLoading";
 import { SearchQuery } from "./type";
 import { GeneratorSearchResults } from "./search/GeneratorSearchResults";
-import { SearchInput } from "../shared/search/SearchInput";
+import { SearchInputMemo } from "../shared/search/SearchInput";
 import { SearchResultContainer } from "../shared/search/SearchResultContainer";
 
 export function GeneratorContainer() {
@@ -104,7 +104,7 @@ export function GeneratorContainer() {
       </div>
       <div className="flex flex-col gap-10">
         <div className="relative max-w-xs w-[25%]">
-          <SearchInput
+          <SearchInputMemo
             searchQuery={searchQuery}
             onSearchQueryChange={handleSearchQueryChange}
             onSearchFocus={handleSearchFocus}

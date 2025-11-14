@@ -2,7 +2,7 @@ import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 import { Dispatch, SetStateAction } from "react";
-import { SearchInput } from "@/components/shared/search/SearchInput";
+import { SearchInputMemo } from "@/components/shared/search/SearchInput";
 import { SearchResultContainer } from "@/components/shared/search/SearchResultContainer";
 
 type SearchWrapperProps = {
@@ -30,7 +30,7 @@ export function SearchWrapper({
 }: SearchWrapperProps) {
   return (
     <>
-      <SearchInput
+      <SearchInputMemo
         className={
           searchQuery.selectedResult || disabled ? "pointer-events-none" : ""
         }

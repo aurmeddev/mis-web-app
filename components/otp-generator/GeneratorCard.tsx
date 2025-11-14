@@ -55,6 +55,7 @@ export function GeneratorCard({
   };
 
   const isError = otp.length > 6;
+  const asterisksToAppend = Math.max(0, 6 - otp.length);
   return (
     <Card className="w-full max-w-sm">
       <CardHeader className="relative">
@@ -71,7 +72,9 @@ export function GeneratorCard({
               "bg-muted select-none font-bold relative rounded py-2 text-center"
             )}
           >
-            {otp || (
+            {otp ? (
+              otp.substring(0, 3) + "***"
+            ) : (
               <div className="animate-pulse bg-gray-300 h-8 mx-auto rounded w-32"></div>
             )}
             {!isError && (

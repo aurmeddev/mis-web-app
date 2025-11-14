@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, ChangeEvent } from "react";
+import { useState, useEffect, useMemo, ChangeEvent, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { useSearchParams, useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -17,6 +17,8 @@ import { showToast } from "@/lib/utils/toast";
 import { genderList } from "../../static-data";
 import {
   MenuAccess,
+  StatusState,
+  UserAccessEditType,
   UserAccessFormValues,
   UserAccessRecordRaw,
   UseUserAccessProps,
@@ -75,17 +77,19 @@ export const useUserAccess = ({ response }: UseUserAccessProps) => {
     result: { data: [], isSuccess: false, message: "" },
     selectedResult: null,
   });
-  const [statusState, setStatusState] = useState({
+  const [statusState, setStatusState] = useState<StatusState>({
     isEditing: false,
     id: "",
     isActive: false,
     isSubmitting: false,
+    editType: "info",
   });
 
   const [menuAccess, setMenuAccess] = useState<MenuAccess>({
     mainMenu: [],
     subMenu: [],
   });
+  const [editType, setEditType] = useState<"info" | "permission" | "">("");
 
   // --- Form Hook ---
   const userAccessForm = useForm<UserAccessFormValues>({
@@ -204,6 +208,7 @@ export const useUserAccess = ({ response }: UseUserAccessProps) => {
     }
 
     const currentFormValues = userAccessForm.getValues();
+    console.log("currentFormValues ", currentFormValues);
     const changedValues = {} as Record<string, any>;
     const fieldsToCompare = [
       "full_name",
@@ -265,18 +270,25 @@ export const useUserAccess = ({ response }: UseUserAccessProps) => {
     setMenuAccess((prevState) => ({ ...prevState, [type]: value }));
   };
 
-  const handleAddUserEntry = () => {
+  const handleAddUserEntry = useCallback(() => {
     handleReset();
     setIsAddingNew(true);
+    setStatusState((prevState) => ({ ...prevState, editType: "all" }));
     handleDialogState("userAccess", true);
-  };
+  }, []);
 
-  const handleEditChange = async (id: string) => {
+  const handleEditChange = async (id: string, type: UserAccessEditType) => {
     setIsAddingNew(false);
     const selectedUserAccessData = tableData.find(
       (data) => data.id === id
     ) as Record<string, any>;
     setEditingRow(id);
+    setStatusState((prevState) => ({
+      ...prevState,
+      editType: type,
+    }));
+
+    console.log("selectedUserAccessData ", selectedUserAccessData);
 
     if (selectedUserAccessData) {
       const {
@@ -321,6 +333,7 @@ export const useUserAccess = ({ response }: UseUserAccessProps) => {
       const { decryptedData } = await decipher.decrypt({ data: passwordValue });
 
       const userAccessEdit = {
+        brand: brandsAccess,
         gender,
         main_menu,
         sub_menu,
@@ -392,6 +405,7 @@ export const useUserAccess = ({ response }: UseUserAccessProps) => {
       isActive: false,
       isEditing: false,
       isSubmitting: false,
+      editType: "info",
     });
   };
 
@@ -408,6 +422,13 @@ export const useUserAccess = ({ response }: UseUserAccessProps) => {
 
     const { brand, main_menu, sub_menu, gender, team, user_type, ...rest } =
       changedValues;
+
+    if (Object.keys(changedValues).length == 0) {
+      handleReset();
+      setUserAccessFormOriginal({ ...userAccessForm.getValues() });
+      setDialogState((prevState) => ({ ...prevState, userAccess: false }));
+      return;
+    }
 
     const requestPayload: any = {
       ...rest,
@@ -577,8 +598,6 @@ export const useUserAccess = ({ response }: UseUserAccessProps) => {
     handleSearchDebounce(ev.target.value);
   };
 
-  const handleSearchFocus = () => {};
-
   const handlePagination = (page: number, limit: number) => {
     const urlQuery = new URLSearchParams();
     urlQuery.set("page", String(page));
@@ -597,7 +616,6 @@ export const useUserAccess = ({ response }: UseUserAccessProps) => {
   return {
     // State
     dialogState,
-    editingRow,
     isAddingNew,
     tableData,
     searchQuery,
@@ -605,6 +623,7 @@ export const useUserAccess = ({ response }: UseUserAccessProps) => {
     selectedBrandAccess,
     userAccessForm,
     statusState,
+    editType,
 
     // Data
     menuStructure,
@@ -625,6 +644,5 @@ export const useUserAccess = ({ response }: UseUserAccessProps) => {
     handeUserAccessDialogOpenChange,
     handlePagination,
     handleSearchQueryChange,
-    handleSearchFocus,
   };
 };

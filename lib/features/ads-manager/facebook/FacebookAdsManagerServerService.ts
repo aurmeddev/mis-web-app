@@ -931,7 +931,8 @@ const validateTargetingCountries = (params: {
   reference: string[];
 }) => {
   if (params.targetingCountries.length === 0) {
-    return "No geo-location targeting.";
+    // No geo-location targeting.
+    return "OK";
   }
 
   const { targetingCountries, reference } = params;

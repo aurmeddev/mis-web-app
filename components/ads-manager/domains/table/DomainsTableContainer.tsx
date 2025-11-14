@@ -21,7 +21,7 @@ import { ApiResponseProps } from "@/database/query";
 import { ImportCSVFileInput } from "@/components/shared/import-csv/ImportCSVFileInput";
 import { DomainUtils } from "@/lib/utils/domain/DomainUtils";
 import { DownloadLocalFile } from "@/components/shared/download/DownloadLocalFile";
-import { SearchInput } from "@/components/shared/search/SearchInput";
+import { SearchInputMemo } from "@/components/shared/search/SearchInput";
 import { InternetBsApiClientService } from "@/lib/features/domains/domain-checker/internetbs-api/InternetBsApiClientService";
 import { DomainsDialog } from "../dialog/DomainsDialog";
 
@@ -452,7 +452,7 @@ export function DomainsTableContainer({
           New Domain Entry
         </Button>
         <div className="relative w-[30%]">
-          <SearchInput
+          <SearchInputMemo
             className="h-9"
             searchQuery={searchQuery}
             onSearchFocus={handleSearchFocus}

@@ -2,8 +2,8 @@
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Pagination } from "@/components/shared/pagination/route-based/Pagination";
-import { SearchInput } from "@/components/shared/search/SearchInput";
-import { UserAccessTable } from "./UserAccessTable";
+import { SearchInputMemo } from "@/components/shared/search/SearchInput";
+import { UserAccessTableMemo } from "./UserAccessTable";
 import { UserAccessDialog } from "../dialog/UserAccessDialog";
 import { useUserAccess } from "../hooks/useUserAccess";
 import { UserAccessTableContainerProps } from "../UserAccess.types";
@@ -13,7 +13,6 @@ export function UserAccessTableContainer({
 }: UserAccessTableContainerProps) {
   const {
     dialogState,
-    editingRow,
     isAddingNew,
     tableData,
     searchQuery,
@@ -38,12 +37,12 @@ export function UserAccessTableContainer({
     handeUserAccessDialogOpenChange,
     handlePagination,
     handleSearchQueryChange,
-    handleSearchFocus,
   } = useUserAccess({ response });
 
   return (
     <>
       <UserAccessDialog
+        editType={statusState.editType}
         isAddingNew={isAddingNew}
         isActionDisabled={false}
         menuStructure={menuStructure}
@@ -65,19 +64,17 @@ export function UserAccessTableContainer({
           New User Entry
         </Button>
         <div className="relative w-[30%]">
-          <SearchInput
+          <SearchInputMemo
             className="h-9"
             searchQuery={searchQuery}
-            onSearchFocus={handleSearchFocus}
             onSearchQueryChange={handleSearchQueryChange}
             placeholder="Search a user"
           />
         </div>
       </div>
       <ScrollArea className="h-[70dvh] mt-4">
-        <UserAccessTable
+        <UserAccessTableMemo
           data={tableData}
-          editingRow={editingRow}
           onEditChange={handleEditChange}
           onConfirmStatus={handleConfirmStatus}
           onEditStatus={handleEditStatus}

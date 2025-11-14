@@ -67,8 +67,7 @@ type UseUserAccessProps = {
 
 type UserAccessTableProps = {
   data: UserAccessRecordRaw[];
-  editingRow: string;
-  onEditChange: (id: string) => void;
+  onEditChange: (id: string, type: UserAccessEditType) => void;
   onEditStatus: (id: string, isActive: boolean) => void;
   onConfirmStatus: (id: string, isActive: boolean) => void;
   statusState: StatusState;
@@ -79,13 +78,20 @@ type StatusState = {
   isEditing: boolean;
   isActive: boolean;
   isSubmitting: boolean;
+  editType: UserAccessEditType;
 };
+
+type UserAccessEditType = "info" | "permission" | "all";
 
 type StatusCellProps = {
   rowData: UserAccessRecordRaw;
   statusState: StatusState;
   onEditStatus: UserAccessTableProps["onEditStatus"];
   onConfirmStatus: UserAccessTableProps["onConfirmStatus"];
+};
+
+type EditOptionsProps = {
+  onEditOptionSelection: (type: UserAccessEditType) => void;
 };
 
 type StepFieldsProps = {
@@ -135,7 +141,10 @@ export type {
   MenuSelectOptions,
   UseUserAccessProps,
   UserAccessTableProps,
+  UserAccessEditType,
   StatusCellProps,
+  StatusState,
+  EditOptionsProps,
   StepFieldsProps,
   Step3ReviewProps,
   Step1FieldsProps,

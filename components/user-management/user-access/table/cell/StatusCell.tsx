@@ -24,7 +24,7 @@ export const StatusCell = ({
             onChange={(value) => onEditStatus(rowData.id, value === "active")}
             isDisabled={false}
           />
-          <div className="*:cursor-pointer *:h-7 *:py-0 *:px-3 *:text-xs absolute flex flex-col gap-2 bg-white top-[100%] px-1 py-3 w-full">
+          <div className="*:cursor-pointer *:h-7 *:py-0 *:px-3 *:text-xs absolute flex flex-col gap-2 bg-white dark:bg-background top-[100%] px-1 py-3 w-full">
             <Button
               variant="default"
               onClick={() => onConfirmStatus(rowData.id, statusState.isActive)}

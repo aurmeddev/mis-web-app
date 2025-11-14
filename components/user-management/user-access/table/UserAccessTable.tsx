@@ -1,52 +1,54 @@
 import { TableBody, Table, TableRow, TableCell } from "@/components/ui/table";
 import {
   AtSign,
+  ChevronDown,
   CircleFadingPlus,
   CircleStop,
   Info,
-  Pencil,
   SearchX,
-  Settings2,
+  UserPen,
+  UserRoundCog,
 } from "lucide-react";
 import { Header } from "@/components/shared/table/header/Header";
-import { Button } from "@/components/ui/button";
 import { UserAccessRecordRaw, UserAccessTableProps } from "../UserAccess.types";
 import { StatusCell } from "./cell/StatusCell";
+import { EditOptionsMemo } from "./row-actions/EditOptions";
+import React from "react";
 
-export function UserAccessTable({
+const tableHeaders = [
+  { label: "#", className: "border-r w-[4%]" },
+  { label: "Name", className: "border-r w-[20%]" },
+  {
+    label: "Email",
+    icon: <AtSign className="h-4 w-4" />,
+    className: "border-r w-[25%]",
+    colSpan: 1,
+  },
+  {
+    label: "Status",
+    icon: <CircleFadingPlus className="h-4 w-4" />,
+    className: "border-r w-[12%]",
+    colSpan: 2,
+  },
+  {
+    label: "Account Type",
+    icon: <Info className="h-4 w-4" />,
+    className: "border-r w-[12%]",
+  },
+  {
+    label: "Actions",
+    icon: <CircleStop className="h-4 w-4" />,
+    className: "w-[15%]",
+  },
+];
+
+function UserAccessTable({
   data,
-  editingRow,
   onEditChange,
   onConfirmStatus,
   onEditStatus,
   statusState,
 }: UserAccessTableProps) {
-  const tableHeaders = [
-    { label: "#", className: "border-r w-[4%]" },
-    { label: "Name", className: "border-r w-[20%]" },
-    {
-      label: "Email",
-      icon: <AtSign className="h-4 w-4" />,
-      className: "border-r w-[25%]",
-      colSpan: 1,
-    },
-    {
-      label: "Status",
-      icon: <CircleFadingPlus className="h-4 w-4" />,
-      className: "border-r w-[12%]",
-      colSpan: 2,
-    },
-    {
-      label: "User Info",
-      icon: <Info className="h-4 w-4" />,
-      className: "border-r w-[20%]",
-    },
-    {
-      label: "Actions",
-      icon: <CircleStop className="h-4 w-4" />,
-      className: "lg:w-[25%] w-[35%]",
-    },
-  ];
   return (
     <Table className="border-t border-r-0 table-fixed">
       <Header headers={tableHeaders} />
@@ -66,7 +68,7 @@ export function UserAccessTable({
 
         {data.map((rowData: UserAccessRecordRaw) => {
           return (
-            <TableRow key={rowData.id}>
+            <TableRow className="group" key={rowData.id}>
               <TableCell className="border-r text-center w-[10%]">
                 {rowData.row_id ? (
                   rowData.row_id
@@ -77,8 +79,12 @@ export function UserAccessTable({
                 )}
               </TableCell>
               <TableCell className="border-r text-xs">
-                <div>{rowData.full_name}</div>
-                <div className="text-muted-foreground">
+                <div>
+                  <span className="text-muted-foreground">Full name: </span>
+                  {rowData.full_name}
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Display name: </span>
                   {rowData.display_name}
                 </div>
               </TableCell>
@@ -86,7 +92,7 @@ export function UserAccessTable({
                 {rowData.email}
               </TableCell>
               <TableCell
-                className="bg-white! border-r py-0 relative"
+                className="bg-white! border-r dark:bg-transparent! py-0 relative"
                 colSpan={2}
               >
                 <StatusCell
@@ -102,20 +108,12 @@ export function UserAccessTable({
               </TableCell>
               <TableCell>
                 <div className="flex items-center justify-center gap-2 text-center">
-                  <Button
-                    className="cursor-pointer py-0 px-3"
-                    variant="outline"
-                    onClick={() => onEditChange(rowData.id)}
-                    size={"sm"}
-                  >
-                    {rowData.id == editingRow ? (
-                      "Editing"
-                    ) : (
-                      <>
-                        <Pencil className="mr-0 h-4 w-4" /> Edit
-                      </>
-                    )}
-                  </Button>
+                  <EditOptionsMemo
+                    onEditOptionSelection={
+                      (type) => onEditChange(rowData.id, type)
+                      // onEditOptionSelection(type, rowData.id)
+                    }
+                  />
                 </div>
               </TableCell>
             </TableRow>
@@ -125,3 +123,5 @@ export function UserAccessTable({
     </Table>
   );
 }
+
+export const UserAccessTableMemo = React.memo(UserAccessTable);

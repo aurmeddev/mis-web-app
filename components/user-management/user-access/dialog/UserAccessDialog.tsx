@@ -8,7 +8,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { useMemo, useState } from "react";
+import React, { ReactNode, useMemo, useState } from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Form } from "@/components/ui/form";
@@ -19,7 +19,11 @@ import { CheckedState } from "@radix-ui/react-checkbox";
 import { Step1Fields } from "./step/Step1Fields";
 import { Step2Fields } from "./step/Step2Fields";
 import { Step3Review } from "./step/Step3Review";
-import { MenuAccess, UserAccessFormValues } from "../UserAccess.types";
+import {
+  MenuAccess,
+  UserAccessEditType,
+  UserAccessFormValues,
+} from "../UserAccess.types";
 
 type SubMenu = {
   sub_menu_id: string;
@@ -34,6 +38,7 @@ export type ParentMenu = {
 };
 
 type Props = {
+  editType: UserAccessEditType;
   isAddingNew: boolean;
   isActionDisabled: boolean;
   menuStructure: ParentMenu[];
@@ -54,6 +59,7 @@ type Props = {
 const TOTAL_STEPS = 3;
 
 export function UserAccessDialog({
+  editType,
   isAddingNew,
   isActionDisabled,
   menuStructure,
@@ -66,6 +72,7 @@ export function UserAccessDialog({
   open,
   userAccessForm,
 }: Props) {
+  console.log("editType ", editType);
   const { brands, menuSelectOptions, userSelectOptions } =
     useUserAccessContext();
   const [step, setStep] = useState(1);
@@ -232,11 +239,78 @@ export function UserAccessDialog({
     }
   };
 
+  const stepsItems = ["User Info", "Add Permissions", "Review and Confirm"];
+  const currentStepItem = {
+    info: [stepsItems[0], stepsItems[2]],
+    permission: [stepsItems[1], stepsItems[2]],
+    all: stepsItems,
+  };
+
   const eventPreventDefault = (ev: Event) => ev.preventDefault();
 
   // Watch the fields to trigger re-renders when the arrays change
   const watchedMainMenus = watch("main_menu") || [];
   const watchedSubMenus = watch("sub_menu") || [];
+
+  const flowComponents = {
+    info: [Step1Fields, Step3Review],
+    permission: [Step2Fields, Step3Review],
+    all: [Step1Fields, Step2Fields, Step3Review],
+  };
+
+  // 'editType' ('all', 'info', or 'permission')
+  const componentsToRender = flowComponents[editType] || [];
+  const CurrentComponent = componentsToRender[step - 1];
+
+  // Function to render the component fields and props
+  const renderComponent = (
+    Component:
+      | typeof Step1Fields
+      | typeof Step2Fields
+      | typeof Step3Review
+      | null
+  ) => {
+    if (!Component) return null;
+
+    switch (Component) {
+      case Step1Fields:
+        return (
+          <Step1Fields
+            control={control}
+            userSelectOptions={userSelectOptions}
+          />
+        );
+      case Step2Fields:
+        return (
+          <Step2Fields
+            brands={brands}
+            control={control}
+            menuStructure={menuStructure}
+            onBrandChange={onBrandChange}
+            onParentChange={handleParentChange}
+            onChildChange={handleChildChange}
+            selectedBrandAccess={selectedBrandAccess}
+            watchedMainMenus={watchedMainMenus}
+            watchedSubMenus={watchedSubMenus}
+          />
+        );
+      case Step3Review:
+        return (
+          <Step3Review
+            brands={brands}
+            selectedBrandAccess={selectedBrandAccess}
+            selectedMenuStructure={selectedMenuStructure}
+            watchedDetails={{
+              display_name: nameDetails.display_name,
+              email,
+              full_name: nameDetails.full_name,
+            }}
+          />
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -253,7 +327,7 @@ export function UserAccessDialog({
           </DialogDescription>
           <div className="flex justify-between pt-2 relative w-full">
             <StepProgress
-              steps={["User Info", "Add Permissions", "Review and Confirm"]}
+              steps={currentStepItem[editType]}
               currentStep={step}
             />
           </div>
@@ -271,40 +345,7 @@ export function UserAccessDialog({
             onSubmit={handleSubmit(onSubmit)}
             className="w-full space-y-6"
           >
-            {step == 1 && (
-              <Step1Fields
-                control={control}
-                userSelectOptions={userSelectOptions}
-              />
-            )}
-
-            {step == 2 && (
-              <Step2Fields
-                brands={brands}
-                control={control}
-                menuStructure={menuStructure}
-                onBrandChange={onBrandChange}
-                onParentChange={handleParentChange}
-                onChildChange={handleChildChange}
-                selectedBrandAccess={selectedBrandAccess}
-                watchedMainMenus={watchedMainMenus}
-                watchedSubMenus={watchedSubMenus}
-              />
-            )}
-
-            {step == 3 && (
-              <Step3Review
-                brands={brands}
-                selectedBrandAccess={selectedBrandAccess}
-                selectedMenuStructure={selectedMenuStructure}
-                watchedDetails={{
-                  display_name: nameDetails.display_name,
-                  email,
-                  full_name: nameDetails.full_name,
-                }}
-              />
-            )}
-
+            {renderComponent(CurrentComponent)}
             <div className="flex justify-end gap-2">
               {step > 1 && (
                 <Button
@@ -318,7 +359,7 @@ export function UserAccessDialog({
                 </Button>
               )}
 
-              {step < TOTAL_STEPS && (
+              {step < flowComponents[editType].length && (
                 <Button
                   className={cn("cursor-pointer")}
                   disabled={isActionDisabled}
@@ -329,7 +370,7 @@ export function UserAccessDialog({
                 </Button>
               )}
 
-              {step == TOTAL_STEPS && (
+              {step === flowComponents[editType].length && (
                 <Button
                   className={cn("cursor-pointer")}
                   disabled={isActionDisabled || formState.isSubmitting}

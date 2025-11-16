@@ -37,7 +37,7 @@ export function GeneratorContainer() {
     setSearchQuery({ ...searchQuery, isSearching: true });
     const response = await profilesService.find({
       method: "find-one",
-      searchKeyword: data,
+      searchKeyword: encodeURIComponent(data),
     });
     setSearchQuery({ ...searchQuery, result: response, isSearching: false });
     setShowResults(true);

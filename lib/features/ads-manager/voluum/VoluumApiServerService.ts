@@ -42,9 +42,8 @@ export class VoluumApiServerService {
       };
     }
 
-    const LOGIN_CODE = adset_name.trim();
-    const { isSuccess, data, message } = await this.getCampaignData({
-      filter: LOGIN_CODE,
+    const { isSuccess, data, message } = await this.getCampaignRawData({
+      filter: adset_name.trim(),
       date_from,
       date_to,
     });
@@ -65,7 +64,7 @@ export class VoluumApiServerService {
     };
   }
 
-  async getCampaignData(params: {
+  async getCampaignRawData(params: {
     filter: string;
     date_from: string;
     date_to: string;

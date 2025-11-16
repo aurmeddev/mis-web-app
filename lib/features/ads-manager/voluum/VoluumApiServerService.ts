@@ -26,26 +26,51 @@ export class VoluumApiServerService {
     date_from: string;
     date_to: string;
   }) {
-    /**
-     * @param {string} customConversions6 - lead
-     * @param {string} customConversions7 - ftd
-     * @param {string} customConversions11 - registered
-     * @param {string} conversions - leads/registered
-     */
+    const {
+      spend,
+      adset_name,
+      date_from = `${params.date_from}T00:00:00.000Z`,
+      date_to = `${plusOneDay(params.date_to)}T00:00:00.000Z`,
+    } = params;
 
-    const extractResult = extractVoluumnCampaignId(params.adset_name);
-    if (!extractResult.isSuccess) {
+    if (!isValidAdsetName(adset_name)) {
+      const statusMessage = "Invalid adset name";
       return {
-        isSuccess: extractResult.isSuccess,
-        message: extractResult.message,
-        data: handleCustomVoluumResponse({ status: "Invalid adset name" }),
+        isSuccess: false,
+        message: statusMessage,
+        data: handleCustomVoluumResponse({ status: statusMessage }),
       };
     }
 
-    const voluumCampaignId = extractResult.data[0].id;
-    const date_from = `${params.date_from}T00:00:00.000Z`;
-    const date_to = `${plusOneDay(params.date_to)}T00:00:00.000Z`;
+    const LOGIN_CODE = adset_name.trim();
+    const { isSuccess, data, message } = await this.getCampaignData({
+      filter: LOGIN_CODE,
+      date_from,
+      date_to,
+    });
 
+    if (!isSuccess || data.length === 0) {
+      return { isSuccess, data, message };
+    }
+
+    const result = formatAdInsightsResponseData({
+      spend: spend,
+      data: data,
+    });
+
+    return {
+      isSuccess: true,
+      message: "Data has been fetched successfully!",
+      data: result,
+    };
+  }
+
+  async getCampaignData(params: {
+    filter: string;
+    date_from: string;
+    date_to: string;
+  }) {
+    const { filter, date_from, date_to } = params;
     const { isSuccess, data, message } = await this.getSessionToken();
     if (!isSuccess) {
       console.error("Voluum session error", message);
@@ -57,7 +82,7 @@ export class VoluumApiServerService {
     }
 
     const response = await fetch(
-      `${this.voluumApiConfig.baseUrl}/report?include=ACTIVE&offset=0&tz=Asia/Singapore&column=cv&column=conversions&column=customConversions6&column=customConversions7&column=customConversions11&column=campaignName&groupBy=campaign&sort=campaignName&filter=${voluumCampaignId}&limit=1&from=${date_from}&currency=USD&to=${date_to}&conversionTimeMode=CONVERSION&direction=DESC`,
+      `${this.voluumApiConfig.baseUrl}/report?include=ACTIVE&offset=0&tz=Asia/Singapore&column=cv&column=conversions&column=customConversions6&column=customConversions7&column=customConversions11&column=campaignName&groupBy=campaign&sort=campaignName&filter=${filter}&limit=1&from=${date_from}&currency=USD&to=${date_to}&conversionTimeMode=CONVERSION&direction=DESC`,
       {
         method: "GET",
         headers: {
@@ -87,18 +112,20 @@ export class VoluumApiServerService {
       };
     }
 
-    const result = formatAdInsightsResponseData({
-      spend: params.spend,
-      data: rows,
-    });
     return {
       isSuccess: true,
       message: "Data has been fetched successfully!",
-      data: result,
+      data: rows,
     };
   }
 }
 
+/**
+ * @param {string} customConversions6 - lead
+ * @param {string} customConversions7 - ftd
+ * @param {string} customConversions11 - registered
+ * @param {string} conversions - leads/registered
+ */
 type formatAdInsightsResponseDataProps = {
   spend: number;
   data: {
@@ -173,29 +200,30 @@ const formatAdInsightsResponseData = (
   });
 };
 
-const extractVoluumnCampaignId = (adset_name: string) => {
-  if (!adset_name) {
-    return {
-      isSuccess: false,
-      message: "Adset name is missing!",
-      data: [],
-    };
-  }
+/** Commented out to align with the new builder adset name format **/
+// const extractVoluumnCampaignId = (adset_name: string) => {
+//   if (!adset_name) {
+//     return {
+//       isSuccess: false,
+//       message: "Adset name is missing!",
+//       data: [],
+//     };
+//   }
 
-  if (adset_name.split("_").length !== 6) {
-    return {
-      isSuccess: false,
-      message: "Adset name is invalid.",
-      data: [],
-    };
-  }
+//   if (adset_name.split("_").length !== 6) {
+//     return {
+//       isSuccess: false,
+//       message: "Adset name is invalid.",
+//       data: [],
+//     };
+//   }
 
-  return {
-    isSuccess: true,
-    message: "Extracted voluumn ID successfully!",
-    data: [{ id: adset_name.split("_")[5].split(" ")[0] }], // Get only the voluum campaign id
-  };
-};
+//   return {
+//     isSuccess: true,
+//     message: "Extracted voluumn ID successfully!",
+//     data: [{ id: adset_name.split("_")[5].split(" ")[0] }], // Get only the voluum campaign id
+//   };
+// };
 
 type handleCustomVoluumResponseProps = {
   status: "Voluum server error" | "Archived" | "Invalid adset name";
@@ -238,4 +266,12 @@ const plusOneDay = (dateString: string) => {
   const date = new Date(dateString);
   date.setDate(date.getDate() + 1);
   return date.toISOString().slice(0, 10); // YYYY-MM-DD
+};
+
+const isValidAdsetName = (text: string) => {
+  if (!text) {
+    return false;
+  }
+  // Check if the text contains only alphanumeric characters
+  return /^[a-zA-Z0-9]+$/.test(text);
 };

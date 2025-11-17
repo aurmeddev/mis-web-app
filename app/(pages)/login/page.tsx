@@ -23,8 +23,7 @@ export default async function Page() {
     const topMainMenu = sortedNavMain[0].items.sort(
       (a: any, b: any) => a.sort_number - b.sort_number
     );
-    console.log("topMainMenu", topMainMenu);
-    console.log("topMainMenu", topMainMenu);
+
     const url = topMainMenu[0].url;
     return redirect(url);
   }

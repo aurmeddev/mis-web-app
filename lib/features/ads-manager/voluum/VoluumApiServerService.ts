@@ -125,7 +125,8 @@ export class VoluumApiServerService {
 type formatAdInsightsResponseDataProps = {
   spend: number;
   data: {
-    campaignName: number;
+    campaignId: string;
+    campaignName: string;
     conversions: number;
     customConversions11: number;
     customConversions6: number;
@@ -139,7 +140,8 @@ const formatAdInsightsResponseData = (
 ) => {
   const { spend, data } = params;
   const defaultResponse = {
-    campaignName: 0,
+    campaignId: "",
+    campaignName: "",
     conversions: 0,
     customConversions11: 0,
     customConversions6: 0,
@@ -148,19 +150,23 @@ const formatAdInsightsResponseData = (
   };
 
   // Providing default values for missing keys.
-  const formattedData = { ...defaultResponse };
+  const formattedData = { ...defaultResponse } as Record<
+    string,
+    string | number
+  >;
   if (data.length > 0) {
-    const firstItem = data[0];
+    const firstItem = data[0] as Record<string, string | number>;
     for (const key in formattedData) {
       if (firstItem.hasOwnProperty(key)) {
-        const value = firstItem[key as keyof typeof firstItem];
-        formattedData[key as keyof typeof formattedData] = value || 0;
+        const value = firstItem[key];
+        formattedData[key] = value;
       }
     }
   }
 
   // A mapping object to define the new keys.
   const keyMapping = {
+    campaignId: "v_campaign_id",
     campaignName: "v_campaign_name",
     conversions: "v_conversions",
     customConversions11: "v_registered",
@@ -228,6 +234,7 @@ const handleCustomVoluumResponse = (
   params: handleCustomVoluumResponseProps
 ) => {
   const defaultResponseError = {
+    v_campaign_id: null,
     v_campaign_name: null,
     v_lead: null,
     v_ftd: null,

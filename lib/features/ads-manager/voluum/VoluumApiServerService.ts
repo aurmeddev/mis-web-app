@@ -75,7 +75,7 @@ export class VoluumApiServerService {
     sessionToken: string;
   }) {
     const { filter, date_from, date_to, sessionToken } = params;
-
+    console.log("sessionToken: ", sessionToken);
     const response = await fetch(
       `${this.voluumApiConfig.baseUrl}/report?include=ACTIVE&offset=0&tz=Asia/Singapore&column=cv&column=conversions&column=customConversions6&column=customConversions7&column=customConversions11&column=campaignName&groupBy=campaign&sort=campaignName&filter=${filter}&limit=1&from=${date_from}&currency=USD&to=${date_to}&conversionTimeMode=CONVERSION&direction=DESC`,
       {

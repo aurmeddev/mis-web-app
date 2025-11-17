@@ -6,14 +6,27 @@ import { LoginPageContainer } from "@/components/auth/login-page-container";
 export default async function Page() {
   const session = await getSession();
   if (session) {
-    const { team_name } = session.user;
-    if (team_name === "Traffic Team" || team_name === "Tech Team") {
-      return redirect("/otp-generator/facebook");
+    const { navMain } = session.user;
+
+    if (navMain.length === 0) {
+      return redirect("/");
     }
-    if (team_name === "Recruitment Team") {
-      return redirect("/accounts/fb-accounts");
+
+    const sortedNavMain = navMain.sort(
+      (a: any, b: any) => a.sort_number - b.sort_number
+    );
+
+    if (sortedNavMain[0].items.length === 0) {
+      return redirect("/");
     }
-    return redirect("/accounts/ap-profiles");
+
+    const topMainMenu = sortedNavMain[0].items.sort(
+      (a: any, b: any) => a.sort_number - b.sort_number
+    );
+    console.log("topMainMenu", topMainMenu);
+    console.log("topMainMenu", topMainMenu);
+    const url = topMainMenu[0].url;
+    return redirect(url);
   }
   return (
     <LoginPageContainer>

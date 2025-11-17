@@ -159,29 +159,37 @@ export class UserPermissionsServerController {
         const data = validationResponse.data;
         const userHasAccessAlready = data.length > 0;
         if (userHasAccessAlready) {
-          // Update the status
-          const { id, is_active } = { ...data[0] };
-          const status: 0 | 1 = is_active === 1 ? 0 : 1;
-          const updatePayload = {
-            id: Number(id),
-            is_active: status,
-          };
-          const permissionsResponse = await this.handleUpdatePermissions({
-            databaseTableName: databaseTableName,
-            payload: updatePayload,
-          });
-
-          if (!permissionsResponse.isSuccess) {
-            return {
-              isSuccess: false,
-              message: permissionsResponse.message,
-              data: [],
+          // If there are sub-menus, skip updating main menu to avoid conflicts
+          if (main.sub_menu && main.sub_menu.length > 0) {
+            result.push({
+              ...mainMenuPayload,
+              status: "Skip updating main menu.",
+            });
+          } else {
+            // Update the status
+            const { id, is_active } = { ...data[0] };
+            const status: 0 | 1 = is_active === 1 ? 0 : 1;
+            const updatePayload = {
+              id: Number(id),
+              is_active: status,
             };
+            const permissionsResponse = await this.handleUpdatePermissions({
+              databaseTableName: databaseTableName,
+              payload: updatePayload,
+            });
+
+            if (!permissionsResponse.isSuccess) {
+              return {
+                isSuccess: false,
+                message: permissionsResponse.message,
+                data: [],
+              };
+            }
+            result.push({
+              ...mainMenuPayload,
+              status: "Success",
+            });
           }
-          result.push({
-            ...mainMenuPayload,
-            status: "Success",
-          });
         } else {
           const mainMenuAccessResponse = await this.handlePostPermissions({
             databaseTableName: databaseTableName,

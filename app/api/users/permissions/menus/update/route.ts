@@ -6,16 +6,16 @@ import { UserPermissionsServerController } from "@/lib/features/users/permission
 import { NextResponse, NextRequest } from "next/server";
 export const PUT = async (request: NextRequest) => {
   // Check if the user session is valid before processing the request
-  // const session = await getSession();
-  // if (!session) {
-  //   return NextResponse.json(
-  //     {
-  //       isSuccess: false,
-  //       message: "Session expired or invalid",
-  //     },
-  //     { status: 403 }
-  //   );
-  // }
+  const session = await getSession();
+  if (!session) {
+    return NextResponse.json(
+      {
+        isSuccess: false,
+        message: "Session expired or invalid",
+      },
+      { status: 403 }
+    );
+  }
 
   // // Decrypt the user ID from the session
   // const decipher = new CryptoServerService();

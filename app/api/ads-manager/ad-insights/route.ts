@@ -148,12 +148,29 @@ export const POST = async (request: NextRequest) => {
   //   })
   // );
 
+  const authVoluum = await voluumApi.getSessionToken();
+  if (!authVoluum.isSuccess) {
+    console.error("Voluum session error", authVoluum.message);
+    return NextResponse.json(
+      {
+        isSuccess: true,
+        message: "Success",
+        data: formattedCampaigns,
+      },
+      { status: 200 }
+    );
+  }
+
+  const sessionToken: string = authVoluum.data[0].token || "";
   for (const campaign of withVoluumAdInsights) {
+    const spend: number = campaign?.spend || 0;
+    const campaignName: string = campaign?.name || "";
     const { data } = await voluumApi.adInsights({
-      spend: campaign?.spend || 0,
-      adset_name: campaign?.name,
+      spend: spend,
+      adset_name: campaignName,
       date_from: yesterday.from,
       date_to: yesterday.to,
+      sessionToken: sessionToken,
     });
     for (const key of Object.keys({ ...data[0] })) {
       const value = data[0][key];

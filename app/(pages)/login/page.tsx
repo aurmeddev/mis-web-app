@@ -20,10 +20,12 @@ export default async function Page() {
       return redirect("/");
     }
 
-    const firstMainMenu = sortedNavMain[0].items.sort(
+    const topMainMenu = sortedNavMain[0].items.sort(
       (a: any, b: any) => a.sort_number - b.sort_number
     );
-    const url = firstMainMenu[0].url;
+    console.log("topMainMenu", topMainMenu);
+    console.log("topMainMenu", topMainMenu);
+    const url = topMainMenu[0].url;
     return redirect(url);
   }
   return (

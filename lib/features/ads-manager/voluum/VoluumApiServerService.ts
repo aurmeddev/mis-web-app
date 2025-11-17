@@ -13,6 +13,7 @@ export class VoluumApiServerService {
     });
 
     const { isSuccess, data, message } = await response.json();
+    console.log("Voluum session token:", data);
     return {
       isSuccess,
       data,
@@ -25,12 +26,14 @@ export class VoluumApiServerService {
     adset_name: string;
     date_from: string;
     date_to: string;
+    sessionToken: string;
   }) {
     const {
       spend,
       adset_name,
       date_from = `${params.date_from}T00:00:00.000Z`,
       date_to = `${plusOneDay(params.date_to)}T00:00:00.000Z`,
+      sessionToken,
     } = params;
 
     if (!isValidAdsetName(adset_name)) {
@@ -46,6 +49,7 @@ export class VoluumApiServerService {
       filter: adset_name.trim(),
       date_from,
       date_to,
+      sessionToken,
     });
 
     if (!isSuccess || data.length === 0) {
@@ -68,24 +72,16 @@ export class VoluumApiServerService {
     filter: string;
     date_from: string;
     date_to: string;
+    sessionToken: string;
   }) {
-    const { filter, date_from, date_to } = params;
-    const { isSuccess, data, message } = await this.getSessionToken();
-    if (!isSuccess) {
-      console.error("Voluum session error", message);
-      return {
-        isSuccess,
-        data: handleCustomVoluumResponse({ status: "Voluum server error" }),
-        message,
-      };
-    }
+    const { filter, date_from, date_to, sessionToken } = params;
 
     const response = await fetch(
       `${this.voluumApiConfig.baseUrl}/report?include=ACTIVE&offset=0&tz=Asia/Singapore&column=cv&column=conversions&column=customConversions6&column=customConversions7&column=customConversions11&column=campaignName&groupBy=campaign&sort=campaignName&filter=${filter}&limit=1&from=${date_from}&currency=USD&to=${date_to}&conversionTimeMode=CONVERSION&direction=DESC`,
       {
         method: "GET",
         headers: {
-          "CWAUTH-TOKEN": data[0].token,
+          "CWAUTH-TOKEN": sessionToken,
           "Content-type": "application/json",
         },
         cache: "no-store",
@@ -94,6 +90,7 @@ export class VoluumApiServerService {
 
     if (!response.ok) {
       const error = await response.text();
+      console.error("Voluum server error", response);
       console.error("Voluum server error", error);
       return {
         isSuccess: false,

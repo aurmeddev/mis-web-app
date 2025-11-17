@@ -9,7 +9,7 @@ export class VoluumApiServerService {
       headers: {
         "Content-type": "application/json",
       },
-      next: { revalidate: 5400 }, // Revalidate every 1.5 hours or 5400 seconds
+      // next: { revalidate: 5400 }, // Revalidate every 1.5 hours or 5400 seconds
     });
 
     const { isSuccess, data, message } = await response.json();

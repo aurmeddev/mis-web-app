@@ -247,8 +247,8 @@ export function AdInsightsContainer({
       // );
 
       setTableData((prevState) => [...prevState, ...combinedAdData]);
-      setIsExportReady(true);
     }
+    setIsExportReady(true);
     setIsActionDisabled(false);
     setIsAdInsightsProgressDialogOpen(false);
   };

@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { CheckedState } from "@radix-ui/react-checkbox";
 import { useState } from "react";
-// import { Json2CsvManager } from "@/lib/utils/converter/Json2CsvManager";
+import { Json2CsvManager } from "@/lib/utils/converter/Json2CsvManager";
 
 type Props = {
   brands: SelectOptions[];
@@ -78,7 +78,7 @@ export function AdInsightsContainer({
   const dateFromSearchParam = searchParams.date_from;
   const dateToSearchParam = searchParams.date_to;
   const fbAdsManagerService = new FacebookAdsManagerClientService();
-  // const jsonCsvManager = new Json2CsvManager();
+  const jsonCsvManager = new Json2CsvManager();
   const dateUtil = new DatetimeUtils();
 
   const [isActionDisabled, setIsActionDisabled] = useState(false);
@@ -278,43 +278,103 @@ export function AdInsightsContainer({
     setIsFilterShown(checked ? true : false);
   };
 
-  // const handleExportAdInsights = async () => {
-  //   const toBeExported = completedImportDetails.map((details: any) => {
-  //     const { id, lead, date_acquired, isValid, status, ...rest } = details;
-  //     return {
-  //       ...rest,
-  //       status: status ? "success" : "failed",
-  //     };
-  //   });
-  //   try {
-  //     const csv = await jsonCsvManager.convertJsonToCSV(toBeExported);
-  //     const brand = importData[0]?.brand || "";
-  //     const geo = importData[0]?.geo || "";
+  const handleExportAdInsights = async () => {
+    const plainData = tableData.map((data: any) => {
+      const {
+        ad_account_name,
+        account_status,
+        ad_insights_summary,
+        campaign_name,
+        cost_per_inline_link_click,
+        cpm,
+        daily_budget,
+        disable_reason,
+        effective_status,
+        frequency,
+        impressions,
+        inline_link_click_ctr,
+        lead,
+        link_click,
+        name,
+        profile,
+        purchase,
+        reach,
+        spend,
+        targeting_countries,
+        v_campaign_name,
+        v_campaign_status,
+        v_lead,
+        v_ftd,
+        v_cpl,
+        v_cpa,
+        v_cv,
+      } = data;
 
-  //     const blob = new Blob([csv], { type: "text/csv" });
-  //     const url = URL.createObjectURL(blob);
+      const campaignName = v_campaign_name
+        ? v_campaign_name
+        : v_campaign_status;
+      const delivery =
+        account_status == "ACTIVE" ? effective_status : account_status;
+      const adInsightsSummary = ad_insights_summary
+        ? ad_insights_summary.message.join(". ")
+        : "";
 
-  //     const todayDate = new Date().toLocaleDateString("en-US", {
-  //       year: "numeric",
-  //       month: "2-digit",
-  //       day: "2-digit",
-  //     });
+      return {
+        profile,
+        ad_account: ad_account_name,
+        ad_insights_summary: adInsightsSummary,
+        adset_name: name,
+        voluum_campaign_name: campaignName,
+        delivery: delivery ? delivery : "",
+        disable_reason,
+        targeting_geo:
+          targeting_countries?.length > 0 ? targeting_countries.join(", ") : "",
+        daily_budget,
+        spend,
+        fb_lead: lead,
+        fb_ftd: purchase,
+        voluum_lead: v_lead,
+        voluum_ftd: v_ftd,
+        cpl: v_cpl,
+        cpa: v_cpa,
+        cv: v_cv,
+        cpm: cpm,
+        cpc: cost_per_inline_link_click,
+        ctr: inline_link_click_ctr,
+        link_click,
+        frequency,
+        impressions,
+        reach,
+      };
+    });
 
-  //     const a = document.createElement("a");
-  //     a.href = url;
-  //     a.download = `imported-data-${brand}-${geo}-${todayDate.replaceAll(
-  //       "/",
-  //       "-"
-  //     )}.csv`;
-  //     document.body.appendChild(a);
-  //     a.click();
-  //     document.body.removeChild(a);
+    try {
+      const csv = await jsonCsvManager.convertJsonToCSV(plainData);
 
-  //     URL.revokeObjectURL(url);
-  //   } catch (err) {
-  //     console.error("Error converting JSON to CSV:", err);
-  //   }
-  // }
+      const blob = new Blob([csv], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+
+      const todayDate = new Date().toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      });
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `exported-data-${profile}-${todayDate.replaceAll(
+        "/",
+        "-"
+      )}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Error converting JSON to CSV:", err);
+    }
+  };
 
   return (
     <div className="min-h-[calc(100dvh-7rem)] p-6 pr-0">
@@ -347,8 +407,10 @@ export function AdInsightsContainer({
           dateRange={dateRange}
           filters={filters}
           onSetDateRange={handleOnSetDateRange}
+          isExportReady={tableData.length > 0}
           isActionDisabled={isActionDisabled}
           isFilterShown={isFilterShown}
+          onExportData={handleExportAdInsights}
           onCheckedChange={handleCheckedChange}
           onValueChange={handleValueChange}
           onSubmit={handleSubmit}

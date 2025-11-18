@@ -15,7 +15,7 @@ export function useAdInsightsColumn() {
         accessorKey: "ad_account_name",
         header: "Ad Account",
         cell: ({ getValue }) => {
-          const cellValue = getValue<string>().toLocaleLowerCase();
+          const cellValue = getValue<string>();
           return <div className="whitespace-normal">{cellValue}</div>;
         },
         minSize: 150,

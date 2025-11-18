@@ -2,14 +2,12 @@
 import { useDebouncedCallback } from "use-debounce";
 import { ChangeEvent, startTransition, useState } from "react";
 import { Button } from "../../ui/button";
-import { Badge } from "../../ui/badge";
 import { Input } from "../../ui/input";
-import { Trash2, X } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { ApProfilesService } from "@/lib/features/ap-profiles/ApProfilesService";
 import { Progress } from "../../ui/progress";
 import { FacebookAdsManagerClientService } from "@/lib/features/ads-manager/facebook/FacebookAdsManagerClientService";
 import { toast } from "sonner";
-import { GlobalTooltip } from "../../shared/tooltip/GlobalTooltip";
 import { DateRange } from "react-day-picker";
 import { DatePickerPopover } from "./popover/DatePickerPopover";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -17,7 +15,6 @@ import { Label } from "@/components/ui/label";
 import { CheckedState } from "@radix-ui/react-checkbox";
 import { GlobalSelect as SelectBrand } from "@/components/shared/select/GlobalSelect";
 import { GlobalSelect as SelectGeo } from "@/components/shared/select/GlobalSelect";
-import { GlobalSelect as SelectBudgetOptimization } from "@/components/shared/select/GlobalSelect";
 import { GlobalComboBoxSelect as SelectMediaBuyer } from "@/components/shared/select/GlobalComboBoxSelect";
 import { SelectOptions } from "@/components/shared/select/type";
 import { ProfileMarketingApiAccessToken } from "../ad-checker/AdCheckerContainer";
@@ -30,8 +27,10 @@ type Props = {
   mediaBuyers: SelectOptions[];
   dateRange: DateRange | undefined;
   filters: AdInsightsFilters;
+  isExportReady: boolean;
   isActionDisabled: boolean;
   isFilterShown: boolean;
+  onExportData: () => void;
   onCheckedChange: (checked: CheckedState) => void;
   onValueChange: (
     value: string,
@@ -52,8 +51,10 @@ export function AdInsightsSidebar({
   mediaBuyers,
   dateRange,
   filters,
+  isExportReady,
   isActionDisabled,
   isFilterShown,
+  onExportData,
   onCheckedChange,
   onValueChange,
   onSubmit,
@@ -66,15 +67,15 @@ export function AdInsightsSidebar({
   const [progress, setProgress] = useState<number>(0);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const budgetOptimizationList = [
-    {
-      id: 1,
-      label: "ABO",
-      value: "ABO",
-    },
-    { id: 2, label: "Branding", value: "Branding" },
-    { id: 3, label: "CBO", value: "CBO" },
-  ];
+  // const budgetOptimizationList = [
+  //   {
+  //     id: 1,
+  //     label: "ABO",
+  //     value: "ABO",
+  //   },
+  //   { id: 2, label: "Branding", value: "Branding" },
+  //   { id: 3, label: "CBO", value: "CBO" },
+  // ];
 
   const handleProfileChangeDebounce = useDebouncedCallback(
     async (data: string) => {
@@ -180,117 +181,124 @@ export function AdInsightsSidebar({
   );
 
   return (
-    <div className="border-r flex flex-col pr-4 space-y-2 lg:w-[35%] w-[30%]">
-      <div className="border relative rounded">
-        <ValidatedProfilesList
-          handleRemoveProfile={handleRemoveProfile}
-          isActionDisabled={isActionDisabled}
-          validatedProfiles={validatedProfiles}
-        />
+    <div className="border-r flex flex-col justify-between pr-4 space-y-2 lg:w-[35%] w-[30%]">
+      <div className="flex flex-col space-y-2 w-full">
+        <div className="border relative rounded">
+          <ValidatedProfilesList
+            handleRemoveProfile={handleRemoveProfile}
+            isActionDisabled={isActionDisabled}
+            validatedProfiles={validatedProfiles}
+          />
 
-        {isProcessing && (
-          <div className="bg-secondary p-2 relative w-full">
-            <div className="font-semibold mb-2 text-xs text-muted-foreground">
-              Processing profiles...
-            </div>
-            <Progress value={progress} className="w-full" />
-
-            <div className="flex font-semibold justify-between text-muted-foreground text-xs">
-              <div>
-                {currentProgressPosition}/{addedProfiles.length} profiles.
+          {isProcessing && (
+            <div className="bg-secondary p-2 relative w-full">
+              <div className="font-semibold mb-2 text-xs text-muted-foreground">
+                Processing profiles...
               </div>
-              <div>{progress}%</div>
+              <Progress value={progress} className="w-full" />
+
+              <div className="flex font-semibold justify-between text-muted-foreground text-xs">
+                <div>
+                  {currentProgressPosition}/{addedProfiles.length} profiles.
+                </div>
+                <div>{progress}%</div>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {!isProcessing && (
-          <Input
-            className="bg-transparent border-none focus-visible:ring-0 shadow-none outline-none placeholder:text-muted-foreground"
-            disabled={progress !== 0}
-            onChange={handleProfileChange}
-            name="profiles"
-            placeholder="Enter profile(s)"
-          />
-        )}
+          {!isProcessing && (
+            <Input
+              className="bg-transparent border-none focus-visible:ring-0 shadow-none outline-none placeholder:text-muted-foreground"
+              disabled={progress !== 0}
+              onChange={handleProfileChange}
+              name="profiles"
+              placeholder="Enter profile(s)"
+            />
+          )}
 
-        {validatedProfiles.length > 1 && !isProcessing && (
-          <Button
-            className="absolute bg-transparent bottom-0 cursor-pointer opacity-70 right-0 hover:opacity-100 hover:bg-transparent"
-            onClick={() => handleRemoveProfile({ removeAll: true })}
-            variant={"link"}
-          >
-            <Trash2 />
-          </Button>
-        )}
-      </div>
-      <div className="w-full">
-        <DatePickerPopover
-          dateRange={dateRange}
-          isSubmitInProgress={false}
-          onSetDateRange={onSetDateRange}
-        />
-      </div>
-
-      <div className="flex items-start gap-3">
-        <Checkbox id="show-filter" onCheckedChange={onCheckedChange} />
-        <div className="grid gap-2">
-          <Label
-            className="font-normal text-muted-foreground"
-            htmlFor="show-filter"
-          >
-            Show more filter options
-          </Label>
+          {validatedProfiles.length > 1 && !isProcessing && (
+            <Button
+              className="absolute bg-transparent bottom-0 cursor-pointer opacity-70 right-0 hover:opacity-100 hover:bg-transparent"
+              onClick={() => handleRemoveProfile({ removeAll: true })}
+              variant={"link"}
+            >
+              <Trash2 />
+            </Button>
+          )}
         </div>
-      </div>
-      {isFilterShown && (
-        <div className="flex flex-col space-y-2">
-          <SelectBrand
-            options={brands}
-            onSelectedValue={(value) => onValueChange(value, "brand")}
-            placeholder="Select brand"
-            value={filters.brand}
+        <div className="w-full">
+          <DatePickerPopover
+            dateRange={dateRange}
+            isSubmitInProgress={false}
+            onSetDateRange={onSetDateRange}
           />
-          <SelectGeo
-            options={geos}
-            onSelectedValue={(value) => onValueChange(value, "geo")}
-            placeholder="Select geo"
-            value={filters.geo}
-          />
-          <SelectMediaBuyer
-            options={mediaBuyers}
-            onSelectedValue={(value) => onValueChange(value, "mediaBuyer")}
-            placeholder="Select media buyer"
-            value={filters.mediaBuyer}
-          />
-          <SelectBudgetOptimization
+        </div>
+
+        <div className="flex items-start gap-3">
+          <Checkbox id="show-filter" onCheckedChange={onCheckedChange} />
+          <div className="grid gap-2">
+            <Label
+              className="font-normal text-muted-foreground"
+              htmlFor="show-filter"
+            >
+              Show more filter options
+            </Label>
+          </div>
+        </div>
+        {isFilterShown && (
+          <div className="flex flex-col space-y-2">
+            <SelectBrand
+              options={brands}
+              onSelectedValue={(value) => onValueChange(value, "brand")}
+              placeholder="Select brand"
+              value={filters.brand}
+            />
+            <SelectGeo
+              options={geos}
+              onSelectedValue={(value) => onValueChange(value, "geo")}
+              placeholder="Select geo"
+              value={filters.geo}
+            />
+            <SelectMediaBuyer
+              options={mediaBuyers}
+              onSelectedValue={(value) => onValueChange(value, "mediaBuyer")}
+              placeholder="Select media buyer"
+              value={filters.mediaBuyer}
+            />
+            {/* <SelectBudgetOptimization
             options={budgetOptimizationList}
             onSelectedValue={(value) =>
               onValueChange(value, "budgetOptimization")
             }
             placeholder="Select budget optimization"
             value={filters.budgetOptimization}
-          />
+          /> */}
+          </div>
+        )}
+        <Button
+          className="cursor-pointer"
+          onClick={onSubmit}
+          disabled={progress !== 0 || isActionDisabled}
+        >
+          Get Ad Insights
+        </Button>
+      </div>
+
+      {isExportReady && (
+        <div className="border rounded p-4 text-sm">
+          <div className="font-semibold">Ad Insights Complete</div>
+          <div className="text-muted-foreground">
+            Your Performance Analysis Report Data is ready to download.
+          </div>
+          <Button
+            disabled={isActionDisabled}
+            onClick={onExportData}
+            className="cursor-pointer mt-2 w-full"
+          >
+            Download
+          </Button>
         </div>
       )}
-      <Button
-        className="cursor-pointer"
-        onClick={onSubmit}
-        disabled={progress !== 0 || isActionDisabled}
-      >
-        Get Ad Insights
-      </Button>
-
-      {/* <div className="border mt-2 rounded p-4 text-sm">
-        <div className="font-semibold">Download Available</div>
-        <div className="text-muted-foreground">
-          Your data export is finished. Click to download.
-        </div>
-
-        <Button className="cursor-pointer mt-2 text-xs w-full">
-          Performance Analysis Report Data
-        </Button>
-      </div> */}
     </div>
   );
 }

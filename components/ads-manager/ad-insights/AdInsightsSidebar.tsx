@@ -294,7 +294,7 @@ export function AdInsightsSidebar({
             onClick={onExportData}
             className="cursor-pointer mt-2 w-full"
           >
-            Export Ad Insights
+            Download
           </Button>
         </div>
       )}

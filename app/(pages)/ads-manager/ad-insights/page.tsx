@@ -64,7 +64,6 @@ export default async function Page({ searchParams }: any) {
   return (
     <AdInsightsContainer
       searchParams={params}
-      isSuperOrAdmin={isSuperOrAdmin}
       brands={formattedBrands}
       geos={formattedGeos}
       mediaBuyers={formattedMediaBuyers}

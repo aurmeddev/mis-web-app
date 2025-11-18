@@ -234,7 +234,7 @@ export function AdInsightsSidebar({
           />
         </div>
 
-        <div className="flex items-start gap-3">
+        {/* <div className="flex items-start gap-3">
           <Checkbox id="show-filter" onCheckedChange={onCheckedChange} />
           <div className="grid gap-2">
             <Label
@@ -244,28 +244,28 @@ export function AdInsightsSidebar({
               Show more filter options
             </Label>
           </div>
-        </div>
-        {isFilterShown && (
-          <div className="flex flex-col space-y-2">
-            <SelectBrand
-              options={brands}
-              onSelectedValue={(value) => onValueChange(value, "brand")}
-              placeholder="Select brand"
-              value={filters.brand}
-            />
-            <SelectGeo
-              options={geos}
-              onSelectedValue={(value) => onValueChange(value, "geo")}
-              placeholder="Select geo"
-              value={filters.geo}
-            />
-            <SelectMediaBuyer
-              options={mediaBuyers}
-              onSelectedValue={(value) => onValueChange(value, "mediaBuyer")}
-              placeholder="Select media buyer"
-              value={filters.mediaBuyer}
-            />
-            {/* <SelectBudgetOptimization
+        </div> */}
+        {/* {isFilterShown && ( */}
+        <div className="flex flex-col space-y-2">
+          <SelectBrand
+            options={brands}
+            onSelectedValue={(value) => onValueChange(value, "brand")}
+            placeholder="Select brand"
+            value={filters.brand}
+          />
+          <SelectGeo
+            options={geos}
+            onSelectedValue={(value) => onValueChange(value, "geo")}
+            placeholder="Select geo"
+            value={filters.geo}
+          />
+          <SelectMediaBuyer
+            options={mediaBuyers}
+            onSelectedValue={(value) => onValueChange(value, "mediaBuyer")}
+            placeholder="Select media buyer"
+            value={filters.mediaBuyer}
+          />
+          {/* <SelectBudgetOptimization
             options={budgetOptimizationList}
             onSelectedValue={(value) =>
               onValueChange(value, "budgetOptimization")
@@ -273,8 +273,8 @@ export function AdInsightsSidebar({
             placeholder="Select budget optimization"
             value={filters.budgetOptimization}
           /> */}
-          </div>
-        )}
+        </div>
+        {/* )} */}
         <Button
           className="cursor-pointer"
           onClick={onSubmit}

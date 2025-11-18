@@ -89,6 +89,7 @@ export function AdInsightsContainer({
   const [adCheckerProgress, setAdCheckerProgress] = useState(0);
   const [profile, setProfile] = useState<string>("");
   const [isFilterShown, setIsFilterShown] = useState(false);
+  const [isExportReady, setIsExportReady] = useState(false);
   const [filters, setFilters] = useState<AdInsightsFilters>({
     brand: "",
     budgetOptimization: "",
@@ -132,7 +133,7 @@ export function AdInsightsContainer({
 
     const optionalFilters: ApiFiltering[] = [];
     const filterObjValues = Object.values(filters).filter(Boolean);
-    if (filterObjValues.length > 0 && isFilterShown) {
+    if (filterObjValues.length > 0) {
       filterObjValues.forEach((value) => {
         optionalFilters.push({
           field: "adset.name",
@@ -246,6 +247,7 @@ export function AdInsightsContainer({
       // );
 
       setTableData((prevState) => [...prevState, ...combinedAdData]);
+      setIsExportReady(true);
     }
     setIsActionDisabled(false);
     setIsAdInsightsProgressDialogOpen(false);
@@ -404,11 +406,11 @@ export function AdInsightsContainer({
           dateRange={dateRange}
           filters={filters}
           onSetDateRange={handleOnSetDateRange}
-          isExportReady={tableData.length > 0}
+          isExportReady={isExportReady}
           isActionDisabled={isActionDisabled}
           isFilterShown={isFilterShown}
           onExportData={handleExportAdInsights}
-          onCheckedChange={handleCheckedChange}
+          // onCheckedChange={handleCheckedChange}
           onValueChange={handleValueChange}
           onSubmit={handleSubmit}
           onSetValidatedProfiles={handleSetValidatedProfiles}

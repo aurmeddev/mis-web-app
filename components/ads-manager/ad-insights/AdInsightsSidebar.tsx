@@ -10,9 +10,7 @@ import { FacebookAdsManagerClientService } from "@/lib/features/ads-manager/face
 import { toast } from "sonner";
 import { DateRange } from "react-day-picker";
 import { DatePickerPopover } from "./popover/DatePickerPopover";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import { CheckedState } from "@radix-ui/react-checkbox";
+// import { CheckedState } from "@radix-ui/react-checkbox";
 import { GlobalSelect as SelectBrand } from "@/components/shared/select/GlobalSelect";
 import { GlobalSelect as SelectGeo } from "@/components/shared/select/GlobalSelect";
 import { GlobalComboBoxSelect as SelectMediaBuyer } from "@/components/shared/select/GlobalComboBoxSelect";
@@ -31,7 +29,7 @@ type Props = {
   isActionDisabled: boolean;
   isFilterShown: boolean;
   onExportData: () => void;
-  onCheckedChange: (checked: CheckedState) => void;
+  // onCheckedChange: (checked: CheckedState) => void;
   onValueChange: (
     value: string,
     type: "brand" | "budgetOptimization" | "geo" | "mediaBuyer"
@@ -55,13 +53,14 @@ export function AdInsightsSidebar({
   isActionDisabled,
   isFilterShown,
   onExportData,
-  onCheckedChange,
+  // onCheckedChange,
   onValueChange,
   onSubmit,
   onSetDateRange,
   onSetValidatedProfiles,
   validatedProfiles,
 }: Props) {
+  console.log("filters ", filters);
   const profilesService = new ApProfilesService();
   const [addedProfiles, setAddedProfiles] = useState<string[]>([]);
   const [progress, setProgress] = useState<number>(0);
@@ -295,7 +294,7 @@ export function AdInsightsSidebar({
             onClick={onExportData}
             className="cursor-pointer mt-2 w-full"
           >
-            Download
+            Export Ad Insights
           </Button>
         </div>
       )}

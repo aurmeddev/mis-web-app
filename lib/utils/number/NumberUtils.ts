@@ -50,4 +50,17 @@ export class NumberUtils {
   getPercentage(queue: number, total: number) {
     return Math.floor((queue / total) * 100);
   }
+
+  roundOff(input: number) {
+    const text = String(input);
+    const decimalRegex = /\./;
+    const hasDecimal = decimalRegex.test(text);
+    if (!hasDecimal) {
+      return input;
+    }
+    // Convert the string back to a floating-point number
+    const numberValue = parseFloat(text);
+    const roundedString = numberValue.toFixed(2);
+    return Number(roundedString);
+  }
 }

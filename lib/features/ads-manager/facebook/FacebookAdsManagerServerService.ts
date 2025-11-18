@@ -9,6 +9,7 @@ import {
 import { ApiResponseProps } from "@/database/query";
 import { DomainManagerServerService } from "../../domains/DomainManagerServerService";
 import { format, parseISO } from "date-fns";
+import { NumberUtils } from "@/lib/utils/number/NumberUtils";
 
 type ResultProps = {
   data: any[];
@@ -92,11 +93,12 @@ export class FacebookAdsManagerServerService {
         }
       }
 
+      const numUtil = new NumberUtils();
       for (const key in rest) {
         if (defaultInsightFields.hasOwnProperty(key)) {
           const value = Number(rest[key]) || 0;
           defaultInsightFields[key as keyof typeof defaultInsightFields] =
-            value;
+            numUtil.roundOff(value);
         }
       }
 

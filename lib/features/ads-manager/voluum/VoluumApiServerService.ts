@@ -148,6 +148,8 @@ export class VoluumApiServerService {
       const errorString = error.toString();
       const status: any = errorString.includes("NO_VISITS_PERIOD")
         ? "NO_VISITS_PERIOD"
+        : errorString.includes("TIME_RANGE_EXCEED_LAST_HOUR")
+        ? "TIME_RANGE_EXCEED_LAST_HOUR"
         : "COST_UPDATE_ERROR";
       return {
         isSuccess: false,

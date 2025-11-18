@@ -1,5 +1,6 @@
 import { appBaseUrl } from "@/lib/base-url/appBaseUrl";
 import { VoluumApiConfig } from "./config/VoluumApiConfig";
+import { UpdateCostProps } from "./type/VoluumApiProps";
 
 export class VoluumApiServerService {
   private voluumApiConfig = new VoluumApiConfig();
@@ -28,13 +29,7 @@ export class VoluumApiServerService {
     date_to: string;
     sessionToken: string;
   }) {
-    const {
-      spend,
-      adset_name,
-      date_from = `${params.date_from}T00:00:00.000Z`,
-      date_to = `${plusOneDay(params.date_to)}T00:00:00.000Z`,
-      sessionToken,
-    } = params;
+    const { spend, adset_name, date_from, date_to, sessionToken } = params;
 
     if (!isValidAdsetName(adset_name)) {
       const statusMessage = "Invalid adset name";
@@ -47,8 +42,8 @@ export class VoluumApiServerService {
 
     const { isSuccess, data, message } = await this.getCampaignRawData({
       filter: adset_name.trim(),
-      date_from,
-      date_to,
+      date_from: `${date_from}T00:00:00.000Z`,
+      date_to: `${plusOneDay(date_to)}T00:00:00.000Z`,
       sessionToken,
     });
 
@@ -113,6 +108,53 @@ export class VoluumApiServerService {
       message: "Data has been fetched successfully!",
       data: rows,
     };
+  }
+
+  async updateCost(params: UpdateCostProps) {
+    const { spend, v_campaign_id, sessionToken, date_from, date_to } = params;
+    const payload = {
+      from: `${date_from}T00:00:00.000`,
+      to: `${plusOneDay(date_to)}T00:00:00.000`,
+      timeZone: "Asia/Singapore",
+      campaignId: v_campaign_id,
+      cost: spend,
+      currency: "USD",
+    };
+
+    try {
+      const response = await fetch(
+        `${this.voluumApiConfig.baseUrl}/report/manual-cost`,
+        {
+          method: "POST",
+          headers: {
+            "CWAUTH-TOKEN": sessionToken,
+            "Content-type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      return {
+        isSuccess: true,
+        message: "Cost updated successfully!",
+        data: [{ status: "COST_UPDATED" }],
+      };
+    } catch (error: any) {
+      console.log(error);
+      const errorString = error.toString();
+      const status: any = errorString.includes("NO_VISITS_PERIOD")
+        ? "NO_VISITS_PERIOD"
+        : "COST_UPDATE_ERROR";
+      return {
+        isSuccess: false,
+        message: "Cost update error!",
+        data: [{ status }],
+      };
+    }
   }
 }
 

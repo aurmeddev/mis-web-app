@@ -26,7 +26,6 @@ type Props = {
     date_from: string;
     date_to: string;
   } & GetAllFbAccountsProps;
-  isSuperOrAdmin: boolean;
 };
 
 export type AdInsightsData = {
@@ -73,7 +72,6 @@ export function AdInsightsContainer({
   geos,
   mediaBuyers,
   searchParams,
-  isSuperOrAdmin,
 }: Props) {
   const dateFromSearchParam = searchParams.date_from;
   const dateToSearchParam = searchParams.date_to;
@@ -284,7 +282,6 @@ export function AdInsightsContainer({
         ad_account_name,
         account_status,
         ad_insights_summary,
-        campaign_name,
         cost_per_inline_link_click,
         cpm,
         daily_budget,

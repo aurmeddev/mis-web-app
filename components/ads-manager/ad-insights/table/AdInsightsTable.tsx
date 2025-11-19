@@ -6,17 +6,13 @@ import {
   useReactTable,
   VisibilityState,
 } from "@tanstack/react-table";
-import { AdInsightsData } from "../AdInsightsContainer";
 import { useAdInsightsColumn } from "../column/useAdInsightsColumns";
 import { useState } from "react";
 import { Pagination } from "@/components/shared/pagination/tanstack/Pagination";
 import { TableWithResizableHeader } from "@/components/shared/table/with-resizable-header/TableWithResizableHeader";
+import { AdInsightsTableProps } from "../AdInsights.types";
 
-type Props = {
-  tableData: AdInsightsData[];
-};
-
-export function AdInsightsTable({ tableData }: Props) {
+export function AdInsightsTable({ tableData }: AdInsightsTableProps) {
   const columns = useAdInsightsColumn();
   const [colSizing, setColSizing] = useState<ColumnSizingState>({});
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({

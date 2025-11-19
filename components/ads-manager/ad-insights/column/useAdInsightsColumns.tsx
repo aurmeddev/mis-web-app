@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { ColumnDef } from "@tanstack/react-table";
-import { AdInsightsData } from "../AdInsightsContainer";
 import { Badge } from "@/components/ui/badge";
+import { AdInsightsData } from "../AdInsights.types";
 
 export function useAdInsightsColumn() {
   const adColumns: ColumnDef<AdInsightsData>[] = useMemo(

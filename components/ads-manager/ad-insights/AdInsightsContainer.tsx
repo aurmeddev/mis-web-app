@@ -43,7 +43,7 @@ export function AdInsightsContainer({
     useState(false);
   const [adCheckerProgress, setAdCheckerProgress] = useState(0);
   const [profile, setProfile] = useState<string>("");
-  const [isFilterShown, setIsFilterShown] = useState(false);
+  // const [isFilterShown, setIsFilterShown] = useState(false);
   const [isExportReady, setIsExportReady] = useState(false);
   const [filters, setFilters] = useState<AdInsightsFilters>({
     brand: "",
@@ -205,7 +205,7 @@ export function AdInsightsContainer({
     });
 
     // run in batches of 50
-    await networkRequestUtils.batchAllSettled(tasks, 50);
+    await networkRequestUtils.batchAllSettled(tasks, 20);
     setIsExportReady(true);
     setIsActionDisabled(false);
     setIsAdInsightsProgressDialogOpen(false);
@@ -232,9 +232,9 @@ export function AdInsightsContainer({
     setFilters((prevState) => ({ ...prevState, [type]: value }));
   };
 
-  const handleCheckedChange = (checked: CheckedState) => {
-    setIsFilterShown(checked ? true : false);
-  };
+  // const handleCheckedChange = (checked: CheckedState) => {
+  //   setIsFilterShown(checked ? true : false);
+  // };
 
   const handleExportAdInsights = async () => {
     const plainData = tableData.map((data: any) => {
@@ -366,7 +366,7 @@ export function AdInsightsContainer({
           onSetDateRange={handleOnSetDateRange}
           isExportReady={isExportReady}
           isActionDisabled={isActionDisabled}
-          isFilterShown={isFilterShown}
+          // isFilterShown={isFilterShown}
           onExportData={handleExportAdInsights}
           // onCheckedChange={handleCheckedChange}
           onValueChange={handleValueChange}

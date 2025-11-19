@@ -1,5 +1,4 @@
 "use client";
-import { GetAllFbAccountsProps } from "@/lib/features/fb-accounts/type/FbAccountsProps";
 import { AdInsightsTable } from "./table/AdInsightsTable";
 import { FacebookAdsManagerClientService } from "@/lib/features/ads-manager/facebook/FacebookAdsManagerClientService";
 import { AdCheckerProgressDialog } from "./dialog/AdInsightsProgressDialog";
@@ -8,76 +7,32 @@ import { DateRange } from "react-day-picker";
 import { DatetimeUtils } from "@/lib/utils/date/DatetimeUtils";
 import { format } from "date-fns";
 import { datePresets } from "@/components/shared/datepicker/DatePresetSelect";
-import { SelectOptions } from "@/components/shared/select/type";
 import { ProfileMarketingApiAccessToken } from "../ad-checker/AdCheckerContainer";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { CheckedState } from "@radix-ui/react-checkbox";
 import { useState } from "react";
 import { Json2CsvManager } from "@/lib/utils/converter/Json2CsvManager";
-
-type Props = {
-  brands: SelectOptions[];
-  geos: SelectOptions[];
-  mediaBuyers: SelectOptions[];
-  searchParams: {
-    page: number;
-    limit: number;
-    date_from: string;
-    date_to: string;
-  } & GetAllFbAccountsProps;
-};
-
-export type AdInsightsData = {
-  id: number;
-  profile: string; // Profile
-  ad_account_name: string; // Account Name
-  ad_insights_summary: Record<string, unknown>; // Ad Insights Summary
-  name: string; // Adset Name
-  v_campaign_name: string; // Voluum Campaign Name || if null
-  v_campaign_status: string; // Voluum Campaign Name || display this
-  account_status: string; // Delivery
-  disable_reason: string; // Delivery
-  effective_status: string; // Delivery
-  targeting_countries: string; // Targeting Geo
-  daily_budget: number; // Daily Budget
-  spend: number; // Spend
-  lead: number; // FB Lead
-  purchase: string; // FB FTD
-  v_lead: number; // Voluum Lead
-  v_ftd: number; // Voluum FTD
-  v_cpl: number; // CPL
-  v_cpa: number; // CPA
-  v_cv: number; // CV
-  cpm: number; // CPM
-  cost_per_inline_link_click: number; // CPC
-  inline_link_click_ctr: number; // CTR
-  link_click: number; // Link Click
-  frequency: number; // Frequency
-  impressions: number; // Impressions
-  reach: number; // Reach
-};
-
-export type AdInsightsFilters = {
-  brand: string;
-  budgetOptimization: string;
-  geo: string;
-  mediaBuyer: string;
-};
-
-type ApiFiltering = { field: string; operator: "CONTAIN"; value: string };
+import { NetworkRequestUtils } from "@/lib/utils/network-request/NetworkRequestUtils";
+import {
+  AdInsightsContainerProps,
+  AdInsightsData,
+  AdInsightsFilters,
+  ApiFiltering,
+} from "./AdInsights.types";
 
 export function AdInsightsContainer({
   brands,
   geos,
   mediaBuyers,
   searchParams,
-}: Props) {
+}: AdInsightsContainerProps) {
   const dateFromSearchParam = searchParams.date_from;
   const dateToSearchParam = searchParams.date_to;
   const fbAdsManagerService = new FacebookAdsManagerClientService();
   const jsonCsvManager = new Json2CsvManager();
   const dateUtil = new DatetimeUtils();
+  const networkRequestUtils = new NetworkRequestUtils();
 
   const [isActionDisabled, setIsActionDisabled] = useState(false);
   const [validatedProfiles, setValidatedProfiles] = useState<
@@ -143,7 +98,7 @@ export function AdInsightsContainer({
       });
     }
 
-    for (const profile of validatedProfiles) {
+    const tasks = validatedProfiles.map((profile) => async () => {
       const invalidProfiles: AdInsightsData[] = [];
       if (!profile.accessToken || !profile.canRequest) {
         invalidProfiles.push({
@@ -247,7 +202,10 @@ export function AdInsightsContainer({
       // );
 
       setTableData((prevState) => [...prevState, ...combinedAdData]);
-    }
+    });
+
+    // run in batches of 50
+    await networkRequestUtils.batchAllSettled(tasks, 50);
     setIsExportReady(true);
     setIsActionDisabled(false);
     setIsAdInsightsProgressDialogOpen(false);

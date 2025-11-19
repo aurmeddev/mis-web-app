@@ -7,13 +7,7 @@ import {
 } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { getPositionFromPercentage } from "../AdInsightsSidebar";
-type Props = {
-  open: boolean;
-  handleOpen: (open: boolean) => void;
-  profile: string;
-  progress: number;
-  profilesLength: number;
-};
+import { AdCheckerProgressDialogProps } from "../AdInsights.types";
 
 export function AdCheckerProgressDialog({
   open,
@@ -21,7 +15,7 @@ export function AdCheckerProgressDialog({
   profile,
   progress,
   profilesLength,
-}: Props) {
+}: AdCheckerProgressDialogProps) {
   const currentProgressPosition = getPositionFromPercentage(
     progress,
     profilesLength

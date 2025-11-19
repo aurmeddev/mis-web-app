@@ -8,40 +8,14 @@ import { ApProfilesService } from "@/lib/features/ap-profiles/ApProfilesService"
 import { Progress } from "../../ui/progress";
 import { FacebookAdsManagerClientService } from "@/lib/features/ads-manager/facebook/FacebookAdsManagerClientService";
 import { toast } from "sonner";
-import { DateRange } from "react-day-picker";
 import { DatePickerPopover } from "./popover/DatePickerPopover";
 // import { CheckedState } from "@radix-ui/react-checkbox";
 import { GlobalSelect as SelectBrand } from "@/components/shared/select/GlobalSelect";
 import { GlobalSelect as SelectGeo } from "@/components/shared/select/GlobalSelect";
 import { GlobalComboBoxSelect as SelectMediaBuyer } from "@/components/shared/select/GlobalComboBoxSelect";
-import { SelectOptions } from "@/components/shared/select/type";
 import { ProfileMarketingApiAccessToken } from "../ad-checker/AdCheckerContainer";
 import { ValidatedProfilesList } from "../ValidatedProfilesList";
-import { AdInsightsFilters } from "./AdInsightsContainer";
-
-type Props = {
-  brands: SelectOptions[];
-  geos: SelectOptions[];
-  mediaBuyers: SelectOptions[];
-  dateRange: DateRange | undefined;
-  filters: AdInsightsFilters;
-  isExportReady: boolean;
-  isActionDisabled: boolean;
-  isFilterShown: boolean;
-  onExportData: () => void;
-  // onCheckedChange: (checked: CheckedState) => void;
-  onValueChange: (
-    value: string,
-    type: "brand" | "budgetOptimization" | "geo" | "mediaBuyer"
-  ) => void;
-  onSubmit: () => void;
-  onSetDateRange: (range: DateRange) => void;
-  onSetValidatedProfiles: (
-    data: ProfileMarketingApiAccessToken[],
-    isRemove: boolean
-  ) => void;
-  validatedProfiles: ProfileMarketingApiAccessToken[];
-};
+import { AdInsightsSidebarProps } from "./AdInsights.types";
 
 export function AdInsightsSidebar({
   brands,
@@ -59,8 +33,7 @@ export function AdInsightsSidebar({
   onSetDateRange,
   onSetValidatedProfiles,
   validatedProfiles,
-}: Props) {
-  console.log("filters ", filters);
+}: AdInsightsSidebarProps) {
   const profilesService = new ApProfilesService();
   const [addedProfiles, setAddedProfiles] = useState<string[]>([]);
   const [progress, setProgress] = useState<number>(0);

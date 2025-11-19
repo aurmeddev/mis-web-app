@@ -205,7 +205,7 @@ export function AdInsightsContainer({
     });
 
     // run in batches of 50
-    await networkRequestUtils.batchAllSettled(tasks, 20);
+    await networkRequestUtils.batchAllSettled(tasks, 10);
     setIsExportReady(true);
     setIsActionDisabled(false);
     setIsAdInsightsProgressDialogOpen(false);

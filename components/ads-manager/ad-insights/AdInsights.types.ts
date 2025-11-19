@@ -62,7 +62,7 @@ type AdInsightsSidebarProps = {
   filters: AdInsightsFilters;
   isExportReady: boolean;
   isActionDisabled: boolean;
-  isFilterShown: boolean;
+  //   isFilterShown: boolean;
   onExportData: () => void;
   // onCheckedChange: (checked: CheckedState) => void;
   onValueChange: (

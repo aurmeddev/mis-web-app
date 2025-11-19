@@ -9,13 +9,13 @@ import { Progress } from "../../ui/progress";
 import { FacebookAdsManagerClientService } from "@/lib/features/ads-manager/facebook/FacebookAdsManagerClientService";
 import { toast } from "sonner";
 import { DatePickerPopover } from "./popover/DatePickerPopover";
-// import { CheckedState } from "@radix-ui/react-checkbox";
 import { GlobalSelect as SelectBrand } from "@/components/shared/select/GlobalSelect";
 import { GlobalSelect as SelectGeo } from "@/components/shared/select/GlobalSelect";
 import { GlobalComboBoxSelect as SelectMediaBuyer } from "@/components/shared/select/GlobalComboBoxSelect";
 import { ProfileMarketingApiAccessToken } from "../ad-checker/AdCheckerContainer";
 import { ValidatedProfilesList } from "../ValidatedProfilesList";
 import { AdInsightsSidebarProps } from "./AdInsights.types";
+import { NetworkRequestUtils } from "@/lib/utils/network-request/NetworkRequestUtils";
 
 export function AdInsightsSidebar({
   brands,
@@ -25,7 +25,7 @@ export function AdInsightsSidebar({
   filters,
   isExportReady,
   isActionDisabled,
-  isFilterShown,
+  // isFilterShown,
   onExportData,
   // onCheckedChange,
   onValueChange,
@@ -35,6 +35,7 @@ export function AdInsightsSidebar({
   validatedProfiles,
 }: AdInsightsSidebarProps) {
   const profilesService = new ApProfilesService();
+  const networkRequestUtils = new NetworkRequestUtils();
   const [addedProfiles, setAddedProfiles] = useState<string[]>([]);
   const [progress, setProgress] = useState<number>(0);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -104,7 +105,7 @@ export function AdInsightsSidebar({
     const results: ProfileMarketingApiAccessToken[] = [];
 
     const divisor = (100 / profiles.length).toFixed();
-    for (const profile of profiles) {
+    const tasks = profiles.map((profile) => async () => {
       setProgress((prev) => {
         const currentProgress = (prev += Number(divisor));
         return currentProgress >= 99 ? 100 : currentProgress;
@@ -140,10 +141,10 @@ export function AdInsightsSidebar({
       }
 
       results.push({ profile, accessToken, status, canRequest });
-    }
+    });
+    await networkRequestUtils.batchAllSettled(tasks, 50);
 
     startTransition(() => setProgress(0));
-
     return results;
   };
 

@@ -28,7 +28,7 @@ export function AdCheckerProgressDialog({
         showCloseButton={false}
       >
         <DialogHeader>
-          <DialogTitle>Checking {profile}...</DialogTitle>
+          <DialogTitle>Retrieving {profile}...</DialogTitle>
           <DialogDescription />
         </DialogHeader>
 

@@ -19,7 +19,7 @@ type AdInsightsData = {
   id: number;
   profile: string; // Profile
   ad_account_name: string; // Account Name
-  ad_insights_summary: Record<string, unknown>; // Ad Insights Summary
+  ad_insights_summary: Record<string, any>; // Ad Insights Summary
   account_currency: string;
   name: string; // Adset Name
   v_campaign_id: string; // Voluum Campaign ID
@@ -28,7 +28,7 @@ type AdInsightsData = {
   account_status: string; // Delivery
   disable_reason: string; // Delivery
   effective_status: string; // Delivery
-  targeting_countries: string; // Targeting Geo
+  targeting_countries: string[]; // Targeting Geo
   daily_budget: number; // Daily Budget
   spend: number; // Spend
   lead: number; // FB Lead
@@ -82,11 +82,15 @@ type AdInsightsSidebarProps = {
 };
 
 type AdCheckerProgressDialogProps = {
+  texts: {
+    currentItemTitle: string;
+    actionType: string;
+    itemsLabel: string;
+  };
   open: boolean;
   handleOpen: (open: boolean) => void;
-  profile: string;
   progress: number;
-  profilesLength: number;
+  itemsLength: number;
 };
 
 type AdInsightsTableProps = {

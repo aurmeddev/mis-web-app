@@ -10,15 +10,15 @@ import { getPositionFromPercentage } from "../AdInsightsSidebar";
 import { AdCheckerProgressDialogProps } from "../AdInsights.types";
 
 export function AdCheckerProgressDialog({
-  open,
   handleOpen,
-  profile,
+  itemsLength,
+  open,
   progress,
-  profilesLength,
+  texts,
 }: AdCheckerProgressDialogProps) {
   const currentProgressPosition = getPositionFromPercentage(
     progress,
-    profilesLength
+    itemsLength
   );
   return (
     <Dialog open={open} onOpenChange={handleOpen}>
@@ -28,7 +28,9 @@ export function AdCheckerProgressDialog({
         showCloseButton={false}
       >
         <DialogHeader>
-          <DialogTitle>Retrieving {profile}...</DialogTitle>
+          <DialogTitle>
+            {texts.actionType} {texts.currentItemTitle}...
+          </DialogTitle>
           <DialogDescription />
         </DialogHeader>
 
@@ -37,8 +39,8 @@ export function AdCheckerProgressDialog({
 
           <div className="flex font-semibold justify-between mt-2 text-muted-foreground text-xs">
             <div>
-              {currentProgressPosition + 1} of {profilesLength} profiles. This
-              may take a few moments.
+              {currentProgressPosition + 1} of {itemsLength} {texts.itemsLabel}
+              This may take a few moments.
             </div>
             <div>{progress}%</div>
           </div>

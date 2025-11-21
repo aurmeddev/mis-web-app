@@ -167,7 +167,7 @@ export class FacebookAdsManagerServerService {
     const insightFields = baseInsightsFields.join(",");
     const searchParams: any = {
       access_token: this.config.access_token,
-      fields: `name,daily_budget,adsets{name,daily_budget,effective_status,targeting{geo_locations{countries}},insights.time_ranges(${time_ranges}){${insightFields}}}`,
+      fields: `name,daily_budget,is_adset_budget_sharing_enabled,adsets{name,created_time,daily_budget,effective_status,targeting{geo_locations{countries}},insights.time_ranges(${time_ranges}){${insightFields}}}`,
       use_account_attribution_setting: true,
     };
 
@@ -199,13 +199,29 @@ export class FacebookAdsManagerServerService {
     const result: ResultProps = await response.json();
     const formattedResult = await Promise.all(
       result.data.map(async (prop) => {
-        const { id, adsets, name, daily_budget, ...restOfProps } = prop;
+        const {
+          id,
+          adsets,
+          name,
+          daily_budget,
+          is_adset_budget_sharing_enabled,
+          ...restOfProps
+        } = prop;
+        const budget_optimization_strategy = is_adset_budget_sharing_enabled
+          ? "ABO"
+          : "CBO";
         const campaignDailyBudget = daily_budget;
         const hasAdsets = adsets?.data.length > 0;
         if (hasAdsets) {
           restOfProps.adsets = await Promise.all(
             adsets.data.map(async (adset: any) => {
-              const { id, insights, targeting, ...restOfAdsetsProps } = adset;
+              const {
+                id,
+                insights,
+                targeting,
+                created_time,
+                ...restOfAdsetsProps
+              } = adset;
               restOfAdsetsProps.effective_status =
                 restOfAdsetsProps.effective_status.includes("PAUSED")
                   ? "PAUSED"
@@ -216,8 +232,11 @@ export class FacebookAdsManagerServerService {
               const targeting_countries = targeting?.geo_locations?.countries;
               const hasTrafficData = insights?.data?.length > 0;
 
+              const created_at = formatDate(created_time) || "";
               return {
                 ...restOfAdsetsProps,
+                budget_optimization_strategy: budget_optimization_strategy,
+                created_at: created_at,
                 ...this.formatInsightsFields(insights),
                 targeting_countries: targeting_countries,
                 daily_budget: `${

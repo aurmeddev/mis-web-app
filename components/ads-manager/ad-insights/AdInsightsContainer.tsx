@@ -21,6 +21,15 @@ import {
 } from "./AdInsights.types";
 import { VoluumApiClientService } from "@/lib/features/ads-manager/voluum/VoluumApiClientService";
 import { LocateFixed } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+const INITIAL_PROGRESS = {
+  actionType: "",
+  count: 0,
+  label: "",
+  length: 0,
+  itemsLabel: "",
+};
 
 export function AdInsightsContainer({
   brands,
@@ -43,9 +52,8 @@ export function AdInsightsContainer({
   const [tableData, setTableData] = useState<AdInsightsData[]>([]);
   const [isAdInsightsProgressDialogOpen, setIsAdInsightsProgressDialogOpen] =
     useState(false);
-  const [adCheckerProgress, setAdCheckerProgress] = useState(0);
-  const [profile, setProfile] = useState<string>("");
-  // const [isFilterShown, setIsFilterShown] = useState(false);
+  const [adInsightsProgress, setAdInsightsProgress] =
+    useState(INITIAL_PROGRESS);
   const [isExportReady, setIsExportReady] = useState(false);
   const [isUpdatingCost, setIsUpdatingCost] = useState(false);
   const [filters, setFilters] = useState<AdInsightsFilters>({
@@ -84,7 +92,14 @@ export function AdInsightsContainer({
 
   const handleSubmitRequest = async () => {
     setIsAdInsightsProgressDialogOpen(true);
-    setAdCheckerProgress(0);
+    setIsExportReady(false);
+    setAdInsightsProgress((prevState) => ({
+      ...prevState,
+      count: 0,
+      length: validatedProfiles.length,
+      actionType: "Retrieving",
+      itemsLabel: "profiles.",
+    }));
 
     const date_from = format(String(dateRange?.from), "yyyy-MM-dd");
     const date_to = format(String(dateRange?.to), "yyyy-MM-dd");
@@ -116,7 +131,7 @@ export function AdInsightsContainer({
           account_status: "",
           disable_reason: "",
           effective_status: "",
-          targeting_countries: "",
+          targeting_countries: [],
           account_currency: "",
           daily_budget: 0,
           spend: 0,
@@ -140,7 +155,11 @@ export function AdInsightsContainer({
 
       let adInsightsData: AdInsightsData[] = [];
       if (profile.canRequest) {
-        setProfile(profile.profile);
+        setAdInsightsProgress((prevState) => ({
+          ...prevState,
+          label: profile.profile,
+        }));
+
         const { data } = await fbAdsManagerService.adInsights({
           access_token: profile.accessToken.trim(),
           date_from,
@@ -149,11 +168,14 @@ export function AdInsightsContainer({
           isVoluumIncluded: true,
         });
 
-        // IBCMYCSL196_IBC22_MY_ABO_JIACO_a9f135ef-069e-461f-bb86-cea7837b299b
         const divisor = (100 / validatedProfiles.length).toFixed();
-        setAdCheckerProgress((prev) => {
-          const currentProgress = (prev += Number(divisor));
-          return currentProgress >= 99 ? 100 : currentProgress;
+        setAdInsightsProgress((prevState) => {
+          const currentProgress = (prevState.count += Number(divisor));
+          return {
+            ...prevState,
+            label: profile.profile,
+            count: currentProgress >= 99 ? 100 : currentProgress,
+          };
         });
 
         adInsightsData = data.map((ad: AdInsightsData) => {
@@ -199,17 +221,16 @@ export function AdInsightsContainer({
         });
       } else {
         const divisor = (100 / validatedProfiles.length).toFixed();
-        setAdCheckerProgress((prev) => {
-          const currentProgress = (prev += Number(divisor));
-          return currentProgress >= 99 ? 100 : currentProgress;
+        setAdInsightsProgress((prevState) => {
+          const currentProgress = (prevState.count += Number(divisor));
+          return {
+            ...prevState,
+            count: currentProgress >= 99 ? 100 : currentProgress,
+          };
         });
       }
 
       const combinedAdData = [...invalidProfiles, ...adInsightsData];
-      // const sortedAdData: any = combinedAdData.sort(
-      //   (a, b) => b.ad_checker_summary.code - a.ad_checker_summary.code
-      // );
-
       setTableData((prevState) => [...prevState, ...combinedAdData]);
     });
 
@@ -218,6 +239,7 @@ export function AdInsightsContainer({
     setIsExportReady(true);
     setIsActionDisabled(false);
     setIsAdInsightsProgressDialogOpen(false);
+    setAdInsightsProgress(INITIAL_PROGRESS);
   };
 
   const handleSubmit = async () => {
@@ -241,162 +263,198 @@ export function AdInsightsContainer({
     setFilters((prevState) => ({ ...prevState, [type]: value }));
   };
 
-  // const handleCheckedChange = (checked: CheckedState) => {
-  //   setIsFilterShown(checked ? true : false);
-  // };
-
   const handleExportAdInsights = async () => {
-    const plainData = tableData.map((data: any) => {
-      const {
-        ad_account_name,
-        account_status,
-        ad_insights_summary,
-        cost_per_inline_link_click,
-        cpm,
-        daily_budget,
-        disable_reason,
-        effective_status,
-        frequency,
-        impressions,
-        inline_link_click_ctr,
-        lead,
-        link_click,
-        name,
-        profile,
-        purchase,
-        reach,
-        spend,
-        targeting_countries,
-        account_currency,
-        v_campaign_name,
-        v_campaign_status,
-        v_lead,
-        v_ftd,
-        v_cpl,
-        v_cpa,
-        v_cv,
-        cost_update_status,
-      } = data;
+    const allCamps = tableData
+      .filter(
+        (d) =>
+          d.ad_insights_summary.code === 200 ||
+          d.ad_insights_summary.code === 404
+      )
+      .map((data: AdInsightsData) => {
+        const {
+          ad_account_name,
+          account_status,
+          ad_insights_summary,
+          cost_per_inline_link_click,
+          cpm,
+          daily_budget,
+          disable_reason,
+          effective_status,
+          frequency,
+          impressions,
+          inline_link_click_ctr,
+          lead,
+          link_click,
+          name,
+          profile,
+          purchase,
+          reach,
+          spend,
+          targeting_countries,
+          account_currency,
+          v_campaign_name,
+          v_campaign_status,
+          v_lead,
+          v_ftd,
+          v_cpl,
+          v_cpa,
+          v_cv,
+          cost_update_status,
+        } = data;
 
-      const campaignName = v_campaign_name
-        ? v_campaign_name
-        : v_campaign_status;
-      const delivery =
-        account_status == "ACTIVE" ? effective_status : account_status;
-      const adInsightsSummary = ad_insights_summary
-        ? ad_insights_summary.message.join(". ")
-        : "";
+        const campaignName = v_campaign_name
+          ? v_campaign_name
+          : v_campaign_status;
+        const delivery =
+          account_status == "ACTIVE" ? effective_status : account_status;
+        const adInsightsSummary = ad_insights_summary
+          ? ad_insights_summary.message.join(". ")
+          : "";
 
-      return {
-        profile,
-        ad_account: ad_account_name,
-        ad_insights_summary: adInsightsSummary,
-        adset_name: name,
-        voluum_campaign_name: campaignName,
-        delivery: delivery ? delivery : account_status,
-        disable_reason,
-        targeting_geo:
-          targeting_countries?.length > 0 ? targeting_countries.join(", ") : "",
-        account_currency,
-        daily_budget,
-        spend,
-        fb_lead: lead,
-        fb_ftd: purchase,
-        voluum_lead: v_lead,
-        voluum_ftd: v_ftd,
-        cpl: v_cpl,
-        cpa: v_cpa,
-        cv: v_cv,
-        cpm: cpm,
-        cpc: cost_per_inline_link_click,
-        ctr: inline_link_click_ctr,
-        link_click,
-        frequency,
-        impressions,
-        reach,
-        cost_update_status,
-      };
-    });
-
-    try {
-      const csv = await jsonCsvManager.convertJsonToCSV(plainData);
-
-      const blob = new Blob([csv], { type: "text/csv" });
-      const url = URL.createObjectURL(blob);
-
-      const todayDate = new Date().toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
+        return {
+          profile,
+          ad_account: ad_account_name,
+          ad_insights_summary: adInsightsSummary,
+          adset_name: name,
+          voluum_campaign_name: campaignName,
+          delivery: delivery ? delivery : account_status,
+          disable_reason,
+          targeting_geo:
+            targeting_countries?.length > 0
+              ? targeting_countries.join(", ")
+              : "",
+          account_currency,
+          daily_budget,
+          spend,
+          fb_lead: lead,
+          fb_ftd: purchase,
+          voluum_lead: v_lead,
+          voluum_ftd: v_ftd,
+          cpl: v_cpl,
+          cpa: v_cpa,
+          cv: v_cv,
+          cpm: cpm,
+          cpc: cost_per_inline_link_click,
+          ctr: inline_link_click_ctr,
+          link_click,
+          frequency,
+          impressions,
+          reach,
+          cost_update_status,
+        };
       });
 
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `exported-data-${profile}-${todayDate.replaceAll(
-        "/",
-        "-"
-      )}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+    const flaggedCamps = tableData
+      .filter(
+        (data) =>
+          data.ad_insights_summary.code === 400 ||
+          data.ad_insights_summary.code === 500
+      )
+      .map((data: AdInsightsData) => {
+        const { profile, ad_insights_summary } = data;
+        const adInsightsSummary = ad_insights_summary
+          ? ad_insights_summary.message.join(". ")
+          : "";
+        return {
+          profile,
+          ad_insights_summary: adInsightsSummary,
+        };
+      });
+    const downloadToCsv = [allCamps, flaggedCamps];
+    downloadToCsv.map(async (download, idx) => {
+      try {
+        const csv = await jsonCsvManager.convertJsonToCSV(download);
 
-      URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error("Error converting JSON to CSV:", err);
-    }
+        const blob = new Blob([csv], { type: "text/csv" });
+        const url = URL.createObjectURL(blob);
+
+        const todayDate = new Date().toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        });
+
+        const csvName =
+          idx == 0 ? "Performance Analysis Report Data" : "Flagged Profiles";
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${csvName}-${todayDate.replaceAll("/", "-")}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        console.error("Error converting JSON to CSV:", err);
+      }
+    });
   };
 
   const handleUpdateCost = async () => {
+    setIsAdInsightsProgressDialogOpen(true);
     setIsUpdatingCost(true);
-    const sampleData = [
-      {
-        id: 0,
-        profile: "PH-AP OXY 05956",
-        ad_account_name: "Cheerful News",
-        ad_insights_summary: {
-          code: 404,
-          message: ["No traffic data"],
-        },
-        name: "IBC22MYC198JC0007",
-        v_campaign_id: "865879a1-6c70-49b2-ae88-837ae0d7182d",
-        v_campaign_name:
-          "FB S2S CMS - Malaysia - IBC22MYC198JC0007 - MYC IMG170 Ex FIBCCA FS198",
-        v_campaign_status: "Everything is OK!",
-        account_status: "DISABLED",
-        disable_reason: "ADS_INTEGRITY_POLICY",
-        effective_status: "ACTIVE",
-        targeting_countries: "",
-        daily_budget: 1,
-        spend: 1,
-        lead: 0,
-        purchase: "",
-        v_lead: 0,
-        v_ftd: 0,
-        v_cpl: 0,
-        v_cpa: 0,
-        v_cv: 0,
-        cpm: 0,
-        cost_per_inline_link_click: 0,
-        inline_link_click_ctr: 0,
-        link_click: 0,
-        frequency: 0,
-        impressions: 0,
-        reach: 0,
-        cost_update_status: "",
-      },
-    ];
-    const filteredTableData = sampleData.filter(
+    // const sampleData = [
+    //   {
+    //     id: 0,
+    //     profile: "PH-AP OXY 05956",
+    //     ad_account_name: "Cheerful News",
+    //     ad_insights_summary: {
+    //       code: 404,
+    //       message: ["No traffic data"],
+    //     },
+    //     name: "IBC22MYC198JC0007",
+    //     v_campaign_id: "865879a1-6c70-49b2-ae88-837ae0d7182d",
+    //     v_campaign_name:
+    //       "FB S2S CMS - Malaysia - IBC22MYC198JC0007 - MYC IMG170 Ex FIBCCA FS198",
+    //     v_campaign_status: "Everything is OK!",
+    //     account_status: "DISABLED",
+    //     disable_reason: "ADS_INTEGRITY_POLICY",
+    //     effective_status: "ACTIVE",
+    //     targeting_countries: "",
+    //     daily_budget: 1,
+    //     spend: 1,
+    //     lead: 0,
+    //     purchase: "",
+    //     v_lead: 0,
+    //     v_ftd: 0,
+    //     v_cpl: 0,
+    //     v_cpa: 0,
+    //     v_cv: 0,
+    //     cpm: 0,
+    //     cost_per_inline_link_click: 0,
+    //     inline_link_click_ctr: 0,
+    //     link_click: 0,
+    //     frequency: 0,
+    //     impressions: 0,
+    //     reach: 0,
+    //     cost_update_status: "",
+    //   },
+    // ];
+    const filteredTableData = tableData.filter(
       (t) =>
         t.v_campaign_status == "Everything is OK!" &&
         t.v_campaign_id &&
-        t.spend > 0
+        t.spend > 0 &&
+        t.cost_update_status !== "COST_UPDATED" &&
+        t.cost_update_status !== "NO_VISITS_PERIOD" &&
+        t.cost_update_status !== "TIME_RANGE_EXCEED_LAST_HOUR"
     );
 
     const formattedDateFrom = format(dateRange?.from || "", "yyyy-MM-dd");
     const formattedDateTo = format(dateRange?.to || "", "yyyy-MM-dd");
-    for (let i = 0; i < filteredTableData.length; i++) {
-      const { spend, v_campaign_id } = filteredTableData[i];
+    const costUpdateDataLength = filteredTableData.length;
+    const divisor = (100 / costUpdateDataLength).toFixed();
+    for (let i = 0; i < costUpdateDataLength; i++) {
+      const { name, spend, v_campaign_id } = filteredTableData[i];
       if (spend > 0) {
+        setAdInsightsProgress((prevState) => ({
+          ...prevState,
+          actionType: "Updating Cost",
+          label: name,
+          length: costUpdateDataLength,
+          itemsLabel: "campaigns.",
+        }));
+
         const { data } = await voluumApiService.updateCost({
           date_from: formattedDateFrom,
           date_to: formattedDateTo,
@@ -404,10 +462,19 @@ export function AdInsightsContainer({
           v_campaign_id,
         });
 
+        setAdInsightsProgress((prevState) => {
+          const currentProgress = (prevState.count += Number(divisor));
+          return {
+            ...prevState,
+            count: currentProgress >= 99 ? 100 : currentProgress,
+            label: name,
+          };
+        });
+
         setTableData((prevState) =>
           prevState.map((item) => {
             const output =
-              item.v_campaign_id == filteredTableData[i].v_campaign_id
+              item.v_campaign_id == v_campaign_id
                 ? { ...item, cost_update_status: data[0].status }
                 : item;
             return output;
@@ -416,6 +483,8 @@ export function AdInsightsContainer({
       }
     }
     setIsUpdatingCost(false);
+    setIsAdInsightsProgressDialogOpen(false);
+    setAdInsightsProgress(INITIAL_PROGRESS);
   };
 
   return (
@@ -431,10 +500,10 @@ export function AdInsightsContainer({
         <Button size={"sm"} className="hidden mr-4">
           Refresh data
         </Button>
-        <div className="hidden items-end justify-end mr-4">
+        <div className="items-end flex justify-end mr-4">
           <Button
-            className="cursor-pointer"
-            disabled={isUpdatingCost}
+            className={cn("cursor-pointer", !isExportReady && "hidden")}
+            disabled={isUpdatingCost || !isExportReady}
             onClick={handleUpdateCost}
             size={"sm"}
           >
@@ -446,9 +515,13 @@ export function AdInsightsContainer({
       <AdCheckerProgressDialog
         open={isAdInsightsProgressDialogOpen}
         handleOpen={handleAdCheckerProgressDialogOpen}
-        profile={profile}
-        profilesLength={validatedProfiles.length}
-        progress={adCheckerProgress}
+        itemsLength={validatedProfiles.length}
+        progress={adInsightsProgress.count}
+        texts={{
+          actionType: adInsightsProgress.actionType,
+          currentItemTitle: adInsightsProgress.label,
+          itemsLabel: adInsightsProgress.itemsLabel,
+        }}
       />
 
       <div className="flex gap-4 min-h-[calc(100dvh-12rem)] mt-4 pr-4">

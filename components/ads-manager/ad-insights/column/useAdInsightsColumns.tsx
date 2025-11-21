@@ -25,7 +25,7 @@ export function useAdInsightsColumn() {
         header: "Ad Insights Summary",
         cell: ({ getValue }) => {
           const cellValue = getValue<any>();
-          const isInternaServerError = cellValue.code === 500;
+          const isInternalServerError = cellValue.code === 500;
           const isAdInsightsSummaryOk = cellValue.code === 200;
           const isAdInsightsSummaryNoAdset = cellValue.code === 404;
           const isAdInsightsSummaryProfileIssue = cellValue.code === 400;
@@ -48,7 +48,7 @@ export function useAdInsightsColumn() {
                       ) : (
                         <>- {adInsightsSummary} </>
                       )}
-                      {isInternaServerError && (
+                      {isInternalServerError && (
                         <Badge className="uppercase" variant={"destructive"}>
                           {adInsightsSummary}
                         </Badge>

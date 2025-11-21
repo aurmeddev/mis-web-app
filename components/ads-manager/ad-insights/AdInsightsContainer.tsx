@@ -293,7 +293,7 @@ export function AdInsightsContainer({
         ad_insights_summary: adInsightsSummary,
         adset_name: name,
         voluum_campaign_name: campaignName,
-        delivery: delivery ? delivery : "",
+        delivery: delivery ? delivery : account_status,
         disable_reason,
         targeting_geo:
           targeting_countries?.length > 0 ? targeting_countries.join(", ") : "",
@@ -416,7 +416,6 @@ export function AdInsightsContainer({
       }
     }
     setIsUpdatingCost(false);
-    console.log("filteredTableData ", filteredTableData);
   };
 
   return (

@@ -61,24 +61,12 @@ export const POST = async (request: NextRequest) => {
     access_token: decryptedData.decryptedData,
   });
   const { isSuccess, data, message } = await graphApi.accessTokenDebugger();
-
-  if (!isSuccess) {
-    return NextResponse.json(
-      {
-        isSuccess,
-        message,
-        data: data,
-      },
-      { status: 400 }
-    );
-  }
-
   return NextResponse.json(
     {
-      isSuccess: true,
-      message: message,
-      data: data,
+      isSuccess,
+      message,
+      data,
     },
-    { status: 200 }
+    { status: isSuccess ? 200 : 400 }
   );
 };

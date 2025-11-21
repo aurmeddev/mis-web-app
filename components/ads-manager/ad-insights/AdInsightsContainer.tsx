@@ -5,12 +5,11 @@ import { AdCheckerProgressDialog } from "./dialog/AdInsightsProgressDialog";
 import { AdInsightsSidebar } from "./AdInsightsSidebar";
 import { DateRange } from "react-day-picker";
 import { DatetimeUtils } from "@/lib/utils/date/DatetimeUtils";
-import { format } from "date-fns";
+import { format, formatDate } from "date-fns";
 import { datePresets } from "@/components/shared/datepicker/DatePresetSelect";
 import { ProfileMarketingApiAccessToken } from "../ad-checker/AdCheckerContainer";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { CheckedState } from "@radix-ui/react-checkbox";
 import { useState } from "react";
 import { Json2CsvManager } from "@/lib/utils/converter/Json2CsvManager";
 import { NetworkRequestUtils } from "@/lib/utils/network-request/NetworkRequestUtils";
@@ -20,6 +19,8 @@ import {
   AdInsightsFilters,
   ApiFiltering,
 } from "./AdInsights.types";
+import { VoluumApiClientService } from "@/lib/features/ads-manager/voluum/VoluumApiClientService";
+import { LocateFixed } from "lucide-react";
 
 export function AdInsightsContainer({
   brands,
@@ -33,6 +34,7 @@ export function AdInsightsContainer({
   const jsonCsvManager = new Json2CsvManager();
   const dateUtil = new DatetimeUtils();
   const networkRequestUtils = new NetworkRequestUtils();
+  const voluumApiService = new VoluumApiClientService();
 
   const [isActionDisabled, setIsActionDisabled] = useState(false);
   const [validatedProfiles, setValidatedProfiles] = useState<
@@ -45,6 +47,7 @@ export function AdInsightsContainer({
   const [profile, setProfile] = useState<string>("");
   // const [isFilterShown, setIsFilterShown] = useState(false);
   const [isExportReady, setIsExportReady] = useState(false);
+  const [isUpdatingCost, setIsUpdatingCost] = useState(false);
   const [filters, setFilters] = useState<AdInsightsFilters>({
     brand: "",
     budgetOptimization: "",
@@ -107,12 +110,14 @@ export function AdInsightsContainer({
           ad_account_name: "",
           ad_insights_summary: { code: 400, message: profile.status },
           name: "",
+          v_campaign_id: "",
           v_campaign_name: "",
           v_campaign_status: "",
           account_status: "",
           disable_reason: "",
           effective_status: "",
           targeting_countries: "",
+          account_currency: "",
           daily_budget: 0,
           spend: 0,
           lead: 0,
@@ -129,6 +134,7 @@ export function AdInsightsContainer({
           frequency: 0,
           impressions: 0,
           reach: 0,
+          cost_update_status: "",
         });
       }
 
@@ -158,6 +164,7 @@ export function AdInsightsContainer({
             ad_insights_summary: ad.ad_insights_summary || {},
 
             name: ad.name || "",
+            v_campaign_id: ad.v_campaign_id || "",
             v_campaign_name: ad.v_campaign_name || "",
             v_campaign_status: ad.v_campaign_status || "",
 
@@ -166,6 +173,7 @@ export function AdInsightsContainer({
             effective_status: ad.effective_status || "",
 
             targeting_countries: ad.targeting_countries || "",
+            account_currency: ad.account_currency || "",
             daily_budget: Number(ad.daily_budget) || 0,
             spend: Number(ad.spend) || 0,
 
@@ -186,6 +194,7 @@ export function AdInsightsContainer({
             frequency: Number(ad.frequency) || 0,
             impressions: Number(ad.impressions) || 0,
             reach: Number(ad.reach) || 0,
+            cost_update_status: "",
           } as AdInsightsData;
         });
       } else {
@@ -258,6 +267,7 @@ export function AdInsightsContainer({
         reach,
         spend,
         targeting_countries,
+        account_currency,
         v_campaign_name,
         v_campaign_status,
         v_lead,
@@ -265,6 +275,7 @@ export function AdInsightsContainer({
         v_cpl,
         v_cpa,
         v_cv,
+        cost_update_status,
       } = data;
 
       const campaignName = v_campaign_name
@@ -286,6 +297,7 @@ export function AdInsightsContainer({
         disable_reason,
         targeting_geo:
           targeting_countries?.length > 0 ? targeting_countries.join(", ") : "",
+        account_currency,
         daily_budget,
         spend,
         fb_lead: lead,
@@ -302,6 +314,7 @@ export function AdInsightsContainer({
         frequency,
         impressions,
         reach,
+        cost_update_status,
       };
     });
 
@@ -333,6 +346,79 @@ export function AdInsightsContainer({
     }
   };
 
+  const handleUpdateCost = async () => {
+    setIsUpdatingCost(true);
+    const sampleData = [
+      {
+        id: 0,
+        profile: "PH-AP OXY 05956",
+        ad_account_name: "Cheerful News",
+        ad_insights_summary: {
+          code: 404,
+          message: ["No traffic data"],
+        },
+        name: "IBC22MYC198JC0007",
+        v_campaign_id: "865879a1-6c70-49b2-ae88-837ae0d7182d",
+        v_campaign_name:
+          "FB S2S CMS - Malaysia - IBC22MYC198JC0007 - MYC IMG170 Ex FIBCCA FS198",
+        v_campaign_status: "Everything is OK!",
+        account_status: "DISABLED",
+        disable_reason: "ADS_INTEGRITY_POLICY",
+        effective_status: "ACTIVE",
+        targeting_countries: "",
+        daily_budget: 1,
+        spend: 1,
+        lead: 0,
+        purchase: "",
+        v_lead: 0,
+        v_ftd: 0,
+        v_cpl: 0,
+        v_cpa: 0,
+        v_cv: 0,
+        cpm: 0,
+        cost_per_inline_link_click: 0,
+        inline_link_click_ctr: 0,
+        link_click: 0,
+        frequency: 0,
+        impressions: 0,
+        reach: 0,
+        cost_update_status: "",
+      },
+    ];
+    const filteredTableData = sampleData.filter(
+      (t) =>
+        t.v_campaign_status == "Everything is OK!" &&
+        t.v_campaign_id &&
+        t.spend > 0
+    );
+
+    const formattedDateFrom = format(dateRange?.from || "", "yyyy-MM-dd");
+    const formattedDateTo = format(dateRange?.to || "", "yyyy-MM-dd");
+    for (let i = 0; i < filteredTableData.length; i++) {
+      const { spend, v_campaign_id } = filteredTableData[i];
+      if (spend > 0) {
+        const { data } = await voluumApiService.updateCost({
+          date_from: formattedDateFrom,
+          date_to: formattedDateTo,
+          spend,
+          v_campaign_id,
+        });
+
+        setTableData((prevState) =>
+          prevState.map((item) => {
+            const output =
+              item.v_campaign_id == filteredTableData[i].v_campaign_id
+                ? { ...item, cost_update_status: data[0].status }
+                : item;
+            return output;
+          })
+        );
+      }
+    }
+    setIsUpdatingCost(false);
+    console.log("filteredTableData ", filteredTableData);
+  };
+
   return (
     <div className="min-h-[calc(100dvh-7rem)] p-6 pr-0">
       <div className="flex justify-between">
@@ -346,6 +432,16 @@ export function AdInsightsContainer({
         <Button size={"sm"} className="hidden mr-4">
           Refresh data
         </Button>
+        <div className="hidden items-end justify-end mr-4">
+          <Button
+            className="cursor-pointer"
+            disabled={isUpdatingCost}
+            onClick={handleUpdateCost}
+            size={"sm"}
+          >
+            <LocateFixed /> {isUpdatingCost ? "Updating Cost" : "Update Cost"}
+          </Button>
+        </div>
       </div>
 
       <AdCheckerProgressDialog

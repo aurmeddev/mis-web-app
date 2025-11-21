@@ -77,6 +77,7 @@ export function useAdInsightsColumn() {
         cell: ({ getValue, row }) => {
           const realValue = getValue<string>();
           const adsetName = String(row.getValue("name"));
+          const costUpdateStatus = String(row.getValue("cost_update_status"));
 
           if (!realValue) {
             const vCampStatus = String(row.getValue("v_campaign_status")) as
@@ -104,7 +105,17 @@ export function useAdInsightsColumn() {
               ""
             );
           }
-          return <div className="whitespace-normal">{realValue}</div>;
+          return (
+            <div className="flex flex-col">
+              <div className="whitespace-normal">{realValue}</div>
+              {costUpdateStatus && (
+                // <div className="text-muted-foreground whitespace-normal">
+                //   {costUpdateStatus}
+                // </div>
+                <Badge className="bg-green-500 mt-1">{costUpdateStatus}</Badge>
+              )}
+            </div>
+          );
         },
         minSize: 350,
       },
@@ -132,8 +143,10 @@ export function useAdInsightsColumn() {
           const filteredReason =
             disableReason.toLocaleLowerCase() !== "none" ? disableReason : "";
           const effectStatus = getValue<string>();
-          if (accountStatus == "ACTIVE") {
+          if (accountStatus == "ACTIVE" && effectStatus) {
             return <div>{effectStatus}</div>;
+          } else if (!filteredReason && !effectStatus) {
+            return <div>{accountStatus}</div>;
           }
           return (
             <div className="whitespace-normal">
@@ -155,6 +168,16 @@ export function useAdInsightsColumn() {
           return (
             <div className="whitespace-normal">{cellValue.join(", ")}</div>
           );
+        },
+        size: 50,
+      },
+      {
+        accessorKey: "account_currency",
+        header: "Currency",
+        cell: ({ getValue }) => {
+          const cellValue = getValue<any>();
+          if (!cellValue.length) return null;
+          return <div className="whitespace-normal">{cellValue}</div>;
         },
         size: 50,
       },
@@ -191,6 +214,11 @@ export function useAdInsightsColumn() {
       {
         accessorKey: "purchase",
         header: "FB FTD",
+        size: 80,
+      },
+      {
+        accessorKey: "v_campaign_id",
+        header: "Voluum Campaign Id",
         size: 80,
       },
       {
@@ -251,6 +279,11 @@ export function useAdInsightsColumn() {
       {
         accessorKey: "reach",
         header: "Reach",
+        size: 80,
+      },
+      {
+        accessorKey: "cost_update_status",
+        header: "Cost Update Status",
         size: 80,
       },
     ],

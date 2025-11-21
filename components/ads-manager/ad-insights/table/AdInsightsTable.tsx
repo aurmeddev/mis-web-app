@@ -18,7 +18,9 @@ export function AdInsightsTable({ tableData }: AdInsightsTableProps) {
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
     account_status: false,
     disable_reason: false,
+    v_campaign_id: false,
     v_campaign_status: false,
+    cost_update_status: false,
   });
   const [pagination, setPagination] = useState({
     pageIndex: 0,

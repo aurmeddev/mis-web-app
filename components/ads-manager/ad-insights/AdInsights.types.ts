@@ -20,7 +20,9 @@ type AdInsightsData = {
   profile: string; // Profile
   ad_account_name: string; // Account Name
   ad_insights_summary: Record<string, unknown>; // Ad Insights Summary
+  account_currency: string;
   name: string; // Adset Name
+  v_campaign_id: string; // Voluum Campaign ID
   v_campaign_name: string; // Voluum Campaign Name
   v_campaign_status: string; // Voluum Campaign Status
   account_status: string; // Delivery
@@ -43,6 +45,7 @@ type AdInsightsData = {
   frequency: number; // Frequency
   impressions: number; // Impressions
   reach: number; // Reach
+  cost_update_status: string;
 };
 
 type AdInsightsFilters = {

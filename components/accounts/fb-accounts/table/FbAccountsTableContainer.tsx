@@ -17,20 +17,18 @@ import { Pagination } from "@/components/shared/pagination/route-based/Paginatio
 import { SearchQuery } from "@/components/otp-generator/type";
 import { ApiResponseProps } from "@/database/query";
 import { useDebouncedCallback } from "use-debounce";
-import { PaginationProps } from "@/lib/utils/pagination/type/PaginationProps";
 import { FbAccountsService } from "@/lib/features/fb-accounts/FbAccountsService";
-import { ApplyFilter, FBAccount, FBAccountForm, Option } from "../type";
 import { CryptoClientService } from "@/lib/features/security/cryptography/CryptoClientService";
 import { SearchWrapper } from "../../ap-profiles/search/SearchWrapper";
 import { FbAccountsSearchResults } from "../search/FbAccountsSearchResults";
 import { SearchParamsManager } from "@/lib/utils/search-params/SearchParamsManager";
 import { FbAccountsFilter } from "../filter/FbAccountsFilter";
-
-type FbAccountsTableContainerProps = {
-  response: ApiResponseProps & { pagination?: PaginationProps };
-  recruiters: Option[];
-  isSuperOrAdmin: boolean;
-};
+import {
+  ApplyFilter,
+  FBAccount,
+  FBAccountForm,
+  FbAccountsTableContainerProps,
+} from "../FbAccounts.types";
 
 type Pagination = { page: number; limit: number };
 
@@ -89,7 +87,7 @@ export function FbAccountsTableContainer({
     if (!canSave) {
       setCanSave(true);
     }
-    setForm((prevState: any) => ({
+    setForm((prevState: Partial<FBAccountForm>) => ({
       ...prevState,
       [name]: value,
     }));
@@ -358,7 +356,7 @@ export function FbAccountsTableContainer({
         handleInputChange={handleInputChange}
         isActionDisabled={isSubmitInProgress}
       />
-      <div className="flex justify-start gap-2 mt-4 w-[40%]">
+      <div className="flex justify-start gap-2 mt-4 w-full">
         <Button
           className="cursor-pointer h-8 text-white"
           variant="default"
@@ -367,7 +365,7 @@ export function FbAccountsTableContainer({
           New Fb Account Entry
         </Button>
 
-        <div className="relative w-full">
+        <div className="relative max-w-[45%]">
           <SearchWrapper
             searchQuery={searchQuery}
             onSearchQueryChange={handleSearchQueryChange}
@@ -391,7 +389,7 @@ export function FbAccountsTableContainer({
         <FbAccountsFilter
           recruiters={recruiters}
           onApplyFilter={handleApplyFilter}
-          searchParams={{ recruiter: splittedRecruiter, status: status }}
+          searchParams={{ recruiter: splittedRecruiter, status }}
           isSuperOrAdmin={isSuperOrAdmin}
         />
       </div>

@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { FbAccountsSearchResultsProps } from "../type";
+import { FbAccountsSearchResultsProps } from "../FbAccounts.types";
 
 export function FbAccountsSearchResults({
   result,

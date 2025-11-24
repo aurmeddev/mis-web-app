@@ -3,9 +3,9 @@ import { TableLoader } from "@/components/shared/skeleton-loader/TableLoader";
 import { TableFetch } from "@/components/shared/table/server-fetch/TableFetch";
 import { FbAccountsService } from "@/lib/features/fb-accounts/FbAccountsService";
 import { FbAccountsTableContainer } from "./table/FbAccountsTableContainer";
-import { Option } from "./type";
 import { UserClientController } from "@/lib/features/users/manage/UserClientController";
 import { GetAllFbAccountsProps } from "@/lib/features/fb-accounts/type/FbAccountsProps";
+import { RecruiterOption } from "./FbAccounts.types";
 
 type Props = {
   searchParams: { page: number; limit: number } & GetAllFbAccountsProps;
@@ -19,13 +19,16 @@ export async function FbAccountsContainer({
   const fbAccountsService = new FbAccountsService();
   const manageUsersService = new UserClientController();
 
-  let recruiters: Option[] = [{ id: 0, label: "", value: "" }];
+  let recruiters: RecruiterOption[] = [
+    { id: 0, label: "", totals: 0, value: "" },
+  ];
   if (isSuperOrAdmin) {
     const users = await manageUsersService.getDistinctRecruiters();
 
     recruiters = users.data.map((u) => ({
       id: u.id,
       label: u.display_name,
+      totals: u.totals,
       value: u.id,
     }));
   }

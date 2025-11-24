@@ -12,8 +12,8 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { FormEvent } from "react";
 import { X } from "lucide-react";
-import { FBAccount } from "../type";
 import { Textarea } from "@/components/ui/textarea";
+import { FBAccount } from "../FbAccounts.types";
 
 type ConfirmDialogProps = {
   form: any;

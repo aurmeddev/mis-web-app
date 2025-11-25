@@ -90,6 +90,9 @@ type FbAccountsTableContainerProps = {
   isSuperOrAdmin: boolean;
 };
 
+type FBAccountsImport = Omit<FBAccountForm, "remarks">;
+type FailedFbAccountsImport = FBAccountsImport & { error: string };
+
 export type {
   ApplyFilter,
   FBAccount,
@@ -98,4 +101,6 @@ export type {
   FbAccountsFilterProps,
   FbAccountsSearchResultsProps,
   FbAccountsTableContainerProps,
+  FBAccountsImport,
+  FailedFbAccountsImport,
 };

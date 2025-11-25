@@ -25,10 +25,18 @@ import { SearchParamsManager } from "@/lib/utils/search-params/SearchParamsManag
 import { FbAccountsFilter } from "../filter/FbAccountsFilter";
 import {
   ApplyFilter,
+  FailedFbAccountsImport,
   FBAccount,
   FBAccountForm,
+  FBAccountsImport,
   FbAccountsTableContainerProps,
 } from "../FbAccounts.types";
+import { ImportCSVFileInput } from "@/components/shared/import-csv/ImportCSVFileInput";
+import { showToast } from "@/lib/utils/toast";
+import { Info } from "lucide-react";
+import { Json2CsvManager } from "@/lib/utils/converter/Json2CsvManager";
+import { format } from "date-fns";
+import { DownloadLocalFile } from "@/components/shared/download/DownloadLocalFile";
 
 type Pagination = { page: number; limit: number };
 
@@ -40,6 +48,7 @@ export function FbAccountsTableContainer({
   const fbAccountsService = new FbAccountsService();
   const cryptoClientService = new CryptoClientService();
   const searchParamsManager = new SearchParamsManager();
+  const jsonCsvManager = new Json2CsvManager();
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -55,14 +64,6 @@ export function FbAccountsTableContainer({
     | "active"
     | "available"
     | undefined;
-
-  const showToast = (isSuccess: boolean, message: string) => {
-    if (isSuccess) {
-      toast.success(message);
-    } else {
-      toast.error(message);
-    }
-  };
 
   const [editingData, setEditingData] = useState<Partial<FBAccount>>({});
   const [form, setForm] = useState<Partial<FBAccountForm>>({});
@@ -336,6 +337,97 @@ export function FbAccountsTableContainer({
     router.push(`?${newRouteQuery.toString()}`);
   };
 
+  const downloadFailedUpload = async (failedUploads: FBAccountsImport[]) => {
+    try {
+      const csv = await jsonCsvManager.convertJsonToCSV(failedUploads);
+
+      const blob = new Blob([csv], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+
+      const todayDate = format(new Date(), "MM/dd/yyyy");
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Failed-uploads-${todayDate.replaceAll("/", "-")}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Error converting JSON to CSV:", err);
+    }
+  };
+
+  const handleSetFileData = (importData: FBAccountsImport[]) => {
+    if (!importData?.length) {
+      toast.info("The CSV file is empty. Please add at least one account.");
+      return;
+    }
+
+    const hasFbOwnerName = importData.some((data) => "fb_owner_name" in data);
+    if (!hasFbOwnerName) {
+      toast.info(
+        "The CSV file is invalid. Please make sure you are using the correct file format."
+      );
+      return;
+    }
+
+    const invalidAccounts: FailedFbAccountsImport[] = [];
+    const uploadAccounts = async () => {
+      for (const account of importData) {
+        const { fb_owner_name, username, password } = account;
+        if (!fb_owner_name || !username || !password) {
+          invalidAccounts.push({
+            ...account,
+            error: "One or more required fields are empty.",
+          });
+          showToast(
+            false,
+            "One or more required fields are empty. Please check your file.",
+            {
+              icon: <Info className="text-red-500" />,
+            }
+          );
+          continue;
+        }
+
+        const response = await fbAccountsService.post(account);
+        if (!response.isSuccess) {
+          showToast(false, response.message, {
+            icon: <Info className="text-red-500" />,
+          });
+          invalidAccounts.push({ ...account, error: response.message });
+          continue;
+        }
+      }
+
+      if (invalidAccounts.length > 0) {
+        toast("Failed uploads", {
+          action: {
+            label: "Download",
+            onClick: () => downloadFailedUpload(invalidAccounts),
+          },
+          dismissible: false,
+          duration: 20000,
+        });
+      }
+    };
+
+    toast.promise(uploadAccounts, {
+      loading: "Uploading accounts...",
+      success: "Upload complete!",
+      error: "Upload failed",
+      position: "bottom-left",
+    });
+  };
+
+  const handleFileValidate = (isValid: boolean) => {
+    if (!isValid) {
+      showToast(false, "Please upload a valid .csv file.");
+    }
+  };
+
   useEffect(() => {
     if (!open) {
       setCanSave(false);
@@ -344,6 +436,7 @@ export function FbAccountsTableContainer({
       });
     }
   }, [open]);
+
   return (
     <div className="overflow-auto w-full">
       <FbAccountsDialog
@@ -365,7 +458,7 @@ export function FbAccountsTableContainer({
           New Fb Account Entry
         </Button>
 
-        <div className="relative max-w-[45%]">
+        <div className="relative min-w-[25%] max-w-[25%] w-full">
           <SearchWrapper
             searchQuery={searchQuery}
             onSearchQueryChange={handleSearchQueryChange}
@@ -392,6 +485,19 @@ export function FbAccountsTableContainer({
           searchParams={{ recruiter: splittedRecruiter, status }}
           isSuperOrAdmin={isSuperOrAdmin}
         />
+        <div className="flex gap-2 items-center ml-auto mr-4">
+          <DownloadLocalFile
+            fileNameWithExt="fb-accounts-upload-template.csv"
+            text="Download template"
+            url={"/downloadable/fb-accounts-upload-template.csv"}
+          />
+          <ImportCSVFileInput
+            className="h-9"
+            onFileValidate={handleFileValidate}
+            onSetFileData={handleSetFileData}
+            title="Upload Accounts"
+          />
+        </div>
       </div>
       <ScrollArea className="h-[68dvh] mt-4">
         <FbAccountsTable

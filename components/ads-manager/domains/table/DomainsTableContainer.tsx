@@ -471,7 +471,7 @@ export function DomainsTableContainer({
         <div className="self-center w-1/2">
           <DownloadLocalFile
             fileNameWithExt="upload-domains-format.csv"
-            text="Download CSV File Format"
+            text="Download template"
             url={"/downloadable/upload-domains-format.csv"}
           />
         </div>

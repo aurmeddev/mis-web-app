@@ -141,9 +141,7 @@ export function FbAccountsDialog({
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="app_2fa_key">
-              2FA Secret Key <span className="text-red-500">*</span>
-            </Label>
+            <Label htmlFor="app_2fa_key">2FA Secret Key</Label>
             <div className="relative">
               <Input
                 className="border h-8 px-2 py-0 rounded w-full"
@@ -157,9 +155,7 @@ export function FbAccountsDialog({
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="recovery_code">
-              Recovery Code <span className="text-red-500">*</span>
-            </Label>
+            <Label htmlFor="recovery_code">Recovery Code</Label>
             <div className="relative">
               <Input
                 className="border h-8 px-2 py-0 rounded w-full"

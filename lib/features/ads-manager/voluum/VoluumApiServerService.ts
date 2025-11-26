@@ -87,14 +87,42 @@ export class VoluumApiServerService {
     );
 
     if (!response.ok) {
-      const error = await response.text();
-      console.error("Voluum server error", response);
-      console.error("Voluum server error", error);
-      return {
-        isSuccess: false,
-        message: error,
-        data: handleCustomVoluumResponse({ status: "Voluum server error" }),
-      };
+      const Unauthorized = response.status === 401;
+      if (Unauthorized) {
+        console.warn("Voluum session token expired, fetching new token...");
+
+        const authVoluum = await this.getSessionToken();
+        if (!authVoluum.isSuccess) {
+          console.error("Voluum session error", authVoluum.message);
+          return {
+            isSuccess: false,
+            message: "Voluum session error",
+            data: handleCustomVoluumResponse({ status: "Voluum server error" }),
+          };
+        }
+
+        const newSessionToken: string = authVoluum.data[0].token || "";
+        const recursiveResponse: any = await this.getCampaignRawData({
+          spend,
+          filter,
+          date_from,
+          date_to,
+          sessionToken: newSessionToken,
+        });
+
+        return {
+          isSuccess: recursiveResponse.isSuccess,
+          message: recursiveResponse.message,
+          data: recursiveResponse.data,
+        };
+      } else {
+        console.error("Voluum server error", response);
+        return {
+          isSuccess: false,
+          message: "Voluum server error",
+          data: handleCustomVoluumResponse({ status: "Voluum server error" }),
+        };
+      }
     }
 
     const { rows } = await response.json();

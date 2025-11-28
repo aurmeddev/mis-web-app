@@ -234,8 +234,8 @@ export function AdInsightsContainer({
       setTableData((prevState) => [...prevState, ...combinedAdData]);
     });
 
-    // run in batches of 50
-    await networkRequestUtils.batchAllSettled(tasks, 10);
+    // run in batches set to 1 temp
+    await networkRequestUtils.batchAllSettled(tasks, 1);
     setIsExportReady(true);
     setIsActionDisabled(false);
     setIsAdInsightsProgressDialogOpen(false);

@@ -174,6 +174,9 @@ export class VoluumApiServerService {
         throw new Error(await response.text());
       }
 
+      console.log("Cost updated successfully!");
+      console.log("campaignId:", v_campaign_id, "spend:", spend);
+      console.log("spend:", spend);
       return {
         isSuccess: true,
         message: "Cost updated successfully!",

@@ -219,4 +219,10 @@ export class DatetimeUtils {
 
     return Math.floor(differenceMinutes);
   };
+
+  plusOneDay = (dateString: string) => {
+    const date = new Date(dateString);
+    date.setDate(date.getDate() + 1);
+    return date.toISOString().slice(0, 10); // YYYY-MM-DD
+  };
 }

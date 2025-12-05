@@ -1,6 +1,8 @@
 import { ApiResponseProps } from "@/database/query";
 import { ICostUpdate, ICostUpdateGateway } from "../ICostUpdate";
 import { VoluumApiConfig } from "../../voluum/config/VoluumApiConfig";
+import { DatetimeUtils } from "@/lib/utils/date/DatetimeUtils";
+import { VoluumSessionServerApi } from "../../voluum/session/VoluumSessionServerApi";
 interface IRequestBody {
   from: string;
   to: string;
@@ -20,9 +22,13 @@ export class VoluumCostUpdateServerApi implements ICostUpdateGateway {
   ) {}
   costUpdate = async (params: ICostUpdate): Promise<ApiResponseProps> => {
     const { spend, date_from, date_to, campaign_id } = params;
+    const dateRanges = {
+      from: `${date_from}T00:00:00.000`,
+      to: `${new DatetimeUtils().plusOneDay(date_to)}T00:00:00.000`,
+    };
     const requestBody: IRequestBody = {
-      from: date_from,
-      to: date_to,
+      from: dateRanges.from,
+      to: dateRanges.to,
       campaignId: campaign_id,
       timeZone: this.timeZone,
       cost: spend,
@@ -43,6 +49,24 @@ export class VoluumCostUpdateServerApi implements ICostUpdateGateway {
       );
 
       if (!response.ok) {
+        const isUnauthorized = response.status === 401;
+        if (isUnauthorized) {
+          console.log("Voluum session is expired. Retrying...");
+          const session = new VoluumSessionServerApi();
+          const authVoluum = await session.generateToken();
+          if (!authVoluum.isSuccess) {
+            console.error("Voluum session error", authVoluum.message);
+            return {
+              isSuccess: false,
+              message: "Voluum session error",
+              data: [{ status: "Voluum session error" }],
+            };
+          }
+
+          const newToken: string = authVoluum.data[0].token;
+          this.session.token = newToken;
+          return await this.costUpdate(params);
+        }
         throw new Error(await response.text());
       }
 

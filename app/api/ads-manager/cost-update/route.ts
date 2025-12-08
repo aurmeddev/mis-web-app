@@ -106,12 +106,13 @@ export const POST = async (request: NextRequest) => {
     );
   }
 
+  const voluumCampaignId = exportResponse.data[0].campaign_id;
   const api = new CostUpdateManager(new VoluumCostUpdateServerApi({ token }));
   const { isSuccess, data, message } = await api.process({
     spend,
     date_from,
     date_to,
-    campaign_id: exportResponse.data[0].campaign_id,
+    campaign_id: voluumCampaignId,
   });
 
   return NextResponse.json(

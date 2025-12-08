@@ -15,6 +15,7 @@ export class VoluumCostUpdateServerApi implements ICostUpdateGateway {
   private timeZone = "Asia/Singapore";
   private currency = "USD";
   private voluumApiConfig = new VoluumApiConfig();
+  private RETRY_MAX_ATTEMPTS = 1;
   constructor(
     private session: {
       token: string;
@@ -49,23 +50,18 @@ export class VoluumCostUpdateServerApi implements ICostUpdateGateway {
       );
 
       if (!response.ok) {
+        if (this.RETRY_MAX_ATTEMPTS === 2) {
+          console.error("Maximum retry attempts reached.");
+          return {
+            isSuccess: false,
+            message: "Maximum retry attempts reached.",
+            data: [],
+          };
+        }
         const isUnauthorized = response.status === 401;
         if (isUnauthorized) {
-          console.log("Voluum session is expired. Retrying...");
-          const session = new VoluumSessionServerApi();
-          const authVoluum = await session.generateToken();
-          if (!authVoluum.isSuccess) {
-            console.error("Voluum session error", authVoluum.message);
-            return {
-              isSuccess: false,
-              message: "Voluum session error",
-              data: [{ status: "Voluum session error" }],
-            };
-          }
-
-          const newToken: string = authVoluum.data[0].token;
-          this.session.token = newToken;
-          return await this.costUpdate(params);
+          this.RETRY_MAX_ATTEMPTS++;
+          return await this.retry(params);
         }
         throw new Error(await response.text());
       }
@@ -92,5 +88,23 @@ export class VoluumCostUpdateServerApi implements ICostUpdateGateway {
         data: [{ status }],
       };
     }
+  };
+
+  private retry = async (params: ICostUpdate) => {
+    console.log("Voluum session is expired. Retrying...");
+    const session = new VoluumSessionServerApi();
+    const { isSuccess, message, data } = await session.generateToken();
+    if (!isSuccess) {
+      console.error("Voluum session error", message);
+      return {
+        isSuccess: false,
+        message: "Voluum session error",
+        data: [{ status: "Voluum session error" }],
+      };
+    }
+
+    const newToken: string = data[0].token;
+    this.session.token = newToken;
+    return await this.costUpdate(params);
   };
 }

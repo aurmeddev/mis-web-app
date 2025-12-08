@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 import { get } from "@vercel/edge-config";
 import { isEnvProduction } from "@/lib/env/isEnvProduction";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const url = request.nextUrl;
   const isInMaintenanceMode = await get("isInMaintenanceMode");
 

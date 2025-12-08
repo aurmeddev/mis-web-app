@@ -13,6 +13,7 @@ interface IExportData {
 }
 export class VoluumExportServerApi implements IExportGateway {
   private voluumApiConfig = new VoluumApiConfig();
+  private RETRY_MAX_ATTEMPTS = 1;
   constructor(
     private session: {
       token: string;
@@ -20,7 +21,15 @@ export class VoluumExportServerApi implements IExportGateway {
   ) {}
   exportData = async (params: IExport): Promise<ApiResponseProps> => {
     const { date_from, date_to, campaign_id } = params;
-    const filter = campaign_id;
+    const { isSuccess, message, data } = this.isValid(campaign_id);
+    if (!isSuccess) {
+      return {
+        isSuccess,
+        message,
+        data,
+      };
+    }
+    const filter = data[0].campaign_id;
     const response = await fetch(
       `${this.voluumApiConfig.baseUrl}/report?include=ACTIVE&offset=0&tz=Asia/Singapore&column=cv&column=conversions&column=customConversions6&column=customConversions7&column=customConversions11&column=campaignName&groupBy=campaign&sort=campaignName&filter=${filter}&limit=1&from=${date_from}&currency=USD&to=${date_to}&conversionTimeMode=CONVERSION&direction=DESC`,
       {
@@ -34,24 +43,19 @@ export class VoluumExportServerApi implements IExportGateway {
     );
 
     if (!response.ok) {
+      if (this.RETRY_MAX_ATTEMPTS === 2) {
+        console.error("Maximum retry attempts reached.");
+        return {
+          isSuccess: false,
+          message: "Maximum retry attempts reached.",
+          data: [],
+        };
+      }
+
       const isUnauthorized = response.status === 401;
       if (isUnauthorized) {
-        console.log("Voluum session is expired. Retrying...");
-        const session = new VoluumSessionServerApi();
-        const authVoluum = await session.generateToken();
-        if (!authVoluum.isSuccess) {
-          console.error("Voluum session error", authVoluum.message);
-          return {
-            isSuccess: false,
-            message: "Voluum session error",
-            data: [],
-            // data: handleCustomVoluumResponse({ status: "Voluum server error" }),
-          };
-        }
-
-        const newToken: string = authVoluum.data[0].token;
-        this.session.token = newToken;
-        return await this.exportData(params);
+        this.RETRY_MAX_ATTEMPTS++;
+        return await this.retry(params);
       }
 
       console.error("Voluum server error", response);
@@ -59,7 +63,6 @@ export class VoluumExportServerApi implements IExportGateway {
         isSuccess: false,
         message: "Voluum server error",
         data: [],
-        // data: handleCustomVoluumResponse({ status: "Voluum server error" }),
       };
     }
 
@@ -69,7 +72,6 @@ export class VoluumExportServerApi implements IExportGateway {
         isSuccess: true,
         message: "No data found.",
         data: [],
-        // data: handleCustomVoluumResponse({ status: "Archived" }),
       };
     }
     return {
@@ -77,6 +79,24 @@ export class VoluumExportServerApi implements IExportGateway {
       message: "Data has been fetched successfully!",
       data: this.format(rows),
     };
+  };
+
+  private retry = async (params: IExport) => {
+    console.log("Voluum session is expired. Retrying...");
+    const session = new VoluumSessionServerApi();
+    const { isSuccess, message, data } = await session.generateToken();
+    if (!isSuccess) {
+      console.error("Voluum session error", message);
+      return {
+        isSuccess: false,
+        message: "Voluum session error",
+        data: [],
+      };
+    }
+
+    const newToken: string = data[0].token;
+    this.session.token = newToken;
+    return await this.exportData(params);
   };
 
   private format = (data: IExportData[]) => {
@@ -89,5 +109,50 @@ export class VoluumExportServerApi implements IExportGateway {
       registered: item.customConversions11,
       cv: item.cv,
     }));
+  };
+
+  private isValid = (text: string) => {
+    if (!text) {
+      return {
+        isSuccess: false,
+        message: "Login code or campaign/adset name is missing.",
+        data: [],
+      };
+    }
+    const isAlphanumeric = /^[a-zA-Z0-9]+$/.test(text); // Check if the text contains only alphanumeric characters
+    if (!isAlphanumeric) {
+      // Old format with voluum campaign id
+      return this.extractVoluumnCampaignId(text);
+    }
+
+    return {
+      isSuccess: true,
+      message: "Success.",
+      data: [{ campaign_id: text.trim() }],
+    };
+  };
+
+  private extractVoluumnCampaignId = (campaign_id: string) => {
+    if (!campaign_id) {
+      return {
+        isSuccess: false,
+        message: "Voluum campaign ID is missing.",
+        data: [],
+      };
+    }
+
+    if (campaign_id.split("_").length !== 6) {
+      return {
+        isSuccess: false,
+        message: "Invalid old campaign naming format.",
+        data: [],
+      };
+    }
+
+    return {
+      isSuccess: true,
+      message: "Success.",
+      data: [{ campaign_id: campaign_id.split("_")[5].split(" ")[0] }], // Get only the voluum campaign id
+    };
   };
 }

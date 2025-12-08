@@ -9,16 +9,16 @@ import { addDays, format } from "date-fns";
 import { NextResponse, NextRequest } from "next/server";
 export const POST = async (request: NextRequest) => {
   // Check if the user session is valid before processing the request
-  const session = await getSession();
-  if (!session) {
-    return NextResponse.json(
-      {
-        isSuccess: false,
-        message: "Session expired or invalid",
-      },
-      { status: 403 }
-    );
-  }
+  // const session = await getSession();
+  // if (!session) {
+  //   return NextResponse.json(
+  //     {
+  //       isSuccess: false,
+  //       message: "Session expired or invalid",
+  //     },
+  //     { status: 403 }
+  //   );
+  // }
 
   let payload: ICostUpdate;
   try {
@@ -106,12 +106,13 @@ export const POST = async (request: NextRequest) => {
     );
   }
 
+  const voluumCampaignId = exportResponse.data[0].campaign_id;
   const api = new CostUpdateManager(new VoluumCostUpdateServerApi({ token }));
   const { isSuccess, data, message } = await api.process({
     spend,
     date_from,
     date_to,
-    campaign_id: exportResponse.data[0].campaign_id,
+    campaign_id: voluumCampaignId,
   });
 
   return NextResponse.json(

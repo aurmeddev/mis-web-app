@@ -1,0 +1,549 @@
+import { SearchQuery } from "@/components/otp-generator/type";
+import { ApiResponseProps } from "@/database/query";
+import { FacebookAdsManagerClientService } from "@/lib/features/ads-manager/facebook/FacebookAdsManagerClientService";
+import { ApProfilesService } from "@/lib/features/ap-profiles/ApProfilesService";
+import { CryptoClientService } from "@/lib/features/security/cryptography/CryptoClientService";
+import { SearchParamsManager } from "@/lib/utils/search-params/SearchParamsManager";
+import { showToast } from "@/lib/utils/toast";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
+import {
+  ChangeEvent,
+  FormEvent,
+  startTransition,
+  useEffect,
+  useState,
+} from "react";
+import { useDebouncedCallback } from "use-debounce";
+import {
+  ProfileForm,
+  ProfileEditState,
+  AccessTokenState,
+  UseApProfilesProps,
+} from "../ApProfiles.types";
+import { getTokens } from "../table/ApProfilesTableContainer";
+import { Profile } from "../type";
+import { UserPermissionsClientController } from "@/lib/features/users/permissions/UserPermissionsClientController";
+
+export const useApProfiles = ({ brands, response }: UseApProfilesProps) => {
+  const profilesService = new ApProfilesService();
+  const searchParamsManager = new SearchParamsManager();
+  const adsManagerApi = new FacebookAdsManagerClientService();
+  const decipher = new CryptoClientService();
+  const userPermissionService = new UserPermissionsClientController();
+
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const searchParamCurrentPage = response.pagination?.page;
+  const searchParamTotalPages = response.pagination?.total_pages;
+  const searchParamLimit = response.pagination?.limit || 10;
+
+  const [editingData, setEditingData] = useState<Partial<Profile>>({});
+  const [form, setForm] = useState<ProfileForm>({
+    profile_name: "",
+    fb_account_id: undefined,
+    marketing_api_access_token: "",
+    app_secret_key: "",
+    remarks: "",
+  });
+  const [tableData, setTableData] = useState<Profile[]>(response.data);
+  const [step, setStep] = useState(1);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [canSave, setCanSave] = useState(false);
+  const [isSubmitInProgress, setIsSubmitInProgress] = useState(false);
+  const [showResults, setShowResults] = useState(false);
+  const [selectedBrandAccess, setSelectedBrandAccess] = useState<string[]>([]);
+  const [profileEditState, setProfileEditState] = useState<ProfileEditState>({
+    id: null,
+    state: "",
+  });
+  const [searchQuery, setSearchQuery] = useState<SearchQuery>({
+    query: "",
+    isSearching: false,
+    result: { data: [], isSuccess: false, message: "" },
+    selectedResult: null,
+  });
+  const [accessTokenState, setAccessTokenState] = useState<AccessTokenState>({
+    isChecking: false,
+    isValid: false,
+    title: "",
+    description: "",
+  });
+
+  useEffect(() => {
+    setTableData(response.data);
+  }, [response.data]);
+
+  const handleInputChange = (name: string, value: string | number) => {
+    if (!canSave) {
+      setCanSave(true);
+    }
+    setForm((prevState: any) => ({
+      ...prevState,
+      [name]: value,
+    }));
+  };
+
+  const handleSearchDebounce = useDebouncedCallback(async (data: string) => {
+    if (/^\s+$/.test(data) || !data) {
+      setShowResults(false);
+      return;
+    }
+    setSearchQuery({ ...searchQuery, isSearching: true });
+    const response = await profilesService.find({
+      method: "find-one",
+      searchKeyword: data,
+    });
+    setSearchQuery({ ...searchQuery, result: response, isSearching: false });
+    setShowResults(true);
+  }, 500);
+
+  const handleSearchQueryChange = (ev: ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery({ ...searchQuery, query: ev.target.value });
+    if (!ev.target.value) return;
+    handleSearchDebounce(ev.target.value);
+  };
+
+  const handleSearchFocus = () => {
+    if (searchQuery.result.data?.length) {
+      setShowResults(true);
+    } else {
+      setShowResults(false);
+    }
+  };
+
+  const handleSelectItem = (item: Profile) => {
+    setSearchQuery((prevState: any) => ({
+      ...prevState,
+      query: "",
+      selectedResult: item,
+    }));
+
+    setTableData([
+      {
+        row_id: 1,
+        ...item,
+      },
+    ]);
+    setShowResults(false);
+  };
+
+  const handleModifyEditingData = (params: {
+    marketing_api_access_token?: string;
+    app_secret_key?: string;
+  }) => {
+    setEditingData((prevState) => ({
+      ...prevState,
+      ...params,
+    }));
+  };
+
+  const handleAccessTokenRequest = async (token: string) => {
+    if (/^\s+$/.test(token) || !token) {
+      return {
+        isSuccess: false,
+        data: "",
+        message: "",
+      };
+    }
+    setAccessTokenState((prevState) => ({ ...prevState, isChecking: true }));
+    const encryptor = await decipher.encrypt({ data: token.trim() });
+    const { isSuccess, data, message } =
+      await adsManagerApi.accessTokenDebugger({
+        access_token: encryptor.encryptedData,
+      });
+
+    if (!isSuccess) {
+      setCanSave(false);
+    } else {
+      setCanSave(true);
+    }
+
+    const title = isSuccess ? message : data[0].status;
+    const description = !isSuccess ? message : "";
+    setAccessTokenState({
+      isChecking: false,
+      isValid: isSuccess,
+      title,
+      description,
+    });
+
+    return response;
+  };
+
+  const handleAccessTokenDebounce = useDebouncedCallback(
+    async (token: string) => {
+      setCanSave(false);
+      await handleAccessTokenRequest(token);
+    },
+    500
+  );
+
+  const handleAccessTokenStateChange = (token: string) => {
+    if (/^\s+$/.test(token) || !token) {
+      setAccessTokenState({
+        isChecking: false,
+        isValid: false,
+        title: "",
+        description: "",
+      });
+      return;
+    }
+    handleAccessTokenDebounce(token);
+  };
+
+  const buildPayload = (
+    isUpdateMode: boolean,
+    editingData: Partial<Profile>
+  ) => {
+    if (!editingData) return {};
+    const payload: any = {};
+
+    if (form.profile_name !== editingData.profile_name) {
+      if (!isUpdateMode) {
+        payload.profile_name = form.profile_name;
+      } else {
+        payload.profile_name = editingData.profile_name;
+        payload.new_profile_name = form.profile_name;
+      }
+    }
+
+    if (!isUpdateMode) {
+      payload.fb_account_id = form.fb_account_id;
+    } else {
+      payload.fb_account_id = editingData.fb_account?.id;
+    }
+
+    if (
+      form.marketing_api_access_token !== editingData.marketing_api_access_token
+    ) {
+      if (!isUpdateMode) {
+        payload.fb_account_id = form.fb_account_id;
+      } else {
+        payload.fb_account_id = editingData.fb_account?.id;
+      }
+      payload.marketing_api_access_token = form.marketing_api_access_token;
+    }
+
+    if (form.app_secret_key !== editingData.app_secret_key) {
+      if (!isUpdateMode) {
+        payload.fb_account_id = form.fb_account_id;
+      } else {
+        payload.fb_account_id = editingData.fb_account?.id;
+      }
+      payload.app_secret_key = form.app_secret_key;
+    }
+
+    // payload.marketing_api_access_token = form.marketing_api_access_token;
+    // payload.app_secret_key = form.app_secret_key;
+
+    if (
+      form.fb_account_id !== editingData.fb_account?.id &&
+      typeof form.fb_account_id !== "undefined"
+    ) {
+      if (!isUpdateMode) {
+        payload.fb_account_id = form.fb_account_id;
+      } else {
+        payload.fb_account_id = editingData.fb_account?.id || 0;
+        payload.new_fb_account_id =
+          form.fb_account_id !== 0 ? form.fb_account_id : 0;
+      }
+    }
+
+    if (form.remarks !== editingData.remarks) {
+      payload.remarks = form.remarks;
+    }
+
+    // cleanups
+    if (payload.new_fb_account_id == 0) {
+      delete payload["marketing_api_access_token"];
+      delete payload["app_secret_key"];
+    }
+
+    return payload;
+  };
+
+  const handleSubmit = async (ev: FormEvent<HTMLFormElement>) => {
+    ev.preventDefault();
+    const isUpdateMode = Object.keys(editingData).length >= 1;
+
+    const payload = buildPayload(isUpdateMode, editingData);
+    setIsSubmitInProgress(true);
+
+    const response = isUpdateMode
+      ? await profilesService.update({ id: editingData.id, ...payload })
+      : await profilesService.post(payload);
+    if (!response.isSuccess) {
+      showToast(false, response.message);
+      return setIsDialogOpen(false);
+    }
+
+    if (isUpdateMode) {
+      handleUpdateEntry(response, payload);
+    } else {
+      const brandIds: number[] = selectedBrandAccess
+        .map((selectedBrand) => {
+          const id = brands.find((b) => b.value == selectedBrand)?.id;
+          return id;
+        })
+        .filter((id): id is number => id !== undefined);
+
+      const profileBrandPermission =
+        await userPermissionService.postApProfileBrandPermissions({
+          ap_profile_id: [response.data[0].id],
+          brand_id: brandIds,
+        });
+
+      handleNewEntry(response);
+    }
+    setIsSubmitInProgress(false);
+    showToast(true, response.message);
+    setIsDialogOpen(false);
+    setStep(1);
+  };
+
+  const handleNewEntry = async (response: ApiResponseProps) => {
+    const { data } = response;
+    const createdBy = data[0].created_by;
+    const updatedForm = {
+      id: data[0].id,
+      row_id: 1,
+      profile_name: form.profile_name,
+      fb_account: {
+        id: data[0].fb_account.id,
+        fb_owner_name: data[0].fb_account.fb_owner_name,
+        username: data[0].fb_account.username,
+        marketing_api_access_token:
+          data[0].fb_account.marketing_api_access_token,
+        app_secret_key: data[0].fb_account.app_secret_key,
+        recruited_by: {
+          full_name: data[0].fb_account.recruited_by?.full_name,
+        },
+      },
+      created_by: {
+        full_name: createdBy.full_name,
+        team_name: createdBy.team_name,
+      },
+      created_at: data[0].created_at,
+      remarks: form.remarks,
+      status: data[0].status,
+    };
+
+    if (!Object.keys(data[0].fb_account).length) {
+      updatedForm["fb_account"] = {} as any;
+    }
+
+    setTableData((prevData: any[]) => [
+      updatedForm,
+      ...prevData.map((row) => ({
+        ...row,
+        row_id: row.row_id + 1, // increment each old row_id by 1
+      })),
+    ]);
+    resetForm();
+  };
+
+  const handleUpdateEntry = async (
+    response: ApiResponseProps,
+    payload: any
+  ) => {
+    setTableData((prevData: Profile[]) =>
+      prevData.map((item) => {
+        const payloadLength = Object.keys(payload).length;
+        const hasOnlyRemarks = payloadLength === 1 && "remarks" in payload;
+        const hasSetNewFbAccount =
+          "new_fb_account_id" in payload && payload.new_fb_account_id !== 0;
+        const hasRemovedFbAccount =
+          "new_fb_account_id" in payload && payload.new_fb_account_id === 0;
+        const hasMarketingApiAccessToken =
+          "marketing_api_access_token" in payload;
+        const hasAppSecretKey = "app_secret_key" in payload;
+
+        // if has set new fb account in payload, use response to propagate.
+        // if has marketing api access token in payload, destructure and modify the marketing_api_access_token and app_secret_key.
+        let fbAccount: any = {};
+        if (hasSetNewFbAccount) {
+          fbAccount = response.data[0].fb_account;
+        }
+
+        if (hasMarketingApiAccessToken || hasAppSecretKey) {
+          fbAccount = {
+            ...fbAccount,
+            marketing_api_access_token:
+              response.data[0].fb_account.marketing_api_access_token,
+            app_secret_key: response.data[0].fb_account.app_secret_key,
+          };
+        }
+
+        if ((!hasRemovedFbAccount && !hasSetNewFbAccount) || hasOnlyRemarks) {
+          fbAccount = { ...item.fb_account, ...fbAccount };
+        }
+
+        const output =
+          item.id === editingData.id
+            ? {
+                ...item,
+                ...form,
+                fb_account: fbAccount,
+                status:
+                  hasSetNewFbAccount || hasRemovedFbAccount
+                    ? response.data[0].status
+                    : item.status,
+              }
+            : item;
+        return output;
+      })
+    );
+    resetForm();
+  };
+
+  const handleEditChange = async (id: number | null) => {
+    const selectedProfile = tableData.find(
+      (data: { id: number }) => data.id === id
+    ) as any;
+
+    let tokens: any = {};
+    setProfileEditState({ id, state: "loading" });
+
+    if (selectedProfile.fb_account) {
+      tokens = await getTokens({
+        app_secret_key: selectedProfile.fb_account.app_secret_key,
+        marketing_api_access_token:
+          selectedProfile.fb_account.marketing_api_access_token,
+        type: "decrypt",
+      });
+      handleAccessTokenRequest(tokens.marketing_api_access_token || "");
+    }
+
+    setEditingData({
+      ...selectedProfile,
+      ...tokens,
+    });
+
+    if (selectedProfile) {
+      setForm({
+        ...selectedProfile,
+        ...tokens,
+      });
+      setIsDialogOpen(true);
+    }
+    setProfileEditState({ id: null, state: "" });
+  };
+
+  const handlePagination = (page: number, limit: number) => {
+    const urlQuery = new URLSearchParams();
+    urlQuery.set("page", String(page));
+    urlQuery.set("limit", String(limit));
+    if (searchParamLimit !== limit) {
+      urlQuery.set("page", "1");
+    }
+    router.push(`?${urlQuery.toString()}`);
+  };
+
+  const handleRemoveSelected = async () => {
+    setSearchQuery((prevState: any) => ({
+      ...prevState,
+      query: "",
+      result: {
+        data: [],
+      },
+      selectedResult: null,
+    }));
+    setShowResults(false);
+    const page = searchParams.get("page") || "";
+    const limit = searchParams.get("limit") || "";
+    const newRouteQuery = searchParamsManager.refreshWithCacheBuster({
+      page,
+      limit,
+    });
+    router.push(`?${newRouteQuery.toString()}`);
+  };
+
+  const handleNewProfile = () => {
+    setEditingData({});
+    resetForm();
+    setIsDialogOpen(true);
+    setSelectedBrandAccess([]);
+  };
+
+  const handleUpdateStep = (step: number) => {
+    setStep(step);
+  };
+
+  const resetForm = () => {
+    setForm({
+      profile_name: "",
+      fb_account_id: undefined,
+      marketing_api_access_token: "",
+      app_secret_key: "",
+      remarks: "",
+    });
+    setAccessTokenState({
+      isChecking: false,
+      isValid: false,
+      title: "",
+      description: "",
+    });
+  };
+
+  const handleBrandChange = (value: string[]) => {
+    if (value.length > 0) {
+      setCanSave(true);
+    }
+    setSelectedBrandAccess(value);
+  };
+
+  useEffect(() => {
+    if (!isDialogOpen) {
+      setCanSave(false);
+      startTransition(() => {
+        setEditingData({});
+        setAccessTokenState({
+          isChecking: false,
+          isValid: false,
+          title: "",
+          description: "",
+        });
+      });
+    }
+  }, [isDialogOpen]);
+
+  return {
+    // States & Data
+    isDialogOpen,
+    setIsDialogOpen,
+    editingData,
+    form,
+    tableData,
+    step,
+    canSave,
+    isSubmitInProgress,
+    showResults,
+    setShowResults,
+    profileEditState,
+    searchQuery,
+    accessTokenState,
+    selectedBrandAccess,
+
+    // Pagination Params
+    searchParamCurrentPage,
+    searchParamTotalPages,
+    searchParamLimit,
+
+    // Handlers
+    handleInputChange,
+    handleSubmit,
+    handleEditChange,
+    handlePagination,
+    handleSearchQueryChange,
+    handleSearchFocus,
+    handleSelectItem,
+    handleRemoveSelected,
+    handleNewProfile,
+    handleUpdateStep,
+    handleModifyEditingData,
+    handleAccessTokenStateChange,
+    handleBrandChange,
+  };
+};

@@ -1,7 +1,8 @@
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { NotFound } from "@/components/not-found/not-found";
-import { ManageApProfilesContainer } from "@/components/accounts/ap-profiles/ManageApProfilesContainer";
+import { ManageApProfilesContainer } from "@/components/accounts/ap-profiles/ApProfilesContainer";
 import { CryptoClientService } from "@/lib/features/security/cryptography/CryptoClientService";
+import { BrandsClientService } from "@/lib/features/brands/BrandsClientService";
 export default async function Page({ searchParams }: any) {
   const session = await getSession();
   const awaitedParams = await searchParams;
@@ -29,8 +30,19 @@ export default async function Page({ searchParams }: any) {
     Number(decipheredUserId.decryptedData)
   );
 
+  const brandsApi = new BrandsClientService();
+  const brands = await brandsApi.getAll({
+    status: "active",
+  }); // Get all the active brands
+  const formattedBrands = brands.data.map((brand) => ({
+    id: brand.id,
+    label: brand.brand_name,
+    value: brand.brand_name,
+  }));
+
   return (
     <ManageApProfilesContainer
+      brands={formattedBrands}
       searchParams={params}
       hasAccessToMarketingApiAccessToken={hasAccessToMarketingApiAccessToken}
     />

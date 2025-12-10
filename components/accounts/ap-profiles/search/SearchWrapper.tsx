@@ -4,18 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Dispatch, SetStateAction } from "react";
 import { SearchInputMemo } from "@/components/shared/search/SearchInput";
 import { SearchResultContainer } from "@/components/shared/search/SearchResultContainer";
-
-type SearchWrapperProps = {
-  searchQuery: any;
-  onSearchQueryChange: (q: any) => void;
-  onSearchFocus: () => void;
-  onRemoveSelected: () => void;
-  showResults: boolean;
-  setShowResults: Dispatch<SetStateAction<boolean>>;
-  disabled?: boolean;
-  SelectedRenderer: React.ReactNode; // custom selected UI
-  ResultsRenderer: React.ReactNode; // custom results component
-};
+import { SearchWrapperProps } from "../ApProfiles.types";
 
 export function SearchWrapper({
   searchQuery,

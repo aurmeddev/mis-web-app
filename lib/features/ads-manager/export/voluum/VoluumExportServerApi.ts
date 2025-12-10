@@ -119,7 +119,7 @@ export class VoluumExportServerApi implements IExportGateway {
         data: [],
       };
     }
-    const isAlphanumeric = /^[a-zA-Z0-9]+$/.test(text); // Check if the text contains only alphanumeric characters
+    const isAlphanumeric = /^[a-zA-Z0-9]+$/.test(text.trim()); // Check if the text contains only alphanumeric characters
     if (!isAlphanumeric) {
       // Old format with voluum campaign id
       return this.extractVoluumnCampaignId(text);

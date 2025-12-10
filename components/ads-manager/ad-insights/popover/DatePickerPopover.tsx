@@ -15,16 +15,18 @@ import { DatePickerWithRange } from "@/components/shared/datepicker/DatePickerWi
 import { DateRange } from "react-day-picker";
 import { DatePresetSelect } from "@/components/shared/datepicker/DatePresetSelect";
 
-type TrendsCalendarPresetsContainerProps = {
+type DatePickerPopoverProps = {
   dateRange: DateRange | undefined;
+  hasDatePresets?: boolean;
   onSetDateRange: (range: DateRange) => void;
   isSubmitInProgress: boolean;
 };
 export function DatePickerPopover({
   dateRange,
+  hasDatePresets = true,
   onSetDateRange,
   isSubmitInProgress,
-}: TrendsCalendarPresetsContainerProps) {
+}: DatePickerPopoverProps) {
   const [open, setOpen] = useState(false);
   const [localDateRange, setLocalDateRange] = useState<DateRange | undefined>(
     dateRange
@@ -87,13 +89,15 @@ export function DatePickerPopover({
         className="p-2 max-w-[650px] w-full max-h-[80vh] overflow-y-auto"
       >
         <div className="flex flex-col space-y-2">
-          <DatePresetSelect
-            dateRange={localDateRange}
-            setDateRange={setLocalDateRange}
-            triggerClassName={
-              isSubmitInProgress ? "pointer-events-none animate-pulse" : ""
-            }
-          />
+          {hasDatePresets && (
+            <DatePresetSelect
+              dateRange={localDateRange}
+              setDateRange={setLocalDateRange}
+              triggerClassName={
+                isSubmitInProgress ? "pointer-events-none animate-pulse" : ""
+              }
+            />
+          )}
           <div className="rounded-md border">
             <DatePickerWithRange
               hasDatePresets={true}

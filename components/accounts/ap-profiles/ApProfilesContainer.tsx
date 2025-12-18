@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { TableLoader } from "@/components/shared/skeleton-loader/TableLoader";
 import { TableFetch } from "@/components/shared/table/server-fetch/TableFetch";
 import { ApProfilesService } from "@/lib/features/ap-profiles/ApProfilesService";
-import { ManageApProfilesTableContainer } from "./table/ApProfilesTableContainer";
+import { ApProfilesTableContainer } from "./table/ApProfilesTableContainer";
 import { SelectOptions } from "@/components/shared/select/type";
 
 type Props = {
@@ -11,7 +11,7 @@ type Props = {
   hasAccessToMarketingApiAccessToken: boolean;
 };
 
-export async function ManageApProfilesContainer({
+export async function ApProfilesContainer({
   brands,
   searchParams,
   hasAccessToMarketingApiAccessToken,
@@ -31,7 +31,7 @@ export async function ManageApProfilesContainer({
           brands={brands}
           searchParams={searchParams}
           fetchService={(params) => profilesService.getAll(params)}
-          Container={ManageApProfilesTableContainer}
+          Container={ApProfilesTableContainer}
           hasAccessToMarketingApiAccessToken={
             hasAccessToMarketingApiAccessToken
           }

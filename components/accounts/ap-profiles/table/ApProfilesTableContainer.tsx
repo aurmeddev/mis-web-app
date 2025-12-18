@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ApProfilesTableMemo } from "./ApProfilesTable";
-import { ManageApProfilesDialog } from "../dialog/ApProfilesDialog";
+import { ApProfilesDialog } from "../dialog/ApProfilesDialog";
 import { Pagination } from "@/components/shared/pagination/route-based/Pagination";
 import { ApProfilesSearchResults } from "../search/ApProfilesSearchResults";
 import { SearchWrapper } from "../search/SearchWrapper";
@@ -10,7 +10,7 @@ import { CryptoClientService } from "@/lib/features/security/cryptography/Crypto
 import { ApProfilesTableContainerProps } from "../ApProfiles.types";
 import { useApProfiles } from "../hooks/useApProfiles";
 
-export function ManageApProfilesTableContainer({
+export function ApProfilesTableContainer({
   brands,
   response,
   hasAccessToMarketingApiAccessToken,
@@ -55,7 +55,7 @@ export function ManageApProfilesTableContainer({
 
   return (
     <>
-      <ManageApProfilesDialog
+      <ApProfilesDialog
         accessTokenState={accessTokenState}
         brands={brands}
         canSave={canSave}

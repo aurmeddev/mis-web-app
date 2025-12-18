@@ -1,6 +1,6 @@
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { NotFound } from "@/components/not-found/not-found";
-import { ManageApProfilesContainer } from "@/components/accounts/ap-profiles/ApProfilesContainer";
+import { ApProfilesContainer } from "@/components/accounts/ap-profiles/ApProfilesContainer";
 import { CryptoClientService } from "@/lib/features/security/cryptography/CryptoClientService";
 import { BrandsClientService } from "@/lib/features/brands/BrandsClientService";
 export default async function Page({ searchParams }: any) {
@@ -41,7 +41,7 @@ export default async function Page({ searchParams }: any) {
   }));
 
   return (
-    <ManageApProfilesContainer
+    <ApProfilesContainer
       brands={formattedBrands}
       searchParams={params}
       hasAccessToMarketingApiAccessToken={hasAccessToMarketingApiAccessToken}

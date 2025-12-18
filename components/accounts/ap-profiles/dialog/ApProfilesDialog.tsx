@@ -25,7 +25,7 @@ import { StepProgress } from "../../../shared/step-progress/StepProgress";
 import { ApProfilesDialogProps } from "../ApProfiles.types";
 import { MultiSelectComboBoxV2 } from "@/components/shared/select/MultiSelectComboBoxV2";
 
-export function ManageApProfilesDialog({
+export function ApProfilesDialog({
   accessTokenState,
   brands,
   canSave,
@@ -243,7 +243,7 @@ export function ManageApProfilesDialog({
                 )}
               </div>
 
-              <div className="grid gap-2">
+              {/* <div className="grid gap-2">
                 <Label htmlFor="brand">Assign Brands</Label>
                 <div>
                   <MultiSelectComboBoxV2
@@ -256,7 +256,7 @@ export function ManageApProfilesDialog({
                     selectedValue={selectedBrandAccess}
                   />
                 </div>
-              </div>
+              </div> */}
 
               <div className="grid gap-2">
                 <div className="font-[500] text-sm">

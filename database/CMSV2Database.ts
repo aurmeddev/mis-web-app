@@ -1,7 +1,8 @@
 import { isEnvProduction } from "@/lib/env/isEnvProduction";
 import { ConnectionOptions } from "mysql2";
+import { IMySQLConnection } from "./IMySQLDatabase";
 
-export class CMSV2Database {
+export class CMSV2Database implements IMySQLConnection {
   private credentials: ConnectionOptions = {
     host: process.env.NEXT_DBHOST,
     user: process.env.NEXT_DBUSER,

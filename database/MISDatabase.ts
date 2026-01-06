@@ -1,7 +1,8 @@
 import { isEnvProduction } from "@/lib/env/isEnvProduction";
 import { ConnectionOptions } from "mysql2";
+import { IMySQLConnection } from "./IMySQLDatabase";
 
-export class MISDatabase {
+export class MISDatabase implements IMySQLConnection {
   private credentials: ConnectionOptions = {
     host: process.env.NEXT_DBHOST,
     user: process.env.NEXT_DBUSER,
@@ -11,7 +12,7 @@ export class MISDatabase {
       : process.env.NEXT_DEV_DBNAME,
   };
 
-  getCredentials = () => {
+  getConnection = () => {
     return this.credentials;
   };
 }

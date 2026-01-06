@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { useSearchParams, useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useDebouncedCallback } from "use-debounce";
-import { ApiResponseProps } from "@/database/poolQuery";
+import { ApiResponseProps } from "@/database/query";
 import { userAccessFormSchema } from "../../schema";
 import { SelectOptions } from "@/components/shared/select/type";
 import { useUserAccessContext } from "@/context/user-access/UserAccessContext";

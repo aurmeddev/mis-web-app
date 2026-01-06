@@ -2,6 +2,7 @@ import { ApiResponseProps, query } from "@/database/query";
 import { IPostbackLogs, IExportPostbackLogs } from "./IPostbackLogs";
 import { MySQLDatabase } from "@/database/MySQLDatabase";
 import { CMSV2Database } from "@/database/CMSV2Database";
+import { DatetimeUtils } from "@/lib/utils/date/DatetimeUtils";
 
 export class ExportServerPostbackLogs implements IExportPostbackLogs {
   async export(params: IPostbackLogs): Promise<ApiResponseProps> {
@@ -24,9 +25,17 @@ export class ExportServerPostbackLogs implements IExportPostbackLogs {
         };
       }
 
+      const dateUtils = new DatetimeUtils();
+      const formattedResponse = response.map((item: any) => ({
+        ...item,
+        createdAt: dateUtils.formatDateTime(
+          dateUtils.convertToUTC8(item.createdAt)
+        ),
+      }));
+
       return {
         isSuccess: true,
-        data: response,
+        data: formattedResponse,
         message: "Postback logs exported successfully",
       };
     } catch (error: any) {

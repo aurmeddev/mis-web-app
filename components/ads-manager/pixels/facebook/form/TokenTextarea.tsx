@@ -1,12 +1,12 @@
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { TokenTextareaProps } from "../Facebook.types";
+import { ITokenTextarea } from "../Facebook.types";
 
 export function TokenTextarea({
   isOnConfirmationMode,
   onPixelFormChange,
   token,
-}: TokenTextareaProps) {
+}: ITokenTextarea) {
   return (
     <div className="space-y-2">
       <Label htmlFor="token">Access Token</Label>

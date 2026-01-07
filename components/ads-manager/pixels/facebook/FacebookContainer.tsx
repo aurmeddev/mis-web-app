@@ -7,7 +7,6 @@ import { Info } from "lucide-react";
 import { useDebouncedCallback } from "use-debounce";
 import { ObjectUtils } from "@/lib/utils/object/ObjectUtils";
 import { PixelClient } from "@/lib/features/pixel/PixelClient";
-import { DateTimeRangePicker } from "@/components/shared/date-time-range-picker/DateTimeRangePicker";
 
 const INITIAL_FORM_VALUE = {
   pixel: "",

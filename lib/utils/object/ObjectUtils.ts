@@ -74,4 +74,36 @@ export class ObjectUtils {
       return accumulator;
     }, {} as Record<string, unknown>);
   };
+
+  /**
+   * Compares two objects and returns a new object containing only the properties
+   * from the 'current' object that have a different value than the 'original' object.
+   *
+   * @template T - The type of the objects being compared.
+   * @param original - The original object (e.g., existing data from the database).
+   * @param current - The current object (e.g., values from the user's form).
+   * @returns An object containing only the properties that have changed.
+   */
+  getChangedProperties<T extends Record<string, any>>(
+    original: T,
+    current: T
+  ): Partial<T> {
+    const changedProperties: Partial<T> = {};
+
+    // 1. Iterate over the keys of the current object.
+    for (const key in current) {
+      // Ensure the key exists in the current object and is a direct property.
+      if (Object.prototype.hasOwnProperty.call(current, key)) {
+        // 2. Compare the value in the current object against the original object.
+        // We use strict equality (===) for comparison.
+        if (current[key] !== original[key]) {
+          // 3. If the values are different, add the property and the new value
+          // from the current object to the result.
+          changedProperties[key] = current[key];
+        }
+      }
+    }
+
+    return changedProperties;
+  }
 }

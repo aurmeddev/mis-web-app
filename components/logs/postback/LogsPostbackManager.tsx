@@ -7,7 +7,7 @@ import LogPostbackDownload from "./LogsPostbackDownload";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { useLogsPostback } from "../hooks/useLogsPostback";
-import { format } from "date-fns";
+import { format, isDate, subDays } from "date-fns";
 import { Loader2 } from "lucide-react";
 
 export default function LogsPostbackManager() {
@@ -27,12 +27,14 @@ export default function LogsPostbackManager() {
     exportState,
     selectedPreset,
   } = useLogsPostback({
-    from: new Date(2025, 11, 1),
-    to: new Date(2026, 0, 6),
+    from: subDays(new Date(), 1),
+    to: subDays(new Date(), 1),
   });
 
-  const dateFrom = format(String(date?.from), "MMM d");
-  const dateTo = format(String(date?.to), "MMM d");
+  const dateFrom = isDate(date?.from)
+    ? format(String(date?.from), "MMM d")
+    : "";
+  const dateTo = isDate(date?.to) ? format(String(date?.to), "MMM d") : "";
 
   return (
     <>
@@ -50,6 +52,20 @@ export default function LogsPostbackManager() {
               onDateChange={(val) => handleManualDateChange("to", val)}
             />
             <TimeInput value={endTime} onChange={setEndTime} />
+
+            <div className="flex justify-end ml-auto gap-2 bg-white">
+              {/* <Button variant="ghost" size="sm" className="px-6 h-9">
+          Cancel
+        </Button> */}
+              <Button
+                disabled={isSubmitting}
+                onClick={handleSubmit}
+                size="sm"
+                className="cursor-pointer w-24 h-9 rounded-md"
+              >
+                {isSubmitting && <Loader2 className="animate-spin" />} Submit
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -65,6 +81,7 @@ export default function LogsPostbackManager() {
                 day_selected:
                   "bg-blue-600 text-white hover:bg-blue-600 focus:bg-blue-600",
               }}
+              disabled={{ after: new Date() }}
             />
           </div>
 
@@ -73,20 +90,6 @@ export default function LogsPostbackManager() {
             onSelect={handlePresetClick}
             selectedLabel={selectedPreset}
           />
-        </div>
-
-        <div className="p-3 border-t flex justify-end gap-2 bg-white">
-          {/* <Button variant="ghost" size="sm" className="px-6 h-9">
-          Cancel
-        </Button> */}
-          <Button
-            disabled={isSubmitting}
-            onClick={handleSubmit}
-            size="sm"
-            className="cursor-pointer w-24 h-9 rounded-md"
-          >
-            {isSubmitting && <Loader2 className="animate-spin" />} Submit
-          </Button>
         </div>
       </div>
 

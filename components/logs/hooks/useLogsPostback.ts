@@ -11,6 +11,7 @@ import {
   isValid,
   format,
   isAfter,
+  subHours,
 } from "date-fns";
 import { ExportClientPostbackLogs } from "@/lib/features/postback/logs/ExportClientPostbackLogs";
 import { showToast } from "@/lib/utils/toast";
@@ -25,50 +26,71 @@ export const useLogsPostback = (initialRange: DateRange) => {
   const jsonCsvManager = new Json2CsvManager();
 
   const [date, setDate] = useState<DateRange | undefined>(initialRange);
-  const [startTime, setStartTime] = useState("00:00");
-  const [endTime, setEndTime] = useState("00:00");
+  const [startTime, setStartTime] = useState(
+    format(subHours(new Date(), 24), "HH:mm")
+  );
+  const [endTime, setEndTime] = useState(format(new Date(), "HH:mm"));
   const [exportState, setExportState] = useState<ILogPostbackExportState>({
     isExportReady: false,
     data: [],
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedPreset, setSelectedPreset] = useState<string>("");
+  const [selectedPreset, setSelectedPreset] = useState<string>("Last 24 hours");
 
   const presets = [
-    { label: "Today", getValue: () => ({ from: new Date(), to: new Date() }) },
+    {
+      label: "Today",
+      getValue: () => ({ from: new Date(), to: new Date() }),
+      startTime: "00:00",
+      endTime: format(new Date(), "HH:mm"),
+    },
     {
       label: "Yesterday",
       getValue: () => ({
         from: subDays(new Date(), 1),
         to: subDays(new Date(), 1),
       }),
+      startTime: "00:00",
+      endTime: "23:59",
     },
     {
       label: "Last 24 hours",
       getValue: () => ({ from: subDays(new Date(), 1), to: new Date() }),
+      startTime: "00:00",
+      endTime: "23:59",
     },
     {
       label: "Last 48 hours",
       getValue: () => ({ from: subDays(new Date(), 2), to: new Date() }),
+      startTime: format(subDays(new Date(), 2), "HH:mm"),
+      endTime: format(new Date(), "HH:mm"),
     },
     {
       label: "Last 3 days",
       getValue: () => ({ from: subDays(new Date(), 3), to: new Date() }),
+      startTime: "00:00",
+      endTime: format(new Date(), "HH:mm"),
     },
     {
       label: "Last 7 days",
       getValue: () => ({ from: subDays(new Date(), 7), to: new Date() }),
+      startTime: "00:00",
+      endTime: format(new Date(), "HH:mm"),
     },
     {
       label: "This month",
       getValue: () => ({
         from: startOfMonth(new Date()),
-        to: endOfMonth(new Date()),
+        to: new Date(),
       }),
+      startTime: "00:00",
+      endTime: "23:59",
     },
     {
       label: "Last 30 days",
       getValue: () => ({ from: subDays(new Date(), 30), to: new Date() }),
+      startTime: "00:00",
+      endTime: format(new Date(), "HH:mm"),
     },
     {
       label: "Last month",
@@ -76,15 +98,24 @@ export const useLogsPostback = (initialRange: DateRange) => {
         const lastMonth = subMonths(new Date(), 1);
         return { from: startOfMonth(lastMonth), to: endOfMonth(lastMonth) };
       },
+      startTime: "00:00",
+      endTime: "23:59",
     },
     {
       label: "This year",
       getValue: () => ({
         from: startOfYear(new Date()),
-        to: endOfYear(new Date()),
+        to: new Date(),
       }),
+      startTime: "00:00",
+      endTime: "23:59",
     },
-    { label: "Custom", getValue: () => date },
+    {
+      label: "Custom",
+      getValue: () => date,
+      startTime: startTime,
+      endTime: endTime,
+    },
   ];
 
   const getCombinedDates = (formatStr: string) => {
@@ -124,10 +155,12 @@ export const useLogsPostback = (initialRange: DateRange) => {
   };
 
   const handlePresetClick = (preset: IPreset) => {
-    const { label, getValue } = preset;
+    const { label, getValue, startTime, endTime } = preset;
     setExportState((prev) => ({ ...prev, isExportReady: false }));
     setDate(getValue());
     setSelectedPreset(label);
+    setStartTime(startTime);
+    setEndTime(endTime);
   };
 
   const handleSubmit = async () => {
@@ -171,7 +204,7 @@ export const useLogsPostback = (initialRange: DateRange) => {
       ) as T;
 
     const sanitizedData = exportState.data.map(sanitizeObject);
-    const combined = getCombinedDates("yyyy-MM-dd haaa");
+    const combined = getCombinedDates("yyyy-MM-dd h:mmaaa");
 
     if (!combined) return;
 

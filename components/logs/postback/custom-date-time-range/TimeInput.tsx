@@ -8,14 +8,10 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
-
-interface ITimeInput {
-  value: string;
-  onChange: (val: string) => void;
-}
+import { ITimeInput } from "../LogsPostback.types";
 
 export default function TimeInput({ value, onChange }: ITimeInput) {
-  const timeOptions = Array.from({ length: 25 }, (_, i) => {
+  const timeOptions = Array.from({ length: 24 }, (_, i) => {
     const hour = i.toString().padStart(2, "0");
     return `${hour}:00`;
   });
@@ -23,7 +19,7 @@ export default function TimeInput({ value, onChange }: ITimeInput) {
   return (
     <div className="relative flex items-center group">
       <Input
-        className="w-20 h-9 pr-7 focus-visible:ring-1"
+        className="w-21 h-9 pr-7 focus-visible:ring-1"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder="HH:mm"

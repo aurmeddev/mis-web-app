@@ -2,11 +2,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { format, isValid, parse } from "date-fns";
 import { useState, useEffect } from "react";
-
-interface IDateInput {
-  value: Date | undefined;
-  onDateChange: (value: string) => void;
-}
+import { IDateInput } from "../LogsPostback.types";
 
 export default function EditableDateInput({ value, onDateChange }: IDateInput) {
   const [localValue, setLocalValue] = useState(

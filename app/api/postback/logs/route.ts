@@ -1,5 +1,5 @@
 // import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
-import { ExportServerPostbackLogs } from "@/lib/features/postback/logs/ExportServerPostbackLogs";
+import { ExportServerPostbackLogs } from "@/lib/features/postback/logs/export/ExportServerPostbackLogs";
 import { SearchParamsManager } from "@/lib/utils/search-params/SearchParamsManager";
 import { NextResponse, NextRequest } from "next/server";
 export const GET = async (request: NextRequest) => {

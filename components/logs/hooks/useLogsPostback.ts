@@ -13,7 +13,7 @@ import {
   isAfter,
   subHours,
 } from "date-fns";
-import { ExportClientPostbackLogs } from "@/lib/features/postback/logs/ExportClientPostbackLogs";
+import { ExportClientPostbackLogs } from "@/lib/features/postback/logs/export/ExportClientPostbackLogs";
 import { showToast } from "@/lib/utils/toast";
 import {
   ILogPostbackExportState,

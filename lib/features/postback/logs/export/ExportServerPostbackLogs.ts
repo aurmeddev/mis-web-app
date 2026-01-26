@@ -8,7 +8,7 @@ export class ExportServerPostbackLogs implements IExportPostbackLogs {
   async export(params: IPostbackLogs): Promise<ApiResponseProps> {
     const db = new MySQLDatabase(new CMSV2Database().getConnection());
     const { date_from, date_to } = params;
-    const queryString = `SELECT voluum_campaignid, pixel, remarks, description, createdAt FROM v_Log WHERE createdAt BETWEEN ? AND ? AND (log_id = 3 OR log_id = 5)`;
+    const queryString = `SELECT voluum_campaignid, pixel, remarks, description, createdAt FROM v_Log WHERE createdAt BETWEEN ? AND ? AND isFixed=0 AND (log_id = 3 OR log_id = 5)`;
     const queryValues = [date_from, date_to];
 
     try {
@@ -29,7 +29,7 @@ export class ExportServerPostbackLogs implements IExportPostbackLogs {
       const formattedResponse = response.map((item: any) => ({
         ...item,
         createdAt: dateUtils.formatDateTime(
-          item.createdAt
+          item.createdAt,
           // dateUtils.convertToUTC8(item.createdAt)
         ),
       }));

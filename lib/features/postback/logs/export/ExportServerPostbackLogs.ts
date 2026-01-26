@@ -28,10 +28,7 @@ export class ExportServerPostbackLogs implements IExportPostbackLogs {
       const dateUtils = new DatetimeUtils();
       const formattedResponse = response.map((item: any) => ({
         ...item,
-        createdAt: dateUtils.formatDateTime(
-          item.createdAt,
-          // dateUtils.convertToUTC8(item.createdAt)
-        ),
+        createdAt: dateUtils.formatDateTime(item.createdAt),
       }));
 
       return {

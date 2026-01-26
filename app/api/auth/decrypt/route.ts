@@ -31,7 +31,7 @@ export const POST = async (request: NextRequest) => {
     data: data,
   });
   if (!response.isSuccess) {
-    return NextResponse.json(response, { status: 201 });
+    return NextResponse.json(response, { status: 500 });
   }
   return NextResponse.json(response, { status: 201 });
 };

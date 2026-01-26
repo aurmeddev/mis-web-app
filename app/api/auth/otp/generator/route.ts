@@ -1,6 +1,6 @@
 import { CryptoServerService } from "@/lib/features/security/cryptography/CryptoServerService";
-import { TOTP } from "@/lib/features/security/otp-generator/TOTP";
-import { GenerateOTPProps } from "@/lib/features/security/otp-generator/type/OtpGeneratorProps";
+import { TOTP } from "@/lib/features/security/otp/generator/TOTP";
+import { GenerateOTPProps } from "@/lib/features/security/otp/generator/type/OtpGeneratorProps";
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { NextResponse, NextRequest } from "next/server";
 export const POST = async (request: NextRequest) => {
@@ -39,7 +39,7 @@ export const POST = async (request: NextRequest) => {
         isSuccess: false,
         message: "No secret key was provided",
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
   const { isSuccess, decryptedData, message } = await decipher.decrypt({
@@ -53,7 +53,7 @@ export const POST = async (request: NextRequest) => {
         isSuccess,
         message: "Data parse error occurred.",
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
   try {
@@ -64,7 +64,7 @@ export const POST = async (request: NextRequest) => {
         message: "OTP generated successfully.",
         data: { otp },
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error: any) {
     console.error(error);
@@ -74,7 +74,7 @@ export const POST = async (request: NextRequest) => {
         message: "Something went wrong! Please try again.",
         data: [],
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 };

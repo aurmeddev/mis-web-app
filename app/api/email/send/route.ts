@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
-import { CryptoServerService } from "@/lib/features/security/cryptography/CryptoServerService";
-import { CryptoManager } from "@/lib/features/security/cryptography/CryptoManager";
+// import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
+import { EmailServerProvider } from "@/lib/features/email/EmailServerProvider";
+import { ResendEmailApi } from "@/lib/features/email/ResendEmailApi";
 export const POST = async (request: NextRequest) => {
   // const authorization = (await headers()).get("authorization");
   // const token = authorization?.split(" ")[1];
@@ -25,11 +25,10 @@ export const POST = async (request: NextRequest) => {
   //     { status: 403 }
   //   );
   // }
-  const { data } = await request.json();
-  const security = new CryptoManager(new CryptoServerService());
-  const response = await security.encrypt({
-    data: data,
-  });
+  const message = await request.json();
+  const resend = new EmailServerProvider(new ResendEmailApi());
+  const response = await resend.sendEmail(message);
+
   if (!response.isSuccess) {
     return NextResponse.json(response, { status: 500 });
   }

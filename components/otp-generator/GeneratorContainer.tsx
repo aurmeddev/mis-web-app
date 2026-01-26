@@ -4,7 +4,7 @@ import { GeneratorCard } from "./GeneratorCard";
 import { ChangeEvent, useEffect, useState, useTransition } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import { ApProfilesService } from "@/lib/features/ap-profiles/ApProfilesService";
-import { OtpGeneratorService } from "@/lib/features/security/otp-generator/OtpGeneratorService";
+import { OtpGeneratorService } from "@/lib/features/security/otp/generator/OtpGeneratorService";
 import { GeneratorCardLoading } from "./GeneratorCardLoading";
 import { SearchQuery } from "./type";
 import { GeneratorSearchResults } from "./search/GeneratorSearchResults";

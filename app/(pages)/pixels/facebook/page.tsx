@@ -1,4 +1,4 @@
-import { FacebookContainer } from "@/components/ads-manager/pixels/facebook/FacebookContainer";
+import { FacebookContainer } from "@/components/pixels/facebook/FacebookContainer";
 import { NotFound } from "@/components/not-found/not-found";
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 export default async function Page() {

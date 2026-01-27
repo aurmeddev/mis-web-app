@@ -9,6 +9,7 @@ import {
   Compass,
   BlocksIcon,
   ClipboardClock,
+  CircuitBoard,
 } from "lucide-react";
 
 import { NavMain, NavMainItem } from "@/components/sidebar/nav-main";
@@ -82,6 +83,7 @@ const addIconPerMenu = (array: any[]) => {
     ShieldCheck: ShieldCheck,
     Compass: Compass,
     ClipboardClock: ClipboardClock,
+    CircuitBoard: CircuitBoard,
   };
   return array.map((item) => {
     const { icon, ...rest } = item;

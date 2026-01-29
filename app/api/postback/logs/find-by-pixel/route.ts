@@ -23,7 +23,7 @@ export const GET = async (request: NextRequest) => {
     return NextResponse.json(
       {
         isSuccess: false,
-        message: "Pixel parameter is required and must be a string.",
+        message: "Pixel parameter is required.",
         data: [],
       },
       { status: 400 },

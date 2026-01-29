@@ -14,7 +14,24 @@ export class ExportClientPostbackLogs implements IExportPostbackLogs {
           "Content-type": "application/json",
         },
         cache: "no-store",
-      }
+      },
+    );
+
+    return await response.json();
+  }
+
+  async findByPixel(params: { pixel: string }): Promise<ApiResponseProps> {
+    const searchParams = new SearchParamsManager();
+    const searchQueryParams = searchParams.append(params);
+    const response = await fetch(
+      `${appBaseUrl}/api/postback/logs/find-by-pixel${searchQueryParams}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-type": "application/json",
+        },
+        cache: "no-store",
+      },
     );
 
     return await response.json();

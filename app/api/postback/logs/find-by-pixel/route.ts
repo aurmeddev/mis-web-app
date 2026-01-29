@@ -19,11 +19,11 @@ export const GET = async (request: NextRequest) => {
     request.nextUrl.searchParams,
   );
 
-  if (!params.pixel || typeof params.pixel !== "string") {
+  if (!params.pixel) {
     return NextResponse.json(
       {
         isSuccess: false,
-        message: "Pixel parameter is required and must be a string.",
+        message: "Pixel parameter is required.",
         data: [],
       },
       { status: 400 },

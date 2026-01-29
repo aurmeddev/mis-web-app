@@ -1,11 +1,10 @@
 import { IPixelFindServer } from "@/lib/features/pixel/IPixel";
 import { PixelServer } from "@/lib/features/pixel/PixelServer";
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
-
 import { NextResponse, NextRequest } from "next/server";
 export const POST = async (
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) => {
   // Check if the user session is valid before processing the request
   const session = await getSession();
@@ -15,7 +14,7 @@ export const POST = async (
         isSuccess: false,
         message: "Session expired or invalid",
       },
-      { status: 403 }
+      { status: 403 },
     );
   }
 
@@ -30,7 +29,7 @@ export const POST = async (
         message: "Invalid JSON payload.",
         data: [],
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -47,6 +46,6 @@ export const POST = async (
       message,
       data: data,
     },
-    { status: isSuccess ? 200 : 400 }
+    { status: isSuccess ? 200 : 400 },
   );
 };

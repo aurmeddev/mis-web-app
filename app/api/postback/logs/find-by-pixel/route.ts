@@ -19,7 +19,7 @@ export const GET = async (request: NextRequest) => {
     request.nextUrl.searchParams,
   );
 
-  if (!params.pixel || typeof params.pixel !== "string") {
+  if (!params.pixel) {
     return NextResponse.json(
       {
         isSuccess: false,

@@ -13,7 +13,7 @@ import {
   isAfter,
   subHours,
 } from "date-fns";
-import { ExportClientPostbackLogs } from "@/lib/features/postback/logs/export/ExportClientPostbackLogs";
+import { ClientPostbackLogs } from "@/lib/features/postback/logs/export/ClientPostbackLogs";
 import { showToast } from "@/lib/utils/toast";
 import {
   ILogPostbackExportState,
@@ -22,12 +22,12 @@ import {
 import { Json2CsvManager } from "@/lib/utils/converter/Json2CsvManager";
 
 export const useLogsPostback = (initialRange: DateRange) => {
-  const ecPostbackLogsService = new ExportClientPostbackLogs();
+  const ecPostbackLogsService = new ClientPostbackLogs();
   const jsonCsvManager = new Json2CsvManager();
 
   const [date, setDate] = useState<DateRange | undefined>(initialRange);
   const [startTime, setStartTime] = useState(
-    format(subHours(new Date(), 24), "HH:mm")
+    format(subHours(new Date(), 24), "HH:mm"),
   );
   const [endTime, setEndTime] = useState(format(new Date(), "HH:mm"));
   const [exportState, setExportState] = useState<ILogPostbackExportState>({
@@ -124,12 +124,12 @@ export const useLogsPostback = (initialRange: DateRange) => {
     const date_from = parse(
       `${format(date.from, "yyyy-MM-dd")} ${startTime}`,
       "yyyy-MM-dd HH:mm",
-      new Date()
+      new Date(),
     );
     const date_to = parse(
       `${format(date.to, "yyyy-MM-dd")} ${endTime}`,
       "yyyy-MM-dd HH:mm",
-      new Date()
+      new Date(),
     );
 
     return {
@@ -184,9 +184,8 @@ export const useLogsPostback = (initialRange: DateRange) => {
 
     setIsSubmitting(true);
     try {
-      const { isSuccess, data, message } = await ecPostbackLogsService.export(
-        combinedDateTime
-      );
+      const { isSuccess, data, message } =
+        await ecPostbackLogsService.export(combinedDateTime);
       if (!isSuccess) {
         showToast(false, message);
         return;
@@ -200,7 +199,7 @@ export const useLogsPostback = (initialRange: DateRange) => {
   const handleDownloadPostbackLog = async () => {
     const sanitizeObject = <T extends Record<string, any>>(obj: T): T =>
       Object.fromEntries(
-        Object.entries(obj).map(([k, v]) => [k, v == null ? "" : v])
+        Object.entries(obj).map(([k, v]) => [k, v == null ? "" : v]),
       ) as T;
 
     const sanitizedData = exportState.data.map(sanitizeObject);

@@ -1,5 +1,5 @@
 // import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
-import { ExportServerPostbackLogs } from "@/lib/features/postback/logs/export/ExportServerPostbackLogs";
+import { ServerPostbackLogs } from "@/lib/features/postback/logs/export/ServerPostbackLogs";
 import { SearchParamsManager } from "@/lib/utils/search-params/SearchParamsManager";
 import { NextResponse, NextRequest } from "next/server";
 export const GET = async (request: NextRequest) => {
@@ -30,7 +30,7 @@ export const GET = async (request: NextRequest) => {
     );
   }
 
-  const logs = new ExportServerPostbackLogs();
+  const logs = new ServerPostbackLogs();
   const { isSuccess, message, data } = await logs.findByPixel(params);
   return NextResponse.json(
     {

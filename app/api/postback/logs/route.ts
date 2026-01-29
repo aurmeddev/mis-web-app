@@ -1,5 +1,5 @@
 // import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
-import { ExportServerPostbackLogs } from "@/lib/features/postback/logs/export/ExportServerPostbackLogs";
+import { ServerPostbackLogs } from "@/lib/features/postback/logs/export/ServerPostbackLogs";
 import { SearchParamsManager } from "@/lib/utils/search-params/SearchParamsManager";
 import { NextResponse, NextRequest } from "next/server";
 export const GET = async (request: NextRequest) => {
@@ -16,10 +16,10 @@ export const GET = async (request: NextRequest) => {
   // }
 
   const params = new SearchParamsManager().toObject(
-    request.nextUrl.searchParams
+    request.nextUrl.searchParams,
   );
 
-  const logs = new ExportServerPostbackLogs();
+  const logs = new ServerPostbackLogs();
   const { isSuccess, message, data } = await logs.export(params);
   return NextResponse.json(
     {
@@ -27,6 +27,6 @@ export const GET = async (request: NextRequest) => {
       message,
       data,
     },
-    { status: isSuccess ? 200 : 400 }
+    { status: isSuccess ? 200 : 400 },
   );
 };

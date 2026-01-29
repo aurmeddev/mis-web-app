@@ -1,11 +1,11 @@
-import { ApiResponseProps, query } from "@/database/query";
-import { IPostbackLogs, IExportPostbackLogs } from "./IPostbackLogs";
+import { ApiResponseProps } from "@/database/query";
+import { IExportPostbackLogs, IPostbackLogs } from "./IPostbackLogs";
 import { MySQLDatabase } from "@/database/MySQLDatabase";
 import { CMSV2Database } from "@/database/CMSV2Database";
 import { DatetimeUtils } from "@/lib/utils/date/DatetimeUtils";
 
-export class ExportServerPostbackLogs implements IExportPostbackLogs {
-  async export(params: IPostbackLogs): Promise<ApiResponseProps> {
+export class ServerPostbackLogs implements IPostbackLogs {
+  async export(params: IExportPostbackLogs): Promise<ApiResponseProps> {
     const db = new MySQLDatabase(new CMSV2Database().getConnection());
     const { date_from, date_to } = params;
     const queryString = `SELECT voluum_campaignid, pixel, remarks, description, createdAt FROM v_Log WHERE createdAt BETWEEN ? AND ? AND isFixed=1 AND (log_id = 3 OR log_id = 5)`;

@@ -19,6 +19,17 @@ export const GET = async (request: NextRequest) => {
     request.nextUrl.searchParams,
   );
 
+  if (!params.pixel || typeof params.pixel !== "string") {
+    return NextResponse.json(
+      {
+        isSuccess: false,
+        message: "Pixel parameter is required and must be a string.",
+        data: [],
+      },
+      { status: 400 },
+    );
+  }
+
   const logs = new ExportServerPostbackLogs();
   const { isSuccess, message, data } = await logs.findByPixel(params);
   return NextResponse.json(

@@ -25,15 +25,9 @@ export class ExportServerPostbackLogs implements IExportPostbackLogs {
         };
       }
 
-      const dateUtils = new DatetimeUtils();
-      const formattedResponse = response.map((item: any) => ({
-        ...item,
-        createdAt: dateUtils.formatDateTime(item.createdAt),
-      }));
-
       return {
         isSuccess: true,
-        data: formattedResponse,
+        data: this.formatResponse(response),
         message: "Postback logs exported successfully",
       };
     } catch (error: any) {
@@ -65,15 +59,9 @@ export class ExportServerPostbackLogs implements IExportPostbackLogs {
         };
       }
 
-      const dateUtils = new DatetimeUtils();
-      const formattedResponse = response.map((item: any) => ({
-        ...item,
-        createdAt: dateUtils.formatDateTime(item.createdAt),
-      }));
-
       return {
         isSuccess: true,
-        data: formattedResponse,
+        data: this.formatResponse(response),
         message: `${pixel} postback logs exported successfully`,
       };
     } catch (error: any) {
@@ -85,4 +73,12 @@ export class ExportServerPostbackLogs implements IExportPostbackLogs {
       };
     }
   }
+
+  formatResponse = (response: any) => {
+    const dateUtils = new DatetimeUtils();
+    return response.map((item: any) => ({
+      ...item,
+      createdAt: dateUtils.formatDateTime(item.createdAt),
+    }));
+  };
 }

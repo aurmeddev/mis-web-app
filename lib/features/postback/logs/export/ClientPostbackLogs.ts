@@ -1,9 +1,9 @@
 import { ApiResponseProps } from "@/database/query";
-import { IPostbackLogs, IExportPostbackLogs } from "./IPostbackLogs";
+import { IExportPostbackLogs, IPostbackLogs } from "./IPostbackLogs";
 import { appBaseUrl } from "@/lib/base-url/appBaseUrl";
 import { SearchParamsManager } from "@/lib/utils/search-params/SearchParamsManager";
-export class ExportClientPostbackLogs implements IExportPostbackLogs {
-  async export(params: IPostbackLogs): Promise<ApiResponseProps> {
+export class ClientPostbackLogs implements IPostbackLogs {
+  async export(params: IExportPostbackLogs): Promise<ApiResponseProps> {
     const searchParams = new SearchParamsManager();
     const searchQueryParams = searchParams.append(params);
     const response = await fetch(

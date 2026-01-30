@@ -134,7 +134,7 @@ export class DatetimeUtils {
     });
 
     const likelyMonthEntry = Object.entries(freq).sort(
-      (a, b) => b[1] - a[1]
+      (a, b) => b[1] - a[1],
     )[0];
     const likelyMonth = likelyMonthEntry ? parseInt(likelyMonthEntry[0]) : null;
 
@@ -225,4 +225,12 @@ export class DatetimeUtils {
     date.setDate(date.getDate() + 1);
     return date.toISOString().slice(0, 10); // YYYY-MM-DD
   };
+
+  getUnixTimestampSeconds() {
+    return Math.floor(Date.now() / 1000);
+  }
+
+  getUnixTimestampMilliseconds() {
+    return Date.now();
+  }
 }

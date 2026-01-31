@@ -1,4 +1,4 @@
-import { IPostbackTrackingParams } from "../IPostbackTrackingParams";
+import { IPostbackTrackingParams } from "../../postback/IPostbackTrackingParams";
 
 interface IPixelDebugger {
   debug(params: IPostbackTrackingParams): Promise<{ result: string }>;

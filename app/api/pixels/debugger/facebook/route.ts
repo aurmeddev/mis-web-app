@@ -1,5 +1,5 @@
 import { IPixelPost } from "@/lib/features/pixel/IPixel";
-import { FacebookPixelDebuggerServerApi } from "@/lib/features/postback/debugger/facebook/FacebookPixelDebuggerServerApi";
+import { FacebookPixelDebuggerServerApi } from "@/lib/features/pixel/debugger/facebook/FacebookPixelDebuggerServerApi";
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { NextRequest, NextResponse } from "next/server";
 export const POST = async (request: NextRequest) => {

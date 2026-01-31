@@ -1,5 +1,5 @@
 import { DatetimeUtils } from "@/lib/utils/date/DatetimeUtils";
-import { IFacebookConversionApiPayload } from "../../IFacebookConversionApi";
+import { IFacebookConversionApiPayload } from "../../../postback/IFacebookConversionApi";
 import { GraphFacebookApiConfig } from "@/lib/features/ads-manager/facebook/config/GraphFacebookApiConfig";
 
 export class FacebookPixelDebuggerServerApi extends GraphFacebookApiConfig {

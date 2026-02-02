@@ -1,10 +1,16 @@
 import { ApiResponseProps } from "@/database/query";
-import { IExportPostbackLogs, IPostbackLogs } from "./IPostbackLogs";
+import {
+  IExportPostbackLogs,
+  IPostbackLogs,
+  IUpdatePostbackLogStatus,
+} from "./IPostbackLogs";
 import { MySQLDatabase } from "@/database/MySQLDatabase";
 import { CMSV2Database } from "@/database/CMSV2Database";
 import { DatetimeUtils } from "@/lib/utils/date/DatetimeUtils";
 
-export class ServerPostbackLogs implements IPostbackLogs {
+export class ServerPostbackLogs
+  implements IPostbackLogs, IUpdatePostbackLogStatus
+{
   async export(params: IExportPostbackLogs): Promise<ApiResponseProps> {
     const db = new MySQLDatabase(new CMSV2Database().getConnection());
     const { date_from, date_to } = params;
@@ -74,6 +80,34 @@ export class ServerPostbackLogs implements IPostbackLogs {
     }
   }
 
+  async updatePostbackLogStatus(params: {
+    id: number;
+  }): Promise<ApiResponseProps> {
+    const db = new MySQLDatabase(new CMSV2Database().getConnection());
+    const { id } = params;
+    const queryString = `UPDATE Log SET id=? wHERE isFixed=1`;
+    const queryValues = [id];
+
+    try {
+      await db.query({
+        query: queryString,
+        values: queryValues,
+      });
+
+      return {
+        isSuccess: true,
+        data: [],
+        message: `Log status updated successfully`,
+      };
+    } catch (error: any) {
+      console.error(error);
+      return {
+        isSuccess: false,
+        message: "Something went wrong! Please try again.",
+        data: [],
+      };
+    }
+  }
   formatResponse = (response: any) => {
     const dateUtils = new DatetimeUtils();
     return response.map((item: any) => ({

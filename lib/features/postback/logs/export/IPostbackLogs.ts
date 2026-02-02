@@ -10,4 +10,9 @@ interface IPostbackLogs {
   findByPixel: (params: { pixel: string }) => Promise<ApiResponseProps>;
 }
 
-export type { IExportPostbackLogs, IPostbackLogs };
+interface IUpdatePostbackLogStatus {
+  updatePostbackLogStatus: (params: {
+    id: number;
+  }) => Promise<ApiResponseProps>;
+}
+export type { IExportPostbackLogs, IPostbackLogs, IUpdatePostbackLogStatus };

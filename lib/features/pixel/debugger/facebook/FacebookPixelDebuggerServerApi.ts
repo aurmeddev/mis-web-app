@@ -5,6 +5,12 @@ import { GraphFacebookApiConfig } from "@/lib/features/ads-manager/facebook/conf
 export class FacebookPixelDebuggerServerApi extends GraphFacebookApiConfig {
   debug = async (params: { pixel: string; token: string }) => {
     const { pixel, token } = params;
+    if (!pixel) {
+      return { isSuccess: false, message: "Pixel is required." };
+    }
+    if (!token) {
+      return { isSuccess: false, message: "Token is required." };
+    }
     try {
       const response = await fetch(
         `${this.baseUrl}/${this.version}/${pixel}/events?access_token=${token}`,
@@ -21,11 +27,24 @@ export class FacebookPixelDebuggerServerApi extends GraphFacebookApiConfig {
       }
       const data = await response.json();
       console.log("Facebook Pixel Debugger API Response:", data);
-      return { isSuccess: true, message: "Postback test successful!" };
+      return {
+        isSuccess: true,
+        message: {
+          title: "Postback test successful!",
+          description: "Postback test successful!",
+        },
+      };
     } catch (error: any) {
       const result = JSON.parse(error.message);
       console.error("Facebook Pixel Debugger API Error:", result);
-      return { isSuccess: false, message: "Conversion API Postback Error" };
+      return {
+        isSuccess: false,
+        message: {
+          title: "Postback Conversion API Error",
+          description:
+            "Generate a new access token from the Facebook Events Manager.",
+        },
+      };
     }
   };
 

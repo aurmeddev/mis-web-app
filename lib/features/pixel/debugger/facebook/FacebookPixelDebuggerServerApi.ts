@@ -6,10 +6,22 @@ export class FacebookPixelDebuggerServerApi extends GraphFacebookApiConfig {
   debug = async (params: { pixel: string; token: string }) => {
     const { pixel, token } = params;
     if (!pixel) {
-      return { isSuccess: false, message: "Pixel is required." };
+      return {
+        isSuccess: false,
+        message: {
+          title: "Pixel is required.",
+          description: "Pixel is required.",
+        },
+      };
     }
     if (!token) {
-      return { isSuccess: false, message: "Token is required." };
+      return {
+        isSuccess: false,
+        message: {
+          title: "Token is required.",
+          description: "Token is required.",
+        },
+      };
     }
     try {
       const response = await fetch(

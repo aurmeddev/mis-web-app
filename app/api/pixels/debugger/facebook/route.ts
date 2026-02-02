@@ -29,28 +29,6 @@ export const POST = async (request: NextRequest) => {
     );
   }
 
-  if (!requestBody.pixel) {
-    return NextResponse.json(
-      {
-        isSuccess: false,
-        message: "Pixel is required.",
-        data: [],
-      },
-      { status: 400 },
-    );
-  }
-
-  if (!requestBody.token) {
-    return NextResponse.json(
-      {
-        isSuccess: false,
-        message: "Token is required.",
-        data: [],
-      },
-      { status: 400 },
-    );
-  }
-
   // Proceed to debug the pixel
   const api = new FacebookPixelDebuggerServerApi();
   const { isSuccess, message } = await api.debug(requestBody);

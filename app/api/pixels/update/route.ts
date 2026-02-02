@@ -1,8 +1,10 @@
+import { FacebookPixelDebuggerServerApi } from "@/lib/features/pixel/debugger/facebook/FacebookPixelDebuggerServerApi";
 import { IPixelUpdate } from "@/lib/features/pixel/IPixel";
 import { PixelServer } from "@/lib/features/pixel/PixelServer";
 import { getSession } from "@/lib/features/security/user-auth/jwt/JwtAuthService";
 import { ObjectUtils } from "@/lib/utils/object/ObjectUtils";
 import { NextRequest, NextResponse } from "next/server";
+import { stringify } from "querystring";
 export const PUT = async (request: NextRequest) => {
   // Check if the user session is valid before processing the request
   const session = await getSession();
@@ -12,7 +14,7 @@ export const PUT = async (request: NextRequest) => {
         isSuccess: false,
         message: "Session expired or invalid",
       },
-      { status: 403 }
+      { status: 403 },
     );
   }
 
@@ -26,7 +28,7 @@ export const PUT = async (request: NextRequest) => {
         message: "Invalid JSON payload.",
         data: [],
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -37,7 +39,7 @@ export const PUT = async (request: NextRequest) => {
         message: "ID is required.",
         data: [],
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -48,7 +50,7 @@ export const PUT = async (request: NextRequest) => {
         message: "ID is invalid.",
         data: [],
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -59,7 +61,7 @@ export const PUT = async (request: NextRequest) => {
         message: "Pixel is required.",
         data: [],
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -70,7 +72,7 @@ export const PUT = async (request: NextRequest) => {
         message: "Token is required.",
         data: [],
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -99,7 +101,7 @@ export const PUT = async (request: NextRequest) => {
           message: "Validation error occurred.",
           data: [],
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -111,14 +113,32 @@ export const PUT = async (request: NextRequest) => {
           message: "The pixel you provided already exists. Please try again.",
           data: [],
         },
-        { status: 409 }
+        { status: 409 },
       );
     }
+  }
+
+  // Validate the pixel
+  const api = new FacebookPixelDebuggerServerApi();
+  const debuggingResult = await api.debug({
+    pixel: `${requestBody.pixel}`,
+    token: `${requestBody.token}`,
+  });
+
+  if (!debuggingResult.isSuccess) {
+    return NextResponse.json(
+      {
+        isSuccess: false,
+        message: JSON.stringify(debuggingResult.message), // Temporary fix for serialization issue
+        data: [],
+      },
+      { status: 400 },
+    );
   }
 
   const { isSuccess, data, message } = await pixel.update(newRequestBody);
   return NextResponse.json(
     { isSuccess, data, message },
-    { status: isSuccess ? 201 : 500 }
+    { status: isSuccess ? 201 : 500 },
   );
 };

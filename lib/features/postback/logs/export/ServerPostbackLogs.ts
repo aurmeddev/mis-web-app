@@ -86,7 +86,7 @@ export class ServerPostbackLogs
   }): Promise<ApiResponseProps> {
     const db = new MySQLDatabase(new CMSV2Database().getConnection());
     const { pixel } = params;
-    const queryString = `UPDATE Log SET isFixed=0 WHERE pixel=?`; // isFixed  = 0 (fixed)
+    const queryString = `UPDATE Log SET isFixed=0 WHERE pixel=? AND isFixed=1`; // isFixed  = 0 (fixed)
     const queryValues = [pixel];
 
     try {

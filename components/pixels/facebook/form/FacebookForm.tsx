@@ -3,6 +3,7 @@ import { FormHeader } from "./FormHeader";
 import { PixelInput } from "./PixelInput";
 import { TokenTextarea } from "./TokenTextarea";
 import { FormActions } from "./FormActions";
+import { GlobalAlertSection } from "@/components/shared/alert/alert-section";
 
 export function FacebookForm({
   formState,
@@ -20,6 +21,11 @@ export function FacebookForm({
   return (
     <div className="mx-auto max-w-[530px] p-8">
       <FormHeader isUpdateMode={isUpdateMode} />
+      <GlobalAlertSection
+        className="mb-4"
+        title={formState.response.title}
+        message={formState.response.message}
+      />
       <form className="space-y-8" onSubmit={onSubmit}>
         <div className="space-y-4">
           <PixelInput

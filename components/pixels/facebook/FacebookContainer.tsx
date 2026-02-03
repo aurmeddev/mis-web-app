@@ -1,6 +1,6 @@
 "use client";
 import { FormEvent, useRef, useState } from "react";
-import { IFacebookPixelFormData } from "./Facebook.types";
+import { IFacebookFormState, IFacebookPixelFormData } from "./Facebook.types";
 import { FacebookForm } from "./form/FacebookForm";
 import { showToast } from "@/lib/utils/toast";
 import { Info } from "lucide-react";
@@ -17,10 +17,14 @@ export function FacebookContainer() {
   const objectUtils = new ObjectUtils();
   const [pixelFormData, setPixelFormData] =
     useState<IFacebookPixelFormData>(INITIAL_FORM_VALUE);
-  const [formState, setFormState] = useState({
+  const [formState, setFormState] = useState<IFacebookFormState>({
     canProceed: false,
     isExisted: false,
     isSubmitting: false,
+    response: {
+      title: "",
+      message: "",
+    },
   });
   const oldPixelFormData = useRef<IFacebookPixelFormData>(INITIAL_FORM_VALUE);
 
@@ -37,7 +41,7 @@ export function FacebookContainer() {
 
     const { pixel, token } = objectUtils.getChangedProperties(
       oldPixelFormData.current,
-      pixelFormData
+      pixelFormData,
     );
 
     const isUpdateMode = formState.isExisted && formState.canProceed;
@@ -48,9 +52,25 @@ export function FacebookContainer() {
           token,
         })
       : await pixelService.post(pixelFormData);
-    setFormState((prevState) => ({ ...prevState, isSubmitting: false }));
+
+    setFormState((prevState) => ({
+      ...prevState,
+      isSubmitting: false,
+    }));
     if (!isSuccess) {
-      showToast(false, message);
+      try {
+        const pixelResponse = JSON.parse(message);
+        setFormState((prevState) => ({
+          ...prevState,
+          isSubmitting: false,
+          response: {
+            title: pixelResponse.title,
+            message: pixelResponse.description,
+          },
+        }));
+      } catch (e) {
+        showToast(false, message);
+      }
       return;
     }
     handleFormReset();
@@ -83,7 +103,7 @@ export function FacebookContainer() {
         setFormState((prevState) => ({ ...prevState, isExisted: false }));
       }
     },
-    500
+    500,
   );
 
   const handleProceed = () => {
@@ -97,6 +117,10 @@ export function FacebookContainer() {
       ...prevState,
       canProceed: false,
       isExisted: false,
+      response: {
+        title: "",
+        message: "",
+      },
     }));
   };
 

@@ -10,6 +10,10 @@ interface IFacebookFormState {
   canProceed: boolean;
   isExisted: boolean;
   isSubmitting: boolean;
+  response: {
+    title: string;
+    message: string;
+  };
 }
 
 interface IFacebookForm {
@@ -30,8 +34,10 @@ interface IPixelInput extends Omit<IFacebookForm, "onSubmit" | "onFormReset"> {
   isOnConfirmationMode: boolean;
 }
 
-interface ITokenTextarea
-  extends Pick<IPixelInput, "isOnConfirmationMode" | "onPixelFormChange"> {
+interface ITokenTextarea extends Pick<
+  IPixelInput,
+  "isOnConfirmationMode" | "onPixelFormChange"
+> {
   token: string;
 }
 
@@ -44,6 +50,7 @@ interface IFormActions {
 
 export type {
   IFacebookPixelFormData,
+  IFacebookFormState,
   IFacebookForm,
   IFormHeader,
   IPixelInput,

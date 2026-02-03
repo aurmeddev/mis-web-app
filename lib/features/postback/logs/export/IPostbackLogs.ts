@@ -12,7 +12,7 @@ interface IPostbackLogs {
 
 interface IUpdatePostbackLogStatus {
   updatePostbackLogStatus: (params: {
-    id: number;
+    pixel: string;
   }) => Promise<ApiResponseProps>;
 }
 export type { IExportPostbackLogs, IPostbackLogs, IUpdatePostbackLogStatus };

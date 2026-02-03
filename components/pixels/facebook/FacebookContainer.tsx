@@ -39,10 +39,7 @@ export function FacebookContainer() {
       return;
     }
 
-    const { pixel, token } = objectUtils.getChangedProperties(
-      oldPixelFormData.current,
-      pixelFormData,
-    );
+    const { pixel, token } = pixelFormData;
 
     const isUpdateMode = formState.isExisted && formState.canProceed;
     const { isSuccess, message } = isUpdateMode

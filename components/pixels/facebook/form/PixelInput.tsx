@@ -20,7 +20,7 @@ export function PixelInput({
         <Label htmlFor="pixel">Pixel</Label>
         <div className="relative">
           <Input
-            disabled={isOnConfirmationMode}
+            disabled={isOnConfirmationMode || formState.canProceed}
             id="pixel"
             onChange={(ev) => onPixelFormChange("pixel", ev.target.value)}
             placeholder="Enter the Pixel ID"

@@ -45,10 +45,11 @@ export class ServerPostbackLogs
       };
     }
   }
+
   async findByPixel(params: { pixel: string }): Promise<ApiResponseProps> {
     const db = new MySQLDatabase(new CMSV2Database().getConnection());
     const { pixel } = params;
-    const queryString = `SELECT voluum_campaignid, pixel, remarks, description, createdAt FROM v_Log WHERE pixel=? AND isFixed=1 AND (log_id = 3 OR log_id = 5)`;
+    const queryString = `SELECT id, voluum_campaignid, pixel, remarks, description, createdAt FROM v_Log WHERE pixel=? AND isFixed=1 AND (log_id = 3 OR log_id = 5)`;
     const queryValues = [pixel];
 
     try {
@@ -81,12 +82,12 @@ export class ServerPostbackLogs
   }
 
   async updatePostbackLogStatus(params: {
-    id: number;
+    pixel: string;
   }): Promise<ApiResponseProps> {
     const db = new MySQLDatabase(new CMSV2Database().getConnection());
-    const { id } = params;
-    const queryString = `UPDATE Log SET isFixed=0 WHERE id=?`; // isFixed  = 0 (fixed)
-    const queryValues = [id];
+    const { pixel } = params;
+    const queryString = `UPDATE Log SET isFixed=0 WHERE pixel=?`; // isFixed  = 0 (fixed)
+    const queryValues = [pixel];
 
     try {
       await db.query({

@@ -97,7 +97,7 @@ export const POST = async (request: NextRequest) => {
     return NextResponse.json(
       {
         isSuccess: false,
-        message: JSON.stringify(debuggingResult.message), // Temporary fix for serialization issue
+        message: JSON.stringify(debuggingResult.message),
         data: [],
       },
       { status: 400 },
